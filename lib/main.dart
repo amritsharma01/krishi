@@ -1,6 +1,6 @@
 import 'package:krishi/core/configs/app_theme.dart';
 import 'package:krishi/core/services/get.dart';
-import 'package:krishi/features/auth/presentation/pages/login_page.dart';
+import 'package:krishi/features/auth/login_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
