@@ -46,6 +46,7 @@ dependencies:
   auto_size_text: ^3.0.0
   skeletonizer: ^2.1.0+1
   fluttertoast:
+  image_picker: ^1.0.7
 
   # Responsiveness
   flutter_screenutil: ^5.6.0

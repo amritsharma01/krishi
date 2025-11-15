@@ -1,6 +1,8 @@
 import 'package:krishi/core/configs/app_theme.dart';
+import 'package:krishi/core/services/auth_service.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/auth/login_page.dart';
+import 'package:krishi/features/navigation/main_navigation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'core/configs/app_colors.dart';
 import 'core/configs/app_theme_provider.dart';
+import 'core/configs/language_provider.dart';
 import 'core/core_service_providers.dart';
 
 void main() async {
@@ -24,12 +27,16 @@ void main() async {
   try {
     final box = await Get.box.init();
     final themeProvider = await ThemeProvider(box).init();
+    final langProvider = await LanguageProvider(box).init();
+    final authService = await AuthService(box).init();
 
     runApp(
       ProviderScope(
         overrides: [
           storageServiceProvider.overrideWith((ref) => box),
           themeModeProvider.overrideWith((ref) => themeProvider),
+          languageProvider.overrideWith((ref) => langProvider),
+          authServiceProvider.overrideWith((ref) => authService),
         ],
         child: const Core(),
       ),
@@ -45,8 +52,14 @@ class Core extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(themeModeProvider);
+    final lang = ref.watch(languageProvider);
+    final auth = ref.watch(authServiceProvider);
+    
+    // Create a unique key combining both theme and language for proper rebuilds
+    final appKey = '${mode.themeMode.name}_${lang.index}';
+    
     return ScreenUtilInit(
-      key: Get.key("Krishi"),
+      key: Get.key("Krishi_$appKey"),
       minTextAdapt: true,
       ensureScreenSize: true,
       splitScreenMode: true,
@@ -54,7 +67,7 @@ class Core extends ConsumerWidget {
       child: ValueListenableBuilder(
         valueListenable: platformProvider,
         builder: (context, platform, child) => PlatformProvider(
-          key: Get.key(platform),
+          key: Get.key('${platform}_$appKey'),
           settings: PlatformSettingsData(
             iosUsesMaterialWidgets: true,
             matchMaterialCaseForPlatformText: false,
@@ -69,7 +82,7 @@ class Core extends ConsumerWidget {
             cupertinoDarkTheme: AppThemes.iosdarkTheme,
             cupertinoLightTheme: AppThemes.ioslightTheme,
             builder: (context) => PlatformApp(
-              key: Get.key(mode.themeMode),
+              key: Get.key('app_$appKey'),
               debugShowCheckedModeBanner: false,
               navigatorKey: navigatorKey,
               scrollBehavior: Get.scrollBehaviour,
@@ -79,7 +92,7 @@ class Core extends ConsumerWidget {
                 DefaultCupertinoLocalizations.delegate,
                 DefaultWidgetsLocalizations.delegate,
               ],
-              home: const LoginPage(),
+              home: auth.isAuthenticated ? const MainNavigation() : const LoginPage(),
             ),
           ),
         ),

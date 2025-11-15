@@ -1,9 +1,7 @@
-import 'package:krishi/core/utils/assets_path.dart';
 import 'package:flutter/material.dart';
 
 //Centralization of icons
 abstract class AppIcons {
-  static String get settings => Assets.icons.settings;
   static const rightCheveron = Icons.chevron_right;
   static const menu = Icons.menu;
   static const bookmark = Icons.bookmark;

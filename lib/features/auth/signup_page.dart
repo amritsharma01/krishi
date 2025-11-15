@@ -4,6 +4,7 @@ import 'package:krishi/core/extensions/color_extensions.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/home/home_page.dart';
 import 'package:krishi/features/widgets/app_text.dart';
@@ -71,14 +72,14 @@ class _SignupPageState extends State<SignupPage> {
 
                 // Title
                 AppText(
-                  'Create Account',
+                  'create_account'.tr(context),
                   style: Get.bodyLarge.px28.w700.primary,
                 ),
 
                 8.verticalGap,
 
                 AppText(
-                  'Join our community today',
+                  'join_community'.tr(context),
                   style: Get.bodyMedium.px14.copyWith(
                     color: Get.disabledColor.o6,
                   ),
@@ -89,7 +90,7 @@ class _SignupPageState extends State<SignupPage> {
                 // Full Name Field
                 AppTextFormField(
                   controller: _nameController,
-                  hintText: 'Full Name',
+                  hintText: 'full_name'.tr(context),
                   textInputType: TextInputType.name,
                   prefixIcon: Icon(
                     Icons.person_outline,
@@ -107,7 +108,7 @@ class _SignupPageState extends State<SignupPage> {
                 // Phone Number Field
                 AppTextFormField(
                   controller: _phoneController,
-                  hintText: 'Phone Number',
+                  hintText: 'phone_number'.tr(context),
                   textInputType: TextInputType.phone,
                   prefixIcon: Icon(
                     Icons.phone_outlined,
@@ -125,7 +126,7 @@ class _SignupPageState extends State<SignupPage> {
                 // Email Field
                 AppTextFormField(
                   controller: _emailController,
-                  hintText: 'Email Address',
+                  hintText: 'email_address'.tr(context),
                   textInputType: TextInputType.emailAddress,
                   prefixIcon: Icon(
                     Icons.email_outlined,
@@ -143,7 +144,7 @@ class _SignupPageState extends State<SignupPage> {
                 // Password Field
                 AppTextFormField(
                   controller: _passwordController,
-                  hintText: 'Password',
+                  hintText: 'password'.tr(context),
                   toHide: _obscurePassword,
                   textInputType: TextInputType.visiblePassword,
                   prefixIcon: Icon(
@@ -175,7 +176,7 @@ class _SignupPageState extends State<SignupPage> {
                 // Confirm Password Field
                 AppTextFormField(
                   controller: _confirmPasswordController,
-                  hintText: 'Confirm Password',
+                  hintText: 'confirm_password'.tr(context),
                   toHide: _obscureConfirmPassword,
                   textInputType: TextInputType.visiblePassword,
                   prefixIcon: Icon(
@@ -202,15 +203,15 @@ class _SignupPageState extends State<SignupPage> {
                   radius: 12,
                 ),
 
-                30.verticalGap,
+                10.verticalGap,
 
                 // Sign Up Button
                 AppButton(
                   onTap: _handleSignup,
-                  text: 'Sign Up',
+                  text: 'signup'.tr(context),
                   bgcolor: AppColors.primary,
                   textColor: AppColors.white,
-                  height: 50.ht,
+                  height: 40.ht,
                   radius: 12,
                 ),
 
@@ -221,7 +222,7 @@ class _SignupPageState extends State<SignupPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     AppText(
-                      'Already have an account?  ',
+                      'already_have_account'.tr(context),
                       style: Get.bodyMedium.px14.copyWith(
                         color: Get.disabledColor.o7,
                       ),
@@ -231,7 +232,7 @@ class _SignupPageState extends State<SignupPage> {
                         Get.pop();
                       },
                       child: AppText(
-                        'Sign In',
+                        'sign_in'.tr(context),
                         style: Get.bodyMedium.px14.w700.primary,
                       ),
                     ),
@@ -248,12 +249,12 @@ class _SignupPageState extends State<SignupPage> {
                     borderRadius: BorderRadius.circular(12).rt,
                   ),
                   child: AppText(
-                    'By signing up, you agree to our Terms of Service and Privacy Policy. Your information will be securely stored.',
+                    'terms_info'.tr(context),
                     style: Get.bodySmall.px11.copyWith(
                       color: Get.disabledColor.o7,
                       height: 1.5,
                     ),
-                    maxLines: 3,
+                    maxLines: 4,
                     textAlign: TextAlign.center,
                   ),
                 ),

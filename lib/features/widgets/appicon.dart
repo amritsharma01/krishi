@@ -1,9 +1,8 @@
 import 'package:krishi/core/extensions/double.dart';
 import 'package:krishi/core/extensions/padding.dart';
+import 'package:krishi/core/services/get.dart';
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
-import '../../../../../core/services/get.dart';
 
 class AppIcon extends StatelessWidget {
   const AppIcon(

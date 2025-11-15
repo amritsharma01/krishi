@@ -1,12 +1,10 @@
 import 'package:krishi/core/extensions/color_extensions.dart';
 import 'package:krishi/core/extensions/double.dart';
 import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/services/get.dart';
+import 'package:krishi/core/utils/assets_path.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-
-import '../../../../../core/services/get.dart';
-import '../../../../../core/utils/assets_path.dart';
 
 class AppProgressIndicator extends StatelessWidget {
   const AppProgressIndicator({super.key, this.color});
@@ -44,7 +42,7 @@ class OverlayLoading extends StatelessWidget {
           borderRadius: BorderRadius.circular(20.rt),
         ),
         color: Get.scaffoldBackgroundColor,
-        child: Image.asset(Assets.images.splashImage),
+        child: Image.asset(Assets.images.logo),
       ),
     );
   }

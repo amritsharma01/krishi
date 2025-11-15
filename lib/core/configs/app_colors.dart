@@ -2,19 +2,41 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 final class AppColors {
-  static const Color primary = Color.fromARGB(255, 99, 141, 175);
+  // Primary agriculture green (Nepal hills, crops)
+  static const Color primary = Color.fromARGB(255, 8, 134, 50);
+
   static const Color transparent = Color.fromARGB(0, 0, 0, 0);
+
+  // iOS defaults
   static const Color iosBlack = CupertinoColors.darkBackgroundGray;
   static const Color iosWhite = CupertinoColors.lightBackgroundGray;
-  static const Color black = Color(0xff0D0D0D);
-  static const Color white = Color(0xffFFFFFF);
-  static const Color cyan = Color(0xff00bcd4);
-  static const Color appBarColor = Color(0xff5D2EC0);
-  static const Color reddisBrown = Color(0xff904D00);
-  static const Color lightOrange = Color(0xffF9D9B5);
-  static const Color titleColor = Color(0xff627485);
-  static const Color borderColor = Color(0xffDCDCDC);
-  static const Color blue = Color(0xff0038FF);
+
+  // Core neutral colors
+  static const Color black = Color(0xFF0D0D0D);
+  static const Color white = Color(0xFFFFFFFF);
+
+  // Nepal sky + water accent cyan
+  static const Color cyan = Color(0xFF00BCD4);
+
+  // App bar with Nepali-blue-inspired tone
+  static const Color appBarColor = Color(0xFF003893); // Nepali flag blue
+
+  // Soil-inspired brown
+  static const Color reddisBrown = Color(0xFF7A4F27);
+
+  // Mustard field light orange
+  static const Color lightOrange = Color(0xFFFFD9A0);
+
+  // Softer, modern title color for readability
+  static const Color titleColor = Color(0xFF4F5B62);
+
+  // Neutral border for clean UI
+  static const Color borderColor = Color(0xFFE0E0E0);
+
+  // Calm Nepali mountain blue-toned UI accent
+  static const Color blue = Color(0xFF31406E);
+
+  // Light and dark greys (unchanged variable names)
   static Color lightgrey = Colors.grey.shade100;
   static Color darkgrey = Colors.grey.shade900;
 }

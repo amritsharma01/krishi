@@ -1,26 +1,29 @@
 import 'package:krishi/core/configs/app_colors.dart';
+import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/color_extensions.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/auth/signup_page.dart';
-import 'package:krishi/features/home/home_page.dart';
+import 'package:krishi/features/navigation/main_navigation.dart';
 import 'package:krishi/features/widgets/app_text.dart';
 import 'package:krishi/features/widgets/button.dart';
 import 'package:krishi/features/widgets/form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends ConsumerState<LoginPage> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -33,10 +36,11 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleLogin() async {
-    // TODO: Implement login logic
+    // TODO: Implement actual login API logic
     await Future.delayed(const Duration(seconds: 1));
     if (mounted) {
-      Get.offAll(const HomePage());
+      await ref.read(authServiceProvider).login();
+      Get.offAll(const MainNavigation());
     }
   }
 
@@ -56,8 +60,8 @@ class _LoginPageState extends State<LoginPage> {
 
                 // Logo/Icon
                 Container(
-                  width: 80.wt,
-                  height: 80.ht,
+                  width: 70.wt,
+                  height: 70.ht,
                   decoration: BoxDecoration(
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(25).rt,
@@ -75,14 +79,14 @@ class _LoginPageState extends State<LoginPage> {
 
                 // App Name
                 AppText(
-                  'Jaljala Connect',
-                  style: Get.bodyLarge.px32.w700.primary,
+                  'app_name'.tr(context),
+                  style: Get.bodyLarge.px30.w700.primary,
                 ),
 
                 8.verticalGap,
 
                 AppText(
-                  'Welcome back',
+                  'welcome_back'.tr(context),
                   style: Get.bodyMedium.px16.copyWith(
                     color: Get.disabledColor.o6,
                   ),
@@ -93,7 +97,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Phone Number Field
                 AppTextFormField(
                   controller: _phoneController,
-                  hintText: 'Phone Number',
+                  hintText: 'phone_number'.tr(context),
                   textInputType: TextInputType.phone,
                   prefixIcon: Icon(
                     Icons.phone_outlined,
@@ -111,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Password Field
                 AppTextFormField(
                   controller: _passwordController,
-                  hintText: 'Password',
+                  hintText: 'password'.tr(context),
                   toHide: _obscurePassword,
                   textInputType: TextInputType.visiblePassword,
                   prefixIcon: Icon(
@@ -138,12 +142,12 @@ class _LoginPageState extends State<LoginPage> {
                   radius: 12,
                 ),
 
-                30.verticalGap,
+                10.verticalGap,
 
                 // Sign In Button
                 AppButton(
                   onTap: _handleLogin,
-                  text: 'Sign In',
+                  text: 'sign_in'.tr(context),
                   bgcolor: AppColors.primary,
                   textColor: AppColors.white,
                   height: 40.ht,
@@ -157,7 +161,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     AppText(
-                      "Don't have an account?  ",
+                      'dont_have_account'.tr(context),
                       style: Get.bodyMedium.px14.copyWith(
                         color: Get.disabledColor.o7,
                       ),
@@ -167,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
                         Get.to(const SignupPage());
                       },
                       child: AppText(
-                        'Sign Up',
+                        'signup'.tr(context),
                         style: Get.bodyMedium.px14.w700.primary,
                       ),
                     ),
@@ -194,12 +198,12 @@ class _LoginPageState extends State<LoginPage> {
                       12.horizontalGap,
                       Expanded(
                         child: AppText(
-                          'Your information will be used to auto-fill seller details and connect you with buyers through our admin system.',
+                          'auth_info'.tr(context),
                           style: Get.bodySmall.px12.copyWith(
                             color: Get.disabledColor.o7,
-                            height: 1.5,
+                            height: 1.4,
                           ),
-                          maxLines: 3,
+                          maxLines: 4,
                         ),
                       ),
                     ],
