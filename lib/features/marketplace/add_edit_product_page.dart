@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:krishi/core/configs/app_colors.dart';
+import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -7,43 +8,134 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/models/category.dart';
+import 'package:krishi/models/product.dart';
+import 'package:krishi/models/unit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-class AddEditProductPage extends StatefulWidget {
-  final Map<String, dynamic>? product; // null for add, existing product for edit
+class AddEditProductPage extends ConsumerStatefulWidget {
+  final Product? product; // null for add, existing product for edit
 
   const AddEditProductPage({super.key, this.product});
 
   @override
-  State<AddEditProductPage> createState() => _AddEditProductPageState();
+  ConsumerState<AddEditProductPage> createState() =>
+      _AddEditProductPageState();
 }
 
-class _AddEditProductPageState extends State<AddEditProductPage> {
+class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _priceController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _unitsAvailableController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
-  
-  String selectedEmoji = '🌾';
-  String selectedCategory = 'Vegetables';
+
   File? _selectedImage;
-  String? _existingImagePath;
+  Category? selectedCategory;
+  Unit? selectedUnit;
   
-  final List<String> emojis = ['🌾', '🍅', '🥔', '🥬', '🧅', '🌶️', '🥕', '🌽', '🚜', '🌱'];
-  final List<String> categories = ['Vegetables', 'Fruits', 'Grains', 'Equipment', 'Seeds'];
+  List<Category> categories = [];
+  List<Unit> units = [];
+  bool isLoadingCategories = true;
+  bool isLoadingUnits = true;
+  bool isSaving = false;
 
   @override
   void initState() {
     super.initState();
+    _loadData();
+    
     if (widget.product != null) {
-      _nameController.text = widget.product!['name'];
-      _priceController.text = widget.product!['price'].toString().replaceAll('Rs. ', '');
-      selectedEmoji = widget.product!['image'];
-      // Check if product has an image path (not emoji)
-      if (widget.product!.containsKey('imagePath')) {
-        _existingImagePath = widget.product!['imagePath'];
+      _nameController.text = widget.product!.name;
+      _priceController.text = widget.product!.price;
+      _descriptionController.text = widget.product!.description;
+      _phoneController.text = widget.product!.sellerPhoneNumber ?? '';
+      _unitsAvailableController.text = widget.product!.unitsAvailable.toString();
+    }
+  }
+
+  Future<void> _loadData() async {
+    await Future.wait([
+      _loadCategories(),
+      _loadUnits(),
+    ]);
+    
+    // Set selected category and unit if editing
+    if (widget.product != null) {
+      selectedCategory = categories.firstWhere(
+        (cat) => cat.id == widget.product!.category,
+        orElse: () => categories.first,
+      );
+      selectedUnit = units.firstWhere(
+        (unit) => unit.id == widget.product!.unit,
+        orElse: () => units.first,
+      );
+    } else {
+      // Set defaults for new product
+      if (categories.isNotEmpty) selectedCategory = categories.first;
+      if (units.isNotEmpty) selectedUnit = units.first;
+    }
+    setState(() {});
+  }
+
+  Future<void> _loadCategories() async {
+    setState(() => isLoadingCategories = true);
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final cats = await apiService.getCategories();
+      if (mounted) {
+        setState(() {
+          categories = cats;
+          isLoadingCategories = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading categories: $e');
+      if (mounted) {
+        setState(() {
+          categories = [];
+          isLoadingCategories = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load categories: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadUnits() async {
+    setState(() => isLoadingUnits = true);
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final uts = await apiService.getUnits();
+      if (mounted) {
+        setState(() {
+          units = uts;
+          isLoadingUnits = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading units: $e');
+      if (mounted) {
+        setState(() {
+          units = [];
+          isLoadingUnits = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load units: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
       }
     }
   }
@@ -53,6 +145,8 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
     _nameController.dispose();
     _priceController.dispose();
     _descriptionController.dispose();
+    _phoneController.dispose();
+    _unitsAvailableController.dispose();
     super.dispose();
   }
 
@@ -64,15 +158,21 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
         maxHeight: 1024,
         imageQuality: 85,
       );
-      
+
       if (pickedFile != null) {
         setState(() {
           _selectedImage = File(pickedFile.path);
-          _existingImagePath = null; // Clear existing image if new one is selected
         });
       }
     } catch (e) {
-      Get.snackbar('Error picking image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('error_picking_image'.tr(context)),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -194,32 +294,91 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
     );
   }
 
-  void _saveProduct() {
+  Future<void> _saveProduct() async {
     if (_formKey.currentState!.validate()) {
-      // TODO: Upload image to backend and get URL
-      final productData = {
-        'name': _nameController.text,
-        'price': 'Rs. ${_priceController.text}',
-        'image': _selectedImage != null || _existingImagePath != null 
-            ? 'image' // Use 'image' as placeholder when real image exists
-            : selectedEmoji, // Use emoji if no image selected
-        'imagePath': _selectedImage?.path ?? _existingImagePath,
-        'description': _descriptionController.text,
-        'category': selectedCategory,
-      };
-      
-      Navigator.pop(context, productData);
-      Get.snackbar(widget.product == null 
-          ? 'Product added successfully!' 
-          : 'Product updated successfully!');
+      if (selectedCategory == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('select_category'.tr(context)),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      if (selectedUnit == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('select_unit'.tr(context)),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      setState(() => isSaving = true);
+
+      try {
+        final apiService = ref.read(krishiApiServiceProvider);
+
+        if (widget.product == null) {
+          // Create new product
+          await apiService.createProduct(
+            name: _nameController.text,
+            sellerPhoneNumber: _phoneController.text,
+            category: selectedCategory!.id,
+            price: _priceController.text,
+            description: _descriptionController.text,
+            unit: selectedUnit!.id,
+            unitsAvailable: int.parse(_unitsAvailableController.text),
+            imagePath: _selectedImage?.path,
+          );
+        } else {
+          // Update existing product
+          await apiService.updateProduct(
+            id: widget.product!.id,
+            name: _nameController.text,
+            sellerPhoneNumber: _phoneController.text,
+            category: selectedCategory!.id,
+            price: _priceController.text,
+            description: _descriptionController.text,
+            unit: selectedUnit!.id,
+            unitsAvailable: int.parse(_unitsAvailableController.text),
+            imagePath: _selectedImage?.path,
+          );
+        }
+
+        if (mounted) {
+          Navigator.pop(context, true); // Return true to indicate success
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                widget.product == null
+                    ? 'product_added'.tr(context)
+                    : 'product_updated'.tr(context),
+              ),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => isSaving = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('error_saving_product'.tr(context)),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.product != null;
-    final hasImage = _selectedImage != null || _existingImagePath != null;
-    
+
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -235,34 +394,25 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16).rt,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Image/Emoji Selector
-              AppText(
-                'product_image'.tr(context),
-                style: Get.bodyMedium.px15.w700.copyWith(
-                  color: Get.disabledColor,
-                ),
-              ),
-              12.verticalGap,
-              Container(
+      body: isLoadingCategories || isLoadingUnits
+          ? Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
+          : Form(
+              key: _formKey,
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16).rt,
-                decoration: BoxDecoration(
-                  color: Get.cardColor,
-                  borderRadius: BorderRadius.circular(16).rt,
-                  border: Border.all(
-                    color: Get.disabledColor.withValues(alpha: 0.1),
-                    width: 1,
-                  ),
-                ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Image Display
+                    // Image Selector
+                    AppText(
+                      'product_image'.tr(context),
+                      style: Get.bodyMedium.px15.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    12.verticalGap,
                     GestureDetector(
                       onTap: _showImageSourceDialog,
                       child: Container(
@@ -270,376 +420,340 @@ class _AddEditProductPageState extends State<AddEditProductPage> {
                         height: 200.rt,
                         decoration: BoxDecoration(
                           color: AppColors.primary.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(12).rt,
+                          borderRadius: BorderRadius.circular(16).rt,
                           border: Border.all(
                             color: AppColors.primary.withValues(alpha: 0.2),
                             width: 2,
-                            style: BorderStyle.solid,
                           ),
                         ),
-                        child: hasImage
+                        child: _selectedImage != null
                             ? ClipRRect(
-                                borderRadius: BorderRadius.circular(10).rt,
-                                child: _selectedImage != null
-                                    ? Image.file(
-                                        _selectedImage!,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : _existingImagePath != null
-                                        ? Image.file(
-                                            File(_existingImagePath!),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : _buildImagePlaceholder(),
+                                borderRadius: BorderRadius.circular(14).rt,
+                                child: Image.file(
+                                  _selectedImage!,
+                                  fit: BoxFit.cover,
+                                ),
                               )
-                            : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    selectedEmoji,
-                                    style: TextStyle(fontSize: 64.st),
-                                  ),
-                                  12.verticalGap,
-                                  Icon(
-                                    Icons.add_photo_alternate_outlined,
-                                    color: AppColors.primary.withValues(alpha: 0.5),
-                                    size: 32.st,
-                                  ),
-                                  8.verticalGap,
-                                  AppText(
-                                    'tap_to_add_image'.tr(context),
-                                    style: Get.bodySmall.px12.w500.copyWith(
-                                      color: Get.disabledColor.withValues(alpha: 0.6),
+                            : (widget.product?.image != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(14).rt,
+                                    child: Image.network(
+                                      Get.baseUrl + widget.product!.image!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons.add_photo_alternate_outlined,
+                                              size: 48.st,
+                                              color: AppColors.primary
+                                                  .withValues(alpha: 0.5),
+                                            ),
+                                            12.verticalGap,
+                                            AppText(
+                                              'tap_to_add_image'.tr(context),
+                                              style:
+                                                  Get.bodyMedium.px14.copyWith(
+                                                color: Get.disabledColor
+                                                    .withValues(alpha: 0.6),
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                        if (loadingProgress == null) {
+                                          return child;
+                                        }
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            color: AppColors.primary,
+                                          ),
+                                        );
+                                      },
                                     ),
-                                  ),
-                                ],
-                              ),
+                                  )
+                                : Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_photo_alternate_outlined,
+                                        size: 48.st,
+                                        color: AppColors.primary
+                                            .withValues(alpha: 0.5),
+                                      ),
+                                      12.verticalGap,
+                                      AppText(
+                                        'tap_to_add_image'.tr(context),
+                                        style: Get.bodyMedium.px14.copyWith(
+                                          color: Get.disabledColor
+                                              .withValues(alpha: 0.6),
+                                        ),
+                                      ),
+                                    ],
+                                  )),
                       ),
                     ),
-                    
-                    if (hasImage) ...[
-                      16.verticalGap,
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _showImageSourceDialog,
-                              icon: Icon(Icons.edit, size: 18.st),
-                              label: AppText(
-                                'change_image'.tr(context),
-                                style: Get.bodySmall.px12.w600,
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.primary,
-                                side: BorderSide(color: AppColors.primary),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8).rt,
-                                ),
-                              ),
-                            ),
-                          ),
-                          12.horizontalGap,
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {
-                                setState(() {
-                                  _selectedImage = null;
-                                  _existingImagePath = null;
-                                });
-                              },
-                              icon: Icon(Icons.delete_outline, size: 18.st),
-                              label: AppText(
-                                'remove_image'.tr(context),
-                                style: Get.bodySmall.px12.w600,
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: Colors.red,
-                                side: BorderSide(color: Colors.red),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8).rt,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                    
-                    16.verticalGap,
-                    Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
-                    16.verticalGap,
-                    
-                    // Emoji Selector (backup option)
+                    24.verticalGap,
+
+                    // Product Name
                     AppText(
-                      'or_select_emoji'.tr(context),
-                      style: Get.bodySmall.px13.w600.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.7),
+                      'product_name'.tr(context),
+                      style: Get.bodyMedium.px15.w700.copyWith(
+                        color: Get.disabledColor,
                       ),
                     ),
-                    12.verticalGap,
-                    Wrap(
-                      spacing: 8.rt,
-                      runSpacing: 8.rt,
-                      children: emojis.map((emoji) {
-                        final isSelected = emoji == selectedEmoji && !hasImage;
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              selectedEmoji = emoji;
-                            });
-                          },
-                          child: Container(
-                            width: 50.rt,
-                            height: 50.rt,
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.primary.withValues(alpha: 0.2)
-                                  : Get.disabledColor.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(10).rt,
-                              border: Border.all(
-                                color: isSelected
-                                    ? AppColors.primary
-                                    : Colors.transparent,
-                                width: 2,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                emoji,
-                                style: TextStyle(fontSize: 28.st),
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                    8.verticalGap,
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        hintText: 'enter_product_name'.tr(context),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12).rt,
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'required_field'.tr(context);
+                        }
+                        return null;
+                      },
                     ),
+                    16.verticalGap,
+
+                    // Phone Number
+                    AppText(
+                      'contact_phone'.tr(context),
+                      style: Get.bodyMedium.px15.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    8.verticalGap,
+                    TextFormField(
+                      controller: _phoneController,
+                      decoration: InputDecoration(
+                        hintText: 'enter_phone'.tr(context),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12).rt,
+                        ),
+                      ),
+                      keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'required_field'.tr(context);
+                        }
+                        return null;
+                      },
+                    ),
+                    16.verticalGap,
+
+                    // Category
+                    AppText(
+                      'category'.tr(context),
+                      style: Get.bodyMedium.px15.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    8.verticalGap,
+                    DropdownButtonFormField<Category>(
+                      value: selectedCategory,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12).rt,
+                        ),
+                        hintText: categories.isEmpty
+                            ? 'no_categories_available'.tr(context)
+                            : 'select_category'.tr(context),
+                      ),
+                      items: categories.isEmpty
+                          ? null
+                          : categories
+                              .map((cat) => DropdownMenuItem(
+                                    value: cat,
+                                    child: Text(cat.name),
+                                  ))
+                              .toList(),
+                      onChanged: categories.isEmpty
+                          ? null
+                          : (value) {
+                              setState(() => selectedCategory = value);
+                            },
+                    ),
+                    16.verticalGap,
+
+                    // Price and Unit in Row
+                    Row(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              AppText(
+                                'price'.tr(context),
+                                style: Get.bodyMedium.px15.w700.copyWith(
+                                  color: Get.disabledColor,
+                                ),
+                              ),
+                              8.verticalGap,
+                              TextFormField(
+                                controller: _priceController,
+                                decoration: InputDecoration(
+                                  hintText: '0.00',
+                                  prefixText: 'Rs. ',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12).rt,
+                                  ),
+                                ),
+                                keyboardType: TextInputType.numberWithOptions(
+                                    decimal: true),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'required'.tr(context);
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        16.horizontalGap,
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              AppText(
+                                'unit'.tr(context),
+                                style: Get.bodyMedium.px15.w700.copyWith(
+                                  color: Get.disabledColor,
+                                ),
+                              ),
+                              8.verticalGap,
+                              DropdownButtonFormField<Unit>(
+                                value: selectedUnit,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12).rt,
+                                  ),
+                                  hintText: units.isEmpty
+                                      ? 'no_units_available'.tr(context)
+                                      : 'select_unit'.tr(context),
+                                ),
+                                items: units.isEmpty
+                                    ? null
+                                    : units
+                                        .map((unit) => DropdownMenuItem(
+                                              value: unit,
+                                              child: Text(unit.name),
+                                            ))
+                                        .toList(),
+                                onChanged: units.isEmpty
+                                    ? null
+                                    : (value) {
+                                        setState(() => selectedUnit = value);
+                                      },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    16.verticalGap,
+
+                    // Units Available
+                    AppText(
+                      'units_available'.tr(context),
+                      style: Get.bodyMedium.px15.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    8.verticalGap,
+                    TextFormField(
+                      controller: _unitsAvailableController,
+                      decoration: InputDecoration(
+                        hintText: '0',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12).rt,
+                        ),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'required_field'.tr(context);
+                        }
+                        if (int.tryParse(value) == null) {
+                          return 'invalid_number'.tr(context);
+                        }
+                        return null;
+                      },
+                    ),
+                    16.verticalGap,
+
+                    // Description
+                    AppText(
+                      'description'.tr(context),
+                      style: Get.bodyMedium.px15.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    8.verticalGap,
+                    TextFormField(
+                      controller: _descriptionController,
+                      decoration: InputDecoration(
+                        hintText: 'enter_description'.tr(context),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12).rt,
+                        ),
+                      ),
+                      maxLines: 4,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'required_field'.tr(context);
+                        }
+                        return null;
+                      },
+                    ),
+                    24.verticalGap,
+
+                    // Save Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isSaving ? null : _saveProduct,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 14).rt,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12).rt,
+                          ),
+                        ),
+                        child: isSaving
+                            ? SizedBox(
+                                height: 20.st,
+                                width: 20.st,
+                                child: CircularProgressIndicator(
+                                  color: AppColors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : AppText(
+                                isEdit ? 'update'.tr(context) : 'save'.tr(context),
+                                style: Get.bodyMedium.px16.w700.copyWith(
+                                  color: AppColors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                    20.verticalGap,
                   ],
                 ),
               ),
-              
-              24.verticalGap,
-              
-              // Product Name
-              AppText(
-                'product_name'.tr(context),
-                style: Get.bodyMedium.px15.w700.copyWith(
-                  color: Get.disabledColor,
-                ),
-              ),
-              8.verticalGap,
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  hintText: 'Enter product name',
-                  filled: true,
-                  fillColor: Get.cardColor,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    borderSide: BorderSide(
-                      color: Get.disabledColor.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    borderSide: BorderSide(
-                      color: Get.disabledColor.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    borderSide: BorderSide(
-                      color: AppColors.primary,
-                      width: 2,
-                    ),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter product name';
-                  }
-                  return null;
-                },
-              ),
-              
-              20.verticalGap,
-              
-              // Product Price
-              AppText(
-                'product_price'.tr(context),
-                style: Get.bodyMedium.px15.w700.copyWith(
-                  color: Get.disabledColor,
-                ),
-              ),
-              8.verticalGap,
-              TextFormField(
-                controller: _priceController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                decoration: InputDecoration(
-                  hintText: 'Enter price',
-                  prefixText: 'Rs. ',
-                  filled: true,
-                  fillColor: Get.cardColor,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    borderSide: BorderSide(
-                      color: Get.disabledColor.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    borderSide: BorderSide(
-                      color: Get.disabledColor.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    borderSide: BorderSide(
-                      color: AppColors.primary,
-                      width: 2,
-                    ),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter price';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Please enter valid price';
-                  }
-                  return null;
-                },
-              ),
-              
-              20.verticalGap,
-              
-              // Category
-              AppText(
-                'product_category'.tr(context),
-                style: Get.bodyMedium.px15.w700.copyWith(
-                  color: Get.disabledColor,
-                ),
-              ),
-              8.verticalGap,
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16).rt,
-                decoration: BoxDecoration(
-                  color: Get.cardColor,
-                  borderRadius: BorderRadius.circular(12).rt,
-                  border: Border.all(
-                    color: Get.disabledColor.withValues(alpha: 0.1),
-                  ),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: selectedCategory,
-                    isExpanded: true,
-                    items: categories.map((category) {
-                      return DropdownMenuItem(
-                        value: category,
-                        child: AppText(
-                          category,
-                          style: Get.bodyMedium.px14,
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCategory = value!;
-                      });
-                    },
-                  ),
-                ),
-              ),
-              
-              20.verticalGap,
-              
-              // Description
-              AppText(
-                'product_description'.tr(context),
-                style: Get.bodyMedium.px15.w700.copyWith(
-                  color: Get.disabledColor,
-                ),
-              ),
-              8.verticalGap,
-              TextFormField(
-                controller: _descriptionController,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  hintText: 'Enter product description',
-                  filled: true,
-                  fillColor: Get.cardColor,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    borderSide: BorderSide(
-                      color: Get.disabledColor.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    borderSide: BorderSide(
-                      color: Get.disabledColor.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    borderSide: BorderSide(
-                      color: AppColors.primary,
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-              
-              32.verticalGap,
-              
-              // Save Button
-              GestureDetector(
-                onTap: _saveProduct,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16).rt,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primary,
-                        AppColors.primary.withValues(alpha: 0.85),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(12).rt,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: AppText(
-                      isEdit ? 'update_product'.tr(context) : 'save_product'.tr(context),
-                      style: Get.bodyMedium.px16.w700.copyWith(
-                        color: AppColors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              
-              20.verticalGap,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImagePlaceholder() {
-    return Center(
-      child: Icon(
-        Icons.image_outlined,
-        size: 64.st,
-        color: Get.disabledColor.withValues(alpha: 0.3),
-      ),
+            ),
     );
   }
 }

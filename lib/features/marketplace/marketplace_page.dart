@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:krishi/core/configs/app_colors.dart';
+import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -9,74 +9,92 @@ import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/cart/cart_page.dart';
 import 'package:krishi/features/marketplace/add_edit_product_page.dart';
 import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/models/product.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MarketplacePage extends StatefulWidget {
+class MarketplacePage extends ConsumerStatefulWidget {
   const MarketplacePage({super.key});
 
   @override
-  State<MarketplacePage> createState() => _MarketplacePageState();
+  ConsumerState<MarketplacePage> createState() => _MarketplacePageState();
 }
 
-class _MarketplacePageState extends State<MarketplacePage> {
+class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   bool isBuyTab = true;
   final TextEditingController _searchController = TextEditingController();
+  
+  List<Product> buyProducts = [];
+  List<Product> userListings = [];
+  bool isLoadingBuyProducts = true;
+  bool isLoadingUserListings = true;
+  String? buyProductsError;
+  String? userListingsError;
 
-  // Dummy data for marketplace products
-  final List<Map<String, dynamic>> buyProducts = [
-    {
-      'name': 'Premium Wheat',
-      'nameNe': 'प्रिमियम गहुँ',
-      'price': 'Rs. 20.50',
-      'image': '🌾',
-      'bgColor': Color(0xFFD4E7D4),
-      'textColor': Color(0xFF2E7D32),
-    },
-    {
-      'name': 'Fresh Tomatoes',
-      'nameNe': 'ताजा गोलभेडा',
-      'price': 'Rs. 5.00',
-      'image': '🍅',
-      'bgColor': Color(0xFFFFD4D4),
-      'textColor': Color(0xFFC62828),
-    },
-    {
-      'name': 'Organic Potatoes',
-      'nameNe': 'जैविक आलु',
-      'price': 'Rs. 8.75',
-      'image': '🥔',
-      'bgColor': Color(0xFFEEDDCC),
-      'textColor': Color(0xFF8B5E34),
-    },
-    {
-      'name': 'Modern Tractor',
-      'nameNe': 'आधुनिक ट्रयाक्टर',
-      'price': 'Rs. 15000.00',
-      'image': '🚜',
-      'bgColor': Color(0xFFD4D4E7),
-      'textColor': Color(0xFF3949AB),
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _loadBuyProducts();
+    _loadUserListings();
+  }
 
-  // Dummy user listings
-  List<Map<String, dynamic>> userListings = [
-    {
-      'id': '1',
-      'name': 'Modern Tractor',
-      'nameNe': 'आधुनिक ट्रयाक्टर',
-      'price': 'Rs. 15000.00',
-      'image': '🚜',
-      'bgColor': Color(0xFFD4D4E7),
-    },
-    {
-      'id': '2',
-      'name': 'High-Yield Seeds',
-      'nameNe': 'उच्च उत्पादन बीउ',
-      'price': 'Rs. 50.00',
-      'image': '🌱',
-      'bgColor': Color(0xFFD4E7D4),
-    },
-  ];
+  Future<void> _loadBuyProducts() async {
+    setState(() {
+      isLoadingBuyProducts = true;
+      buyProductsError = null;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final response = await apiService.getProducts(
+        page: 1,
+        search: _searchController.text.isEmpty ? null : _searchController.text,
+      );
+      if (mounted) {
+        setState(() {
+          buyProducts = response.results;
+          isLoadingBuyProducts = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          buyProductsError = e.toString();
+          isLoadingBuyProducts = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadUserListings() async {
+    setState(() {
+      isLoadingUserListings = true;
+      userListingsError = null;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      // Get current user first to filter their products
+      final user = await apiService.getCurrentUser();
+      final response = await apiService.getProducts(page: 1);
+      if (mounted) {
+        setState(() {
+          // Filter products by current user
+          userListings = response.results
+              .where((product) => product.seller == user.id)
+              .toList();
+          isLoadingUserListings = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          userListingsError = e.toString();
+          isLoadingUserListings = false;
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -216,160 +234,235 @@ class _MarketplacePageState extends State<MarketplacePage> {
   }
 
   Widget _buildBuyContent() {
-    return SingleChildScrollView(
-      physics: Get.scrollPhysics,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16).rt,
-        child: Column(
-          children: [
-            // Search Bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12).rt,
-              decoration: BoxDecoration(
-                color: Get.cardColor,
-                borderRadius: BorderRadius.circular(8).rt,
-                border: Border.all(
-                  color: Get.disabledColor.withValues(alpha: 0.2),
-                  width: 1,
+    return RefreshIndicator(
+      onRefresh: _loadBuyProducts,
+      child: SingleChildScrollView(
+        physics: Get.scrollPhysics,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16).rt,
+          child: Column(
+            children: [
+              // Search Bar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12).rt,
+                decoration: BoxDecoration(
+                  color: Get.cardColor,
+                  borderRadius: BorderRadius.circular(8).rt,
+                  border: Border.all(
+                    color: Get.disabledColor.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search,
+                      color: Get.disabledColor.withValues(alpha: 0.5),
+                      size: 20.st,
+                    ),
+                    12.horizontalGap,
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'search_products'.tr(context),
+                          hintStyle: Get.bodyMedium.px14.copyWith(
+                            color: Get.disabledColor.withValues(alpha: 0.5),
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        style: Get.bodyMedium.px14,
+                        onSubmitted: (_) => _loadBuyProducts(),
+                      ),
+                    ),
+                    if (_searchController.text.isNotEmpty)
+                      GestureDetector(
+                        onTap: () {
+                          _searchController.clear();
+                          _loadBuyProducts();
+                        },
+                        child: Icon(
+                          Icons.clear,
+                          color: Get.disabledColor.withValues(alpha: 0.5),
+                          size: 20.st,
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.search,
-                    color: Get.disabledColor.withValues(alpha: 0.5),
-                    size: 20.st,
+              16.verticalGap,
+              // Products Grid
+              if (isLoadingBuyProducts)
+                Padding(
+                  padding: const EdgeInsets.all(32).rt,
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
                   ),
-                  12.horizontalGap,
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'search_products'.tr(context),
-                        hintStyle: Get.bodyMedium.px14.copyWith(
-                          color: Get.disabledColor.withValues(alpha: 0.5),
-                        ),
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
+                )
+              else if (buyProductsError != null)
+                Padding(
+                  padding: const EdgeInsets.all(32).rt,
+                  child: Column(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red, size: 48.st),
+                      16.verticalGap,
+                      AppText(
+                        'error_loading_products'.tr(context),
+                        style: Get.bodyMedium.px14.copyWith(color: Colors.red),
                       ),
-                      style: Get.bodyMedium.px14,
+                    ],
+                  ),
+                )
+              else if (buyProducts.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(32).rt,
+                  child: AppText(
+                    'no_products_available'.tr(context),
+                    style: Get.bodyMedium.px14.copyWith(
+                      color: Get.disabledColor.withValues(alpha: 0.6),
                     ),
                   ),
-                ],
-              ),
-            ),
-            16.verticalGap,
-            // Products Grid
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12.rt,
-                mainAxisSpacing: 12.rt,
-                childAspectRatio: 0.8,
-              ),
-              itemCount: buyProducts.length,
-              itemBuilder: (context, index) {
-                return _buildProductCard(buyProducts[index]);
-              },
-            ),
-            20.verticalGap,
-          ],
+                )
+              else
+                GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12.rt,
+                    mainAxisSpacing: 12.rt,
+                    childAspectRatio: 0.8,
+                  ),
+                  itemCount: buyProducts.length,
+                  itemBuilder: (context, index) {
+                    return _buildProductCard(buyProducts[index]);
+                  },
+                ),
+              20.verticalGap,
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildSellContent() {
-    return SingleChildScrollView(
-      physics: Get.scrollPhysics,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16).rt,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Add New Product Button
-            GestureDetector(
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AddEditProductPage(),
-                  ),
-                );
-                if (result != null) {
-                  setState(() {
-                    userListings.add({
-                      'id': DateTime.now().toString(),
-                      ...result,
-                      'bgColor': Color(0xFFD4E7D4),
-                    });
-                  });
-                }
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 14).rt,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primary.withValues(alpha: 0.85),
+    return RefreshIndicator(
+      onRefresh: _loadUserListings,
+      child: SingleChildScrollView(
+        physics: Get.scrollPhysics,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16).rt,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Add New Product Button
+              GestureDetector(
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddEditProductPage(),
+                    ),
+                  );
+                  if (result == true) {
+                    _loadUserListings();
+                  }
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 14).rt,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.primary,
+                        AppColors.primary.withValues(alpha: 0.85),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12).rt,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(12).rt,
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.add_circle_outline,
-                      color: AppColors.white,
-                      size: 22.st,
-                    ),
-                    10.horizontalGap,
-                    AppText(
-                      'add_new_product'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.add_circle_outline,
                         color: AppColors.white,
+                        size: 22.st,
                       ),
-                    ),
-                  ],
+                      10.horizontalGap,
+                      AppText(
+                        'add_new_product'.tr(context),
+                        style: Get.bodyMedium.px15.w700.copyWith(
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            20.verticalGap,
-            // Your Listings
-            AppText(
-              'your_listings'.tr(context),
-              style: Get.bodyLarge.px18.w700.copyWith(
-                color: Get.disabledColor,
+              20.verticalGap,
+              // Your Listings
+              AppText(
+                'your_listings'.tr(context),
+                style: Get.bodyLarge.px18.w700.copyWith(
+                  color: Get.disabledColor,
+                ),
               ),
-            ),
-            16.verticalGap,
-            // Listings
-            ...userListings.asMap().entries.map((entry) {
-              final index = entry.key;
-              final listing = entry.value;
-              return _buildListingCard(listing, index);
-            }),
-            20.verticalGap,
-          ],
+              16.verticalGap,
+              // Listings
+              if (isLoadingUserListings)
+                Padding(
+                  padding: const EdgeInsets.all(32).rt,
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+                )
+              else if (userListingsError != null)
+                Padding(
+                  padding: const EdgeInsets.all(32).rt,
+                  child: Column(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red, size: 48.st),
+                      16.verticalGap,
+                      AppText(
+                        'error_loading_listings'.tr(context),
+                        style: Get.bodyMedium.px14.copyWith(color: Colors.red),
+                      ),
+                    ],
+                  ),
+                )
+              else if (userListings.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(32).rt,
+                  child: AppText(
+                    'no_listings_yet'.tr(context),
+                    style: Get.bodyMedium.px14.copyWith(
+                      color: Get.disabledColor.withValues(alpha: 0.6),
+                    ),
+                  ),
+                )
+              else
+                ...userListings.map((listing) {
+                  return _buildListingCard(listing);
+                }),
+              20.verticalGap,
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProductCard(Map<String, dynamic> product) {
+  Widget _buildProductCard(Product product) {
     return Container(
       decoration: BoxDecoration(
         color: Get.cardColor,
@@ -395,35 +488,46 @@ class _MarketplacePageState extends State<MarketplacePage> {
             width: double.infinity,
             height: 110.rt,
             decoration: BoxDecoration(
-              color: product['bgColor'],
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(16.rt),
                 topRight: Radius.circular(16.rt),
               ),
             ),
-            child: product.containsKey('imagePath') && product['imagePath'] != null
+            child: product.image != null
                 ? ClipRRect(
                     borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(16.rt),
                       topRight: Radius.circular(16.rt),
                     ),
-                    child: Image.file(
-                      File(product['imagePath']),
+                    child: Image.network(
+                      Get.baseUrl + product.image!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Center(
-                          child: Text(
-                            product['image'],
-                            style: TextStyle(fontSize: 42.st),
+                          child: Icon(
+                            Icons.image_not_supported,
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            size: 42.st,
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                            strokeWidth: 2,
                           ),
                         );
                       },
                     ),
                   )
                 : Center(
-                    child: Text(
-                      product['image'],
-                      style: TextStyle(fontSize: 42.st),
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      size: 42.st,
                     ),
                   ),
           ),
@@ -439,18 +543,18 @@ class _MarketplacePageState extends State<MarketplacePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
-                        product['name'],
+                        product.name,
                         style: Get.bodyMedium.px13.w700.copyWith(
-                          color: product['textColor'],
+                          color: Get.disabledColor,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       2.verticalGap,
                       AppText(
-                        product['price'],
+                        'Rs. ${product.price}/${product.unitName}',
                         style: Get.bodyMedium.px14.w800.copyWith(
-                          color: Get.disabledColor,
+                          color: AppColors.primary,
                         ),
                         maxLines: 1,
                       ),
@@ -458,8 +562,29 @@ class _MarketplacePageState extends State<MarketplacePage> {
                   ),
                   // Add to Cart Button
                   GestureDetector(
-                    onTap: () {
-                      Get.snackbar('Added to cart!');
+                    onTap: () async {
+                      try {
+                        final apiService = ref.read(krishiApiServiceProvider);
+                        await apiService.addToCart(
+                            productId: product.id, quantity: 1);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('added_to_cart'.tr(context)),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('error_adding_to_cart'.tr(context)),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
                     },
                     child: Container(
                       width: double.infinity,
@@ -499,7 +624,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
     );
   }
 
-  void _showDeleteConfirmation(int index) {
+  void _showDeleteConfirmation(Product product) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -530,12 +655,31 @@ class _MarketplacePageState extends State<MarketplacePage> {
             ),
           ),
           TextButton(
-            onPressed: () {
-              setState(() {
-                userListings.removeAt(index);
-              });
-              Navigator.pop(context);
-              Get.snackbar('Product deleted successfully');
+            onPressed: () async {
+              try {
+                final apiService = ref.read(krishiApiServiceProvider);
+                await apiService.deleteProduct(product.id);
+                Navigator.pop(context);
+                _loadUserListings();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('product_deleted'.tr(context)),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                Navigator.pop(context);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('error_deleting_product'.tr(context)),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             child: AppText(
               'delete'.tr(context),
@@ -549,7 +693,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
     );
   }
 
-  Widget _buildListingCard(Map<String, dynamic> listing, int index) {
+  Widget _buildListingCard(Product listing) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.rt),
       padding: const EdgeInsets.all(14).rt,
@@ -575,29 +719,40 @@ class _MarketplacePageState extends State<MarketplacePage> {
             width: 70.rt,
             height: 70.rt,
             decoration: BoxDecoration(
-              color: listing['bgColor'],
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12).rt,
             ),
-            child: listing.containsKey('imagePath') && listing['imagePath'] != null
+            child: listing.image != null
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(12).rt,
-                    child: Image.file(
-                      File(listing['imagePath']),
+                    child: Image.network(
+                      Get.baseUrl + listing.image!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Center(
-                          child: Text(
-                            listing['image'],
-                            style: TextStyle(fontSize: 32.st),
+                          child: Icon(
+                            Icons.image_not_supported,
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            size: 32.st,
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                            strokeWidth: 2,
                           ),
                         );
                       },
                     ),
                   )
                 : Center(
-                    child: Text(
-                      listing['image'],
-                      style: TextStyle(fontSize: 32.st),
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      size: 32.st,
                     ),
                   ),
           ),
@@ -608,14 +763,14 @@ class _MarketplacePageState extends State<MarketplacePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  listing['name'],
+                  listing.name,
                   style: Get.bodyMedium.px15.w700.copyWith(
                     color: Get.disabledColor,
                   ),
                 ),
                 6.verticalGap,
                 AppText(
-                  listing['price'],
+                  'Rs. ${listing.price}/${listing.unitName}',
                   style: Get.bodyMedium.px14.w700.copyWith(
                     color: AppColors.primary,
                   ),
@@ -634,13 +789,8 @@ class _MarketplacePageState extends State<MarketplacePage> {
                       builder: (context) => AddEditProductPage(product: listing),
                     ),
                   );
-                  if (result != null) {
-                    setState(() {
-                      userListings[index] = {
-                        ...listing,
-                        ...result,
-                      };
-                    });
+                  if (result == true) {
+                    _loadUserListings();
                   }
                 },
                 child: Container(
@@ -658,7 +808,7 @@ class _MarketplacePageState extends State<MarketplacePage> {
               ),
               8.horizontalGap,
               GestureDetector(
-                onTap: () => _showDeleteConfirmation(index),
+                onTap: () => _showDeleteConfirmation(listing),
                 child: Container(
                   padding: const EdgeInsets.all(8).rt,
                   decoration: BoxDecoration(

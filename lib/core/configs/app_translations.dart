@@ -535,6 +535,260 @@ class AppTranslations {
       'en': 'Profile Settings',
       'ne': 'प्रोफाइल सेटिङहरू',
     },
+    
+    // New Translation Keys
+    'loading_weather': {
+      'en': 'Loading weather...',
+      'ne': 'मौसम लोड हुँदैछ...',
+    },
+    'weather_error': {
+      'en': 'Weather unavailable',
+      'ne': 'मौसम उपलब्ध छैन',
+    },
+    'error_loading_products': {
+      'en': 'Error loading products',
+      'ne': 'उत्पादनहरू लोड गर्दा त्रुटि',
+    },
+    'no_products_available': {
+      'en': 'No products available',
+      'ne': 'कुनै उत्पादन उपलब्ध छैन',
+    },
+    'added_to_cart': {
+      'en': 'Added to cart',
+      'ne': 'कार्टमा थपियो',
+    },
+    'error_adding_to_cart': {
+      'en': 'Error adding to cart',
+      'ne': 'कार्टमा थप्दा त्रुटि',
+    },
+    'error_loading_listings': {
+      'en': 'Error loading your listings',
+      'ne': 'तपाईंको सूची लोड गर्दा त्रुटि',
+    },
+    'no_listings_yet': {
+      'en': 'No listings yet',
+      'ne': 'अझै कुनै सूची छैन',
+    },
+    'product_deleted': {
+      'en': 'Product deleted successfully',
+      'ne': 'उत्पादन सफलतापूर्वक मेटाइयो',
+    },
+    'error_deleting_product': {
+      'en': 'Error deleting product',
+      'ne': 'उत्पादन मेट्दा त्रुटि',
+    },
+    'error_loading_profile': {
+      'en': 'Error loading profile',
+      'ne': 'प्रोफाइल लोड गर्दा त्रुटि',
+    },
+    'retry': {
+      'en': 'Retry',
+      'ne': 'पुन: प्रयास गर्नुहोस्',
+    },
+    'error_loading_cart': {
+      'en': 'Error loading cart',
+      'ne': 'कार्ट लोड गर्दा त्रुटि',
+    },
+    'error_updating_quantity': {
+      'en': 'Error updating quantity',
+      'ne': 'परिमाण अपडेट गर्दा त्रुटि',
+    },
+    'item_removed': {
+      'en': 'Item removed from cart',
+      'ne': 'कार्टबाट वस्तु हटाइयो',
+    },
+    'error_removing_item': {
+      'en': 'Error removing item',
+      'ne': 'वस्तु हटाउँदा त्रुटि',
+    },
+    'fill_all_fields': {
+      'en': 'Please fill all fields',
+      'ne': 'कृपया सबै फिल्डहरू भर्नुहोस्',
+    },
+    'checkout_success': {
+      'en': 'Order placed successfully',
+      'ne': 'अर्डर सफलतापूर्वक राखियो',
+    },
+    'checkout_error': {
+      'en': 'Error processing checkout',
+      'ne': 'चेकआउट प्रशोधन गर्दा त्रुटि',
+    },
+    'confirm': {
+      'en': 'Confirm',
+      'ne': 'पुष्टि गर्नुहोस्',
+    },
+    'address': {
+      'en': 'Address',
+      'ne': 'ठेगाना',
+    },
+    'error_loading_categories': {
+      'en': 'Error loading categories',
+      'ne': 'श्रेणीहरू लोड गर्दा त्रुटि',
+    },
+    'error_loading_units': {
+      'en': 'Error loading units',
+      'ne': 'इकाइहरू लोड गर्दा त्रुटि',
+    },
+    'error_picking_image': {
+      'en': 'Error picking image',
+      'ne': 'छवि छान्दा त्रुटि',
+    },
+    'select_category': {
+      'en': 'Please select a category',
+      'ne': 'कृपया श्रेणी छान्नुहोस्',
+    },
+    'select_unit': {
+      'en': 'Please select a unit',
+      'ne': 'कृपया इकाइ छान्नुहोस्',
+    },
+    'product_added': {
+      'en': 'Product added successfully',
+      'ne': 'उत्पादन सफलतापूर्वक थपियो',
+    },
+    'product_updated': {
+      'en': 'Product updated successfully',
+      'ne': 'उत्पादन सफलतापूर्वक अपडेट गरियो',
+    },
+    'error_saving_product': {
+      'en': 'Error saving product',
+      'ne': 'उत्पादन बचत गर्दा त्रुटि',
+    },
+    'required_field': {
+      'en': 'This field is required',
+      'ne': 'यो फिल्ड आवश्यक छ',
+    },
+    'contact_phone': {
+      'en': 'Contact Phone',
+      'ne': 'सम्पर्क फोन',
+    },
+    'enter_phone': {
+      'en': 'Enter phone number',
+      'ne': 'फोन नम्बर प्रविष्ट गर्नुहोस्',
+    },
+    'category': {
+      'en': 'Category',
+      'ne': 'श्रेणी',
+    },
+    'price': {
+      'en': 'Price',
+      'ne': 'मूल्य',
+    },
+    'unit': {
+      'en': 'Unit',
+      'ne': 'इकाइ',
+    },
+    'required': {
+      'en': 'Required',
+      'ne': 'आवश्यक',
+    },
+    'units_available': {
+      'en': 'Units Available',
+      'ne': 'उपलब्ध इकाइहरू',
+    },
+    'invalid_number': {
+      'en': 'Invalid number',
+      'ne': 'अमान्य नम्बर',
+    },
+    'description': {
+      'en': 'Description',
+      'ne': 'विवरण',
+    },
+    'enter_description': {
+      'en': 'Enter product description',
+      'ne': 'उत्पादन विवरण प्रविष्ट गर्नुहोस्',
+    },
+    'update': {
+      'en': 'Update',
+      'ne': 'अपडेट गर्नुहोस्',
+    },
+    'save': {
+      'en': 'Save',
+      'ne': 'बचत गर्नुहोस्',
+    },
+    'enter_product_name': {
+      'en': 'Enter product name',
+      'ne': 'उत्पादन नाम प्रविष्ट गर्नुहोस्',
+    },
+    'no_articles_available': {
+      'en': 'No articles available',
+      'ne': 'कुनै लेखहरू उपलब्ध छैन',
+    },
+    'no_news_available': {
+      'en': 'No news available',
+      'ne': 'कुनै समाचार उपलब्ध छैन',
+    },
+    'error_loading_articles': {
+      'en': 'Error loading articles',
+      'ne': 'लेखहरू लोड गर्दा त्रुटि',
+    },
+    'error_loading_news': {
+      'en': 'Error loading news',
+      'ne': 'समाचार लोड गर्दा त्रुटि',
+    },
+    'yesterday': {
+      'en': 'Yesterday',
+      'ne': 'हिजो',
+    },
+    'days_ago': {
+      'en': 'days ago',
+      'ne': 'दिन अघि',
+    },
+    'no_categories_available': {
+      'en': 'No categories available',
+      'ne': 'कुनै श्रेणीहरू उपलब्ध छैन',
+    },
+    'no_units_available': {
+      'en': 'No units available',
+      'ne': 'कुनै इकाइहरू उपलब्ध छैन',
+    },
+    'sign_in_with_google': {
+      'en': 'Sign in with Google',
+      'ne': 'Google सँग साइन इन गर्नुहोस्',
+    },
+    'sign_up_with_google': {
+      'en': 'Sign up with Google',
+      'ne': 'Google सँग साइन अप गर्नुहोस्',
+    },
+    'or': {
+      'en': 'OR',
+      'ne': 'वा',
+    },
+    'loading': {
+      'en': 'Loading...',
+      'ne': 'लोड हुँदैछ...',
+    },
+    'google_signin_cancelled': {
+      'en': 'Google sign in cancelled',
+      'ne': 'Google साइन इन रद्द गरियो',
+    },
+    'google_signin_failed': {
+      'en': 'Google sign in failed',
+      'ne': 'Google साइन इन असफल भयो',
+    },
+    'passwords_dont_match': {
+      'en': 'Passwords do not match',
+      'ne': 'पासवर्डहरू मेल खाँदैनन्',
+    },
+    'google_signin_info': {
+      'en': 'Sign in with your Google account to access Krishi marketplace',
+      'ne': 'कृषि बजारमा पहुँच गर्न आफ्नो Google खाताद्वारा साइन इन गर्नुहोस्',
+    },
+    'google_signup_info': {
+      'en': 'Create your account using Google to join Krishi community',
+      'ne': 'कृषि समुदायमा सामेल हुन Google प्रयोग गरेर आफ्नो खाता सिर्जना गर्नुहोस्',
+    },
+    'auth_failed_backend': {
+      'en': 'Authentication failed. Please try again.',
+      'ne': 'प्रमाणीकरण असफल भयो। कृपया पुन: प्रयास गर्नुहोस्।',
+    },
+    'signin_success': {
+      'en': 'Sign in successful! Welcome back.',
+      'ne': 'साइन इन सफल भयो! फेरि स्वागत छ।',
+    },
+    'signup_success': {
+      'en': 'Account created successfully! Welcome to Krishi.',
+      'ne': 'खाता सफलतापूर्वक सिर्जना गरियो! कृषिमा स्वागत छ।',
+    },
   };
 
   static String translate(String key, String languageCode) {

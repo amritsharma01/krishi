@@ -1,4 +1,5 @@
 import 'package:krishi/core/configs/app_colors.dart';
+import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -6,69 +7,231 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/models/cart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class CartPage extends StatefulWidget {
+class CartPage extends ConsumerStatefulWidget {
   const CartPage({super.key});
 
   @override
-  State<CartPage> createState() => _CartPageState();
+  ConsumerState<CartPage> createState() => _CartPageState();
 }
 
-class _CartPageState extends State<CartPage> {
-  // Dummy cart items
-  List<Map<String, dynamic>> cartItems = [
-    {
-      'id': '1',
-      'name': 'Fresh Tomatoes',
-      'nameNe': 'ताजा गोलभेडा',
-      'price': 80.0,
-      'image': '🍅',
-      'quantity': 2,
-      'unit': 'kg',
-      'bgColor': Color(0xFFFFD4D4),
-    },
-    {
-      'id': '2',
-      'name': 'Organic Potatoes',
-      'nameNe': 'जैविक आलु',
-      'price': 60.0,
-      'image': '🥔',
-      'quantity': 1,
-      'unit': 'kg',
-      'bgColor': Color(0xFFEEDDCC),
-    },
-    {
-      'id': '3',
-      'name': 'Premium Wheat',
-      'nameNe': 'प्रिमियम गहुँ',
-      'price': 20.50,
-      'image': '🌾',
-      'quantity': 5,
-      'unit': 'kg',
-      'bgColor': Color(0xFFD4E7D4),
-    },
-  ];
+class _CartPageState extends ConsumerState<CartPage> {
+  Cart? cart;
+  bool isLoading = true;
+  String? error;
 
-  double get subtotal {
-    return cartItems.fold(
-        0, (sum, item) => sum + (item['price'] * item['quantity']));
+  // Checkout form controllers
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCart();
   }
 
-  void _updateQuantity(int index, int change) {
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _addressController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCart() async {
     setState(() {
-      final newQuantity = cartItems[index]['quantity'] + change;
-      if (newQuantity > 0) {
-        cartItems[index]['quantity'] = newQuantity;
+      isLoading = true;
+      error = null;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final cartData = await apiService.getCart();
+      if (mounted) {
+        setState(() {
+          cart = cartData;
+          isLoading = false;
+        });
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          error = e.toString();
+          isLoading = false;
+        });
+      }
+    }
   }
 
-  void _removeItem(int index) {
-    setState(() {
-      cartItems.removeAt(index);
-    });
-    Get.snackbar('Item removed from cart');
+  Future<void> _updateQuantity(CartItem item, int newQuantity) async {
+    if (newQuantity <= 0) return;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      await apiService.updateCartItem(
+        itemId: item.id,
+        quantity: newQuantity,
+      );
+      _loadCart();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('error_updating_quantity'.tr(context)),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _removeItem(int itemId) async {
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      await apiService.removeCartItem(itemId);
+      _loadCart();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('item_removed'.tr(context)),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('error_removing_item'.tr(context)),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showCheckoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Get.cardColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16).rt,
+        ),
+        title: AppText(
+          'checkout'.tr(context),
+          style: Get.bodyLarge.px18.w700.copyWith(
+            color: Get.disabledColor,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: 'full_name'.tr(context),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8).rt,
+                  ),
+                ),
+              ),
+              12.verticalGap,
+              TextField(
+                controller: _addressController,
+                decoration: InputDecoration(
+                  labelText: 'address'.tr(context),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8).rt,
+                  ),
+                ),
+                maxLines: 3,
+              ),
+              12.verticalGap,
+              TextField(
+                controller: _phoneController,
+                decoration: InputDecoration(
+                  labelText: 'phone_number'.tr(context),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8).rt,
+                  ),
+                ),
+                keyboardType: TextInputType.phone,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: AppText(
+              'cancel'.tr(context),
+              style: Get.bodyMedium.px14.w600.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: _processCheckout,
+            child: AppText(
+              'confirm'.tr(context),
+              style: Get.bodyMedium.px14.w600.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _processCheckout() async {
+    if (_nameController.text.isEmpty ||
+        _addressController.text.isEmpty ||
+        _phoneController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('fill_all_fields'.tr(context)),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      await apiService.checkout(
+        buyerName: _nameController.text,
+        buyerAddress: _addressController.text,
+        buyerPhoneNumber: _phoneController.text,
+      );
+
+      if (mounted) {
+        Navigator.pop(context); // Close dialog
+        Navigator.pop(context); // Return to previous page
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('checkout_success'.tr(context)),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('checkout_error'.tr(context)),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -88,8 +251,61 @@ class _CartPageState extends State<CartPage> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: cartItems.isEmpty ? _buildEmptyCart() : _buildCartContent(),
-      bottomNavigationBar: cartItems.isEmpty ? null : _buildCheckoutBar(),
+      body: _buildBody(),
+      bottomNavigationBar: cart != null && cart!.items.isNotEmpty
+          ? _buildCheckoutBar()
+          : null,
+    );
+  }
+
+  Widget _buildBody() {
+    if (isLoading) {
+      return Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+    }
+
+    if (error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, color: Colors.red, size: 64.st),
+            16.verticalGap,
+            AppText(
+              'error_loading_cart'.tr(context),
+              style: Get.bodyMedium.px14.copyWith(color: Colors.red),
+            ),
+            16.verticalGap,
+            ElevatedButton(
+              onPressed: _loadCart,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.white,
+              ),
+              child: AppText(
+                'retry'.tr(context),
+                style: Get.bodyMedium.px14.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (cart == null || cart!.items.isEmpty) {
+      return _buildEmptyCart();
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadCart,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16).rt,
+        itemCount: cart!.items.length,
+        itemBuilder: (context, index) {
+          return _buildCartItem(cart!.items[index]);
+        },
+      ),
     );
   }
 
@@ -129,17 +345,10 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildCartContent() {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16).rt,
-      itemCount: cartItems.length,
-      itemBuilder: (context, index) {
-        return _buildCartItem(cartItems[index], index);
-      },
-    );
-  }
+  Widget _buildCartItem(CartItem item) {
+    final product = item.productDetails;
+    if (product == null) return const SizedBox.shrink();
 
-  Widget _buildCartItem(Map<String, dynamic> item, int index) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.rt),
       padding: const EdgeInsets.all(14).rt,
@@ -165,15 +374,46 @@ class _CartPageState extends State<CartPage> {
             width: 70.rt,
             height: 70.rt,
             decoration: BoxDecoration(
-              color: item['bgColor'],
+              color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12).rt,
             ),
-            child: Center(
-              child: Text(
-                item['image'],
-                style: TextStyle(fontSize: 32.st),
-              ),
-            ),
+            child: product.image != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12).rt,
+                    child: Image.network(
+                      Get.baseUrl + product.image!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(
+                          child: Icon(
+                            Icons.image_not_supported,
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            size: 32.st,
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: SizedBox(
+                            width: 20.st,
+                            height: 20.st,
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                : Center(
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      size: 32.st,
+                    ),
+                  ),
           ),
           16.horizontalGap,
           // Product Details
@@ -182,22 +422,23 @@ class _CartPageState extends State<CartPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  item['name'],
+                  product.name,
                   style: Get.bodyMedium.px15.w700.copyWith(
                     color: Get.disabledColor,
                   ),
+                  maxLines: 1,
                 ),
                 6.verticalGap,
                 Row(
                   children: [
                     AppText(
-                      'Rs. ${item['price'].toStringAsFixed(2)}',
+                      'Rs. ${item.unitPrice}',
                       style: Get.bodyMedium.px14.w700.copyWith(
                         color: AppColors.primary,
                       ),
                     ),
                     AppText(
-                      ' /${item['unit']}',
+                      ' /${product.unitName}',
                       style: Get.bodySmall.px11.copyWith(
                         color: Get.disabledColor.withValues(alpha: 0.6),
                       ),
@@ -209,7 +450,7 @@ class _CartPageState extends State<CartPage> {
                 Row(
                   children: [
                     GestureDetector(
-                      onTap: () => _updateQuantity(index, -1),
+                      onTap: () => _updateQuantity(item, item.quantity - 1),
                       child: Container(
                         padding: const EdgeInsets.all(6).rt,
                         decoration: BoxDecoration(
@@ -225,14 +466,14 @@ class _CartPageState extends State<CartPage> {
                     ),
                     16.horizontalGap,
                     AppText(
-                      '${item['quantity']}',
+                      '${item.quantity}',
                       style: Get.bodyMedium.px14.w700.copyWith(
                         color: Get.disabledColor,
                       ),
                     ),
                     16.horizontalGap,
                     GestureDetector(
-                      onTap: () => _updateQuantity(index, 1),
+                      onTap: () => _updateQuantity(item, item.quantity + 1),
                       child: Container(
                         padding: const EdgeInsets.all(6).rt,
                         decoration: BoxDecoration(
@@ -256,7 +497,7 @@ class _CartPageState extends State<CartPage> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               GestureDetector(
-                onTap: () => _removeItem(index),
+                onTap: () => _removeItem(item.id),
                 child: Container(
                   padding: const EdgeInsets.all(6).rt,
                   decoration: BoxDecoration(
@@ -272,7 +513,7 @@ class _CartPageState extends State<CartPage> {
               ),
               8.verticalGap,
               AppText(
-                'Rs. ${(item['price'] * item['quantity']).toStringAsFixed(2)}',
+                'Rs. ${item.subtotal}',
                 style: Get.bodyMedium.px15.w800.copyWith(
                   color: Get.disabledColor,
                 ),
@@ -305,13 +546,13 @@ class _CartPageState extends State<CartPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 AppText(
-                  'subtotal'.tr(context),
+                  'total'.tr(context),
                   style: Get.bodyMedium.px15.w600.copyWith(
                     color: Get.disabledColor.withValues(alpha: 0.7),
                   ),
                 ),
                 AppText(
-                  'Rs. ${subtotal.toStringAsFixed(2)}',
+                  'Rs. ${cart?.totalAmount ?? '0.00'}',
                   style: Get.bodyLarge.px18.w700.copyWith(
                     color: Get.disabledColor,
                   ),
@@ -320,10 +561,7 @@ class _CartPageState extends State<CartPage> {
             ),
             16.verticalGap,
             GestureDetector(
-              onTap: () {
-                // TODO: Navigate to checkout page
-                Get.snackbar('Checkout coming soon!');
-              },
+              onTap: _showCheckoutDialog,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14).rt,
@@ -359,4 +597,3 @@ class _CartPageState extends State<CartPage> {
     );
   }
 }
-

@@ -1,0 +1,86 @@
+class UserProfile {
+  final int id;
+  final String fullName;
+  final String? phoneNumber;
+  final String? address;
+  final String? profileImage;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  UserProfile({
+    required this.id,
+    required this.fullName,
+    this.phoneNumber,
+    this.address,
+    this.profileImage,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory UserProfile.fromJson(Map<String, dynamic> json) {
+    return UserProfile(
+      id: json['id'] as int,
+      fullName: json['full_name'] as String,
+      phoneNumber: json['phone_number'] as String?,
+      address: json['address'] as String?,
+      profileImage: json['profile_image'] as String?,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'full_name': fullName,
+      'phone_number': phoneNumber,
+      'address': address,
+      'profile_image': profileImage,
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
+    };
+  }
+}
+
+class User {
+  final int id;
+  final String email;
+  final String? firstName;
+  final String? lastName;
+  final bool isStaff;
+  final UserProfile? profile;
+
+  User({
+    required this.id,
+    required this.email,
+    this.firstName,
+    this.lastName,
+    required this.isStaff,
+    this.profile,
+  });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] as int,
+      email: json['email'] as String,
+      firstName: json['first_name'] as String?,
+      lastName: json['last_name'] as String?,
+      isStaff: json['is_staff'] as bool? ?? false,
+      profile: json['profile'] != null
+          ? UserProfile.fromJson(json['profile'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'first_name': firstName,
+      'last_name': lastName,
+      'is_staff': isStaff,
+      'profile': profile?.toJson(),
+    };
+  }
+}
+

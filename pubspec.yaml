@@ -41,6 +41,9 @@ dependencies:
   # API calls
   dio: ^5.0.0
 
+  # Authentication
+  google_sign_in: ^6.2.1
+
   #utils
   google_fonts: ^6.2.1
   auto_size_text: ^3.0.0

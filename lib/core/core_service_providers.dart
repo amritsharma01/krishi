@@ -6,6 +6,7 @@ import '../abstractservices/storage_services.dart';
 import 'configs/app_theme_provider.dart';
 import 'configs/language_provider.dart';
 import 'services/api_services/api_services.dart';
+import 'services/api_services/krishi_api_service.dart';
 import 'services/auth_service.dart';
 import 'services/get.dart';
 import 'services/storage_services/token_storage_service.dart';
@@ -31,8 +32,16 @@ final languageProvider = ChangeNotifierProvider<LanguageProvider>(
     (ref) => LanguageProvider(ref.watch(storageServiceProvider)));
 
 final authServiceProvider = ChangeNotifierProvider<AuthService>(
-    (ref) => AuthService(ref.watch(storageServiceProvider)));
+    (ref) => AuthService(
+        ref.watch(storageServiceProvider),
+        ref.watch(secureStorageProvider),
+        ref.watch(krishiApiServiceProvider)));
 
 final secureStorageProvider = Provider<TokenStorage>((ref) {
   return TokenStorage(ref);
+});
+
+final krishiApiServiceProvider = Provider<KrishiApiService>((ref) {
+  final apiManager = ref.watch(apiServiceProvider);
+  return KrishiApiService(apiManager);
 });

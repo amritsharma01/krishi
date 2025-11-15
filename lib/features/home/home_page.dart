@@ -1,4 +1,5 @@
 import 'package:krishi/core/configs/app_colors.dart';
+import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -6,81 +7,108 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/cart/cart_page.dart';
+import 'package:krishi/features/knowledge/articles_page.dart';
+import 'package:krishi/features/knowledge/news_page.dart';
 import 'package:krishi/features/widgets/app_text.dart';
 import 'package:krishi/features/widgets/notification_icon.dart';
+import 'package:krishi/models/product.dart';
+import 'package:krishi/models/weather.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  // Dummy data for weather (will be replaced with API data)
-  final String location = "Jaljala, Parbat";
-  final String temperature = "28°C";
-  final String weatherCondition = "Sunny";
-  final IconData weatherIcon = Icons.wb_sunny_rounded;
+class _HomePageState extends ConsumerState<HomePage> {
+  Weather? weather;
+  List<Product> trendingProducts = [];
+  bool isLoadingWeather = true;
+  bool isLoadingProducts = true;
+  String? weatherError;
+  String? productsError;
 
-  // Dummy cart count
-  final int cartItemsCount = 3;
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
-  // Dummy trending products data
-  final List<Map<String, dynamic>> trendingProducts = [
-    {
-      'name': 'Fresh Tomatoes',
-      'nameNe': 'ताजा गोलभेडा',
-      'price': 'Rs. 80',
-      'unit': '/kg',
-      'image': '🍅',
-      'rating': 4.5,
-      'seller': 'Ram Bahadur',
-    },
-    {
-      'name': 'Organic Potatoes',
-      'nameNe': 'जैविक आलु',
-      'price': 'Rs. 60',
-      'unit': '/kg',
-      'image': '🥔',
-      'rating': 4.8,
-      'seller': 'Sita Kumari',
-    },
-    {
-      'name': 'Fresh Cabbage',
-      'nameNe': 'ताजा बन्दा',
-      'price': 'Rs. 50',
-      'unit': '/kg',
-      'image': '🥬',
-      'rating': 4.3,
-      'seller': 'Krishna Prasad',
-    },
-    {
-      'name': 'Red Onions',
-      'nameNe': 'रातो प्याज',
-      'price': 'Rs. 90',
-      'unit': '/kg',
-      'image': '🧅',
-      'rating': 4.6,
-      'seller': 'Lakshmi Devi',
-    },
-    {
-      'name': 'Green Chillies',
-      'nameNe': 'हरियो खुर्सानी',
-      'price': 'Rs. 120',
-      'unit': '/kg',
-      'image': '🌶️',
-      'rating': 4.7,
-      'seller': 'Hari Bahadur',
-    },
-  ];
+  Future<void> _loadData() async {
+    await Future.wait([
+      _loadWeather(),
+      _loadTrendingProducts(),
+    ]);
+  }
+
+  Future<void> _loadWeather() async {
+    setState(() {
+      isLoadingWeather = true;
+      weatherError = null;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final weatherData = await apiService.getCurrentWeather();
+      if (mounted) {
+        setState(() {
+          weather = weatherData;
+          isLoadingWeather = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          weatherError = e.toString();
+          isLoadingWeather = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadTrendingProducts() async {
+    setState(() {
+      isLoadingProducts = true;
+      productsError = null;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final response = await apiService.getProducts(page: 1);
+      if (mounted) {
+        setState(() {
+          trendingProducts = response.results.take(5).toList();
+          isLoadingProducts = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          productsError = e.toString();
+          isLoadingProducts = false;
+        });
+      }
+    }
+  }
 
   String _getGreeting() {
     final hour = DateTime.now().hour;
     if (hour < 12) return 'good_morning';
     if (hour < 17) return 'good_afternoon';
     return 'good_evening';
+  }
+
+  IconData _getWeatherIcon() {
+    if (weather == null) return Icons.wb_sunny_rounded;
+    final condition = weather!.condition.toLowerCase();
+    if (condition.contains('clear')) return Icons.wb_sunny_rounded;
+    if (condition.contains('cloud')) return Icons.wb_cloudy_rounded;
+    if (condition.contains('rain')) return Icons.umbrella_rounded;
+    if (condition.contains('snow')) return Icons.ac_unit_rounded;
+    return Icons.wb_sunny_rounded;
   }
 
   @override
@@ -90,10 +118,7 @@ class _HomePageState extends State<HomePage> {
       appBar: _buildCustomAppBar(),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () async {
-            // TODO: Implement refresh logic to fetch new data
-            await Future.delayed(const Duration(seconds: 1));
-          },
+          onRefresh: _loadData,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
@@ -264,11 +289,20 @@ class _HomePageState extends State<HomePage> {
                           width: 1.5,
                         ),
                       ),
-                      child: Icon(
-                        weatherIcon,
-                        color: AppColors.white,
-                        size: 36.st,
-                      ),
+                      child: isLoadingWeather
+                          ? SizedBox(
+                              width: 36.st,
+                              height: 36.st,
+                              child: CircularProgressIndicator(
+                                color: AppColors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Icon(
+                              _getWeatherIcon(),
+                              color: AppColors.white,
+                              size: 36.st,
+                            ),
                     ),
                   ],
                 ),
@@ -284,43 +318,63 @@ class _HomePageState extends State<HomePage> {
                       width: 1,
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.location_on_rounded,
-                        color: AppColors.white,
-                        size: 20.st,
-                      ),
-                      8.horizontalGap,
-                      Expanded(
-                        child: AppText(
-                          location,
-                          style: Get.bodyMedium.px14.w600.copyWith(
-                            color: AppColors.white,
-                            letterSpacing: 0.3,
+                  child: isLoadingWeather
+                      ? Center(
+                          child: AppText(
+                            'loading_weather'.tr(context),
+                            style: Get.bodyMedium.px14.w600.copyWith(
+                              color: AppColors.white,
+                            ),
                           ),
-                        ),
-                      ),
-                      Container(
-                        height: 24.rt,
-                        width: 1.5,
-                        color: AppColors.white.withValues(alpha: 0.4),
-                        margin: const EdgeInsets.symmetric(horizontal: 12).rt,
-                      ),
-                      Icon(
-                        Icons.thermostat_rounded,
-                        color: AppColors.white,
-                        size: 20.st,
-                      ),
-                      6.horizontalGap,
-                      AppText(
-                        temperature,
-                        style: Get.bodyMedium.px14.w700.copyWith(
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ],
-                  ),
+                        )
+                      : weatherError != null
+                          ? Center(
+                              child: AppText(
+                                'weather_error'.tr(context),
+                                style: Get.bodyMedium.px14.w600.copyWith(
+                                  color: AppColors.white,
+                                ),
+                              ),
+                            )
+                          : Row(
+                              children: [
+                                Icon(
+                                  Icons.location_on_rounded,
+                                  color: AppColors.white,
+                                  size: 20.st,
+                                ),
+                                8.horizontalGap,
+                                Expanded(
+                                  child: AppText(
+                                    weather?.location ?? 'Unknown',
+                                    style: Get.bodyMedium.px14.w600.copyWith(
+                                      color: AppColors.white,
+                                      letterSpacing: 0.3,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  height: 24.rt,
+                                  width: 1.5,
+                                  color: AppColors.white.withValues(alpha: 0.4),
+                                  margin:
+                                      const EdgeInsets.symmetric(horizontal: 12)
+                                          .rt,
+                                ),
+                                Icon(
+                                  Icons.thermostat_rounded,
+                                  color: AppColors.white,
+                                  size: 20.st,
+                                ),
+                                6.horizontalGap,
+                                AppText(
+                                  '${weather?.temperatureC.toStringAsFixed(1) ?? '--'}°C',
+                                  style: Get.bodyMedium.px14.w700.copyWith(
+                                    color: AppColors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
                 ),
               ],
             ),
@@ -344,7 +398,11 @@ class _HomePageState extends State<HomePage> {
                   colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
                 ),
                 onTap: () {
-                  // TODO: Navigate to Kishan Gyaan page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const ArticlesPage()),
+                  );
                 },
               ),
             ),
@@ -376,7 +434,10 @@ class _HomePageState extends State<HomePage> {
                   colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
                 ),
                 onTap: () {
-                  // TODO: Navigate to News page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NewsPage()),
+                  );
                 },
               ),
             ),
@@ -384,12 +445,11 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: _buildFeatureCard(
                 title: 'view_cart',
-                subtitle: '$cartItemsCount items_in_cart',
+                subtitle: 'items_in_cart',
                 icon: Icons.shopping_cart_rounded,
                 gradient: const LinearGradient(
                   colors: [Color(0xFFD32F2F), Color(0xFFE57373)],
                 ),
-                badge: cartItemsCount,
                 onTap: () {
                   Navigator.push(
                     context,
@@ -530,18 +590,60 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildTrendingProductsList() {
+    if (isLoadingProducts) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32).rt,
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
+    if (productsError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32).rt,
+          child: Column(
+            children: [
+              Icon(Icons.error_outline,
+                  color: Colors.red, size: 48.st),
+              16.verticalGap,
+              AppText(
+                'error_loading_products'.tr(context),
+                style: Get.bodyMedium.px14.copyWith(color: Colors.red),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (trendingProducts.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32).rt,
+          child: AppText(
+            'no_products_available'.tr(context),
+            style: Get.bodyMedium.px14.copyWith(
+              color: Get.disabledColor.withValues(alpha: 0.6),
+            ),
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: trendingProducts.length,
       itemBuilder: (context, index) {
         final product = trendingProducts[index];
-        return _buildProductCard(product, index);
+        return _buildProductCard(product);
       },
     );
   }
 
-  Widget _buildProductCard(Map<String, dynamic> product, int index) {
+  Widget _buildProductCard(Product product) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.rt),
       padding: const EdgeInsets.all(12).rt,
@@ -577,9 +679,39 @@ class _HomePageState extends State<HomePage> {
               ),
               borderRadius: BorderRadius.circular(12).rt,
             ),
-            child: Center(
-              child: Text(product['image'], style: TextStyle(fontSize: 36.st)),
-            ),
+            child: product.image != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12).rt,
+                    child: Image.network(
+                      Get.baseUrl + product.image!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Center(
+                          child: Icon(
+                            Icons.image_not_supported,
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            size: 32.st,
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                            strokeWidth: 2,
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                : Center(
+                    child: Icon(
+                      Icons.image_not_supported,
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      size: 32.st,
+                    ),
+                  ),
           ),
           16.horizontalGap,
           // Product Details
@@ -588,23 +720,15 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  product['name'],
+                  product.name,
                   style: Get.bodyMedium.px15.w700.copyWith(
                     color: Get.disabledColor,
                   ),
+                  maxLines: 1,
                 ),
                 4.verticalGap,
                 Row(
                   children: [
-                    Icon(Icons.star_rounded, color: Colors.amber, size: 16.st),
-                    4.horizontalGap,
-                    AppText(
-                      '${product['rating']}',
-                      style: Get.bodySmall.px12.w600.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.7),
-                      ),
-                    ),
-                    8.horizontalGap,
                     Icon(
                       Icons.person_outline_rounded,
                       color: Get.disabledColor.withValues(alpha: 0.5),
@@ -613,7 +737,7 @@ class _HomePageState extends State<HomePage> {
                     4.horizontalGap,
                     Expanded(
                       child: AppText(
-                        product['seller'],
+                        product.sellerEmail,
                         style: Get.bodySmall.px11.w500.copyWith(
                           color: Get.disabledColor.withValues(alpha: 0.6),
                         ),
@@ -626,13 +750,13 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   children: [
                     AppText(
-                      product['price'],
+                      'Rs. ${product.price}',
                       style: Get.bodyMedium.px18.w800.copyWith(
                         color: AppColors.primary,
                       ),
                     ),
                     AppText(
-                      product['unit'],
+                      '/${product.unitName}',
                       style: Get.bodySmall.px11.w500.copyWith(
                         color: Get.disabledColor.withValues(alpha: 0.6),
                       ),
@@ -644,9 +768,28 @@ class _HomePageState extends State<HomePage> {
           ),
           // Add to Cart Button
           GestureDetector(
-            onTap: () {
-              // TODO: Add to cart functionality
-              Get.snackbar('Added to cart!');
+            onTap: () async {
+              try {
+                final apiService = ref.read(krishiApiServiceProvider);
+                await apiService.addToCart(productId: product.id, quantity: 1);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('added_to_cart'.tr(context)),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('error_adding_to_cart'.tr(context)),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             child: Container(
               padding: const EdgeInsets.all(12).rt,

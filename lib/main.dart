@@ -1,5 +1,4 @@
 import 'package:krishi/core/configs/app_theme.dart';
-import 'package:krishi/core/services/auth_service.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/auth/login_page.dart';
 import 'package:krishi/features/navigation/main_navigation.dart';
@@ -28,7 +27,6 @@ void main() async {
     final box = await Get.box.init();
     final themeProvider = await ThemeProvider(box).init();
     final langProvider = await LanguageProvider(box).init();
-    final authService = await AuthService(box).init();
 
     runApp(
       ProviderScope(
@@ -36,7 +34,6 @@ void main() async {
           storageServiceProvider.overrideWith((ref) => box),
           themeModeProvider.overrideWith((ref) => themeProvider),
           languageProvider.overrideWith((ref) => langProvider),
-          authServiceProvider.overrideWith((ref) => authService),
         ],
         child: const Core(),
       ),
