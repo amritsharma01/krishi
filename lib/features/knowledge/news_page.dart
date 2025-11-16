@@ -136,7 +136,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
                 topRight: Radius.circular(16.rt),
               ),
               child: Image.network(
-                Get.baseUrl + article.image!,
+                Get.imageUrl(article.image),
                 width: double.infinity,
                 height: 200.rt,
                 fit: BoxFit.cover,

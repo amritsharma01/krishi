@@ -434,7 +434,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                       topRight: Radius.circular(16.rt),
                     ),
                     child: Image.network(
-                      Get.baseUrl + product.image!,
+                      Get.imageUrl(product.image),
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Center(
@@ -606,7 +606,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(12).rt,
                     child: Image.network(
-                      Get.baseUrl + listing.image!,
+                      Get.imageUrl(listing.image),
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Center(

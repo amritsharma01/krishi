@@ -192,7 +192,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(10).rt,
                     child: Image.network(
-                      Get.baseUrl + product.image!,
+                      Get.imageUrl(product.image),
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Center(

@@ -654,7 +654,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(12).rt,
                     child: Image.network(
-                      Get.baseUrl + product.image!,
+                      Get.imageUrl(product.image),
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Center(

@@ -29,6 +29,57 @@ abstract final class Get {
   //static String baseUrl = "http://192.168.1.65:8000/";
   static String baseUrl = "https://6mf87s99-8000.inc1.devtunnels.ms/";
 
+  // Helper method to construct image URLs properly
+  static String imageUrl(String? imagePath) {
+    if (imagePath == null || imagePath.isEmpty) return '';
+
+    // If already a full URL (http:// or https://)
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      // Replace localhost/127.0.0.1 URLs with the actual baseUrl
+      if (imagePath.contains('localhost') || imagePath.contains('127.0.0.1')) {
+        try {
+          final uri = Uri.parse(imagePath);
+          // Extract the path (includes query params if any)
+          var path = uri.path;
+          if (uri.query.isNotEmpty) {
+            path += '?${uri.query}';
+          }
+          // Use the actual baseUrl instead
+          final base = baseUrl.endsWith('/')
+              ? baseUrl.substring(0, baseUrl.length - 1)
+              : baseUrl;
+          // Ensure path starts with /
+          if (!path.startsWith('/')) {
+            path = '/$path';
+          }
+          return base + path;
+        } catch (e) {
+          // If parsing fails, try to extract path manually
+          final pathMatch = RegExp(r'/(media/.*)').firstMatch(imagePath);
+          if (pathMatch != null) {
+            final path = pathMatch.group(1)!;
+            final base = baseUrl.endsWith('/')
+                ? baseUrl.substring(0, baseUrl.length - 1)
+                : baseUrl;
+            return base + (path.startsWith('/') ? path : '/$path');
+          }
+          // Fallback: return as-is if we can't parse it
+          return imagePath;
+        }
+      }
+      // For other full URLs, return as-is
+      return imagePath;
+    }
+
+    // Handle relative paths
+    final base = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    // Ensure path starts with / for proper URL construction
+    final path = imagePath.startsWith('/') ? imagePath : '/$imagePath';
+    return base + path;
+  }
+
   static Future<Directory> get directory async =>
       await getApplicationDocumentsDirectory();
 

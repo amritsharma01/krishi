@@ -400,7 +400,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                     radius: 50.rt,
                     backgroundColor: AppColors.white,
                     backgroundImage: NetworkImage(
-                      Get.baseUrl + currentUser!.profile!.profileImage!,
+                      Get.imageUrl(currentUser!.profile!.profileImage),
                     ),
                     onBackgroundImageError: (exception, stackTrace) {
                       // Handle image error

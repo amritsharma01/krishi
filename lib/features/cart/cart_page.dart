@@ -11,6 +11,7 @@ import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/models/cart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -179,32 +180,49 @@ class _CartPageState extends ConsumerState<CartPage> {
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12).rt,
             ),
-            child: product.image != null
+            child: product.image != null && product.image!.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(12).rt,
-                    child: Image.network(
-                      Get.baseUrl + product.image!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            size: 32.st,
-                          ),
-                        );
-                      },
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: SizedBox(
-                            width: 20.st,
-                            height: 20.st,
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                              strokeWidth: 2,
+                    child: Builder(
+                      builder: (context) {
+                        final imageUrl = Get.imageUrl(product.image);
+
+                        if (imageUrl.isEmpty) {
+                          return Center(
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              size: 32.st,
                             ),
-                          ),
+                          );
+                        }
+                        return Image.network(
+                          imageUrl,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                                size: 32.st,
+                              ),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: SizedBox(
+                                width: 20.st,
+                                height: 20.st,
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          },
                         );
                       },
                     ),

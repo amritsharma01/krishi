@@ -181,7 +181,6 @@ class AuthService extends ChangeNotifier {
 
   Future<void> logout() async {
     try {
-      // Sign out from Google
       await _googleSignIn.signOut();
     } catch (e) {
       // Ignore sign out errors
