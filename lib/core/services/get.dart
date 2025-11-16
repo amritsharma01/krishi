@@ -26,7 +26,8 @@ abstract final class Get {
   static double get height => size.height;
 
   //constant
-  static String baseUrl = "https://qrhs13ph-8000.inc1.devtunnels.ms/";
+  //static String baseUrl = "http://192.168.1.65:8000/";
+  static String baseUrl = "https://6mf87s99-8000.inc1.devtunnels.ms/";
 
   static Future<Directory> get directory async =>
       await getApplicationDocumentsDirectory();

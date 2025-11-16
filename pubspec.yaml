@@ -41,11 +41,15 @@ dependencies:
   # API calls
   dio: ^5.0.0
 
+  # Authentication
+  google_sign_in: ^6.2.1
+
   #utils
   google_fonts: ^6.2.1
   auto_size_text: ^3.0.0
   skeletonizer: ^2.1.0+1
   fluttertoast:
+  image_picker: ^1.0.7
 
   # Responsiveness
   flutter_screenutil: ^5.6.0

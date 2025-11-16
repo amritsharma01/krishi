@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">krishi</string>
+    <!-- Your Web Client ID from Google Cloud Console -->
+    <string name="default_web_client_id">22500384416-rjksqv8dbrigmt4e7brbtvrveukjdu67.apps.googleusercontent.com</string>
+</resources>
+
