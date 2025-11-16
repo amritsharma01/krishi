@@ -72,10 +72,7 @@ class _CartPageState extends ConsumerState<CartPage> {
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      await apiService.updateCartItem(
-        itemId: item.id,
-        quantity: newQuantity,
-      );
+      await apiService.updateCartItem(itemId: item.id, quantity: newQuantity);
       _loadCart();
     } catch (e) {
       if (mounted) {
@@ -119,13 +116,12 @@ class _CartPageState extends ConsumerState<CartPage> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Get.cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16).rt,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: AppText(
           'checkout'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(
-            color: Get.disabledColor,
+          style: Get.bodyLarge.copyWith(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
           ),
         ),
         content: SingleChildScrollView(
@@ -137,28 +133,28 @@ class _CartPageState extends ConsumerState<CartPage> {
                 decoration: InputDecoration(
                   labelText: 'full_name'.tr(context),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8).rt,
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
               ),
-              12.verticalGap,
+
               TextField(
                 controller: _addressController,
                 decoration: InputDecoration(
                   labelText: 'address'.tr(context),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8).rt,
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 maxLines: 3,
               ),
-              12.verticalGap,
+
               TextField(
                 controller: _phoneController,
                 decoration: InputDecoration(
                   labelText: 'phone_number'.tr(context),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8).rt,
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 keyboardType: TextInputType.phone,
@@ -171,8 +167,9 @@ class _CartPageState extends ConsumerState<CartPage> {
             onPressed: () => Navigator.pop(context),
             child: AppText(
               'cancel'.tr(context),
-              style: Get.bodyMedium.px14.w600.copyWith(
-                color: Get.disabledColor,
+              style: Get.bodyMedium.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -180,8 +177,9 @@ class _CartPageState extends ConsumerState<CartPage> {
             onPressed: _processCheckout,
             child: AppText(
               'confirm'.tr(context),
-              style: Get.bodyMedium.px14.w600.copyWith(
-                color: AppColors.primary,
+              style: Get.bodyMedium.copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -260,9 +258,7 @@ class _CartPageState extends ConsumerState<CartPage> {
 
   Widget _buildBody() {
     if (isLoading) {
-      return Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      );
+      return Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     if (error != null) {
@@ -329,9 +325,7 @@ class _CartPageState extends ConsumerState<CartPage> {
           24.verticalGap,
           AppText(
             'empty_cart'.tr(context),
-            style: Get.bodyLarge.px20.w700.copyWith(
-              color: Get.disabledColor,
-            ),
+            style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
           ),
           12.verticalGap,
           AppText(

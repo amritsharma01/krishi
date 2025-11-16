@@ -38,10 +38,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _loadData() async {
-    await Future.wait([
-      _loadWeather(),
-      _loadTrendingProducts(),
-    ]);
+    await Future.wait([_loadWeather(), _loadTrendingProducts()]);
   }
 
   Future<void> _loadWeather() async {
@@ -184,7 +181,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           // Krishi Text
           AppText(
             'krishi'.tr(context),
-            style: Get.bodyLarge.px24.w700.copyWith(color: AppColors.primary),
+            style: Get.bodyLarge.px22.w700.copyWith(color: AppColors.primary),
           ),
         ],
       ),
@@ -209,7 +206,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           end: Alignment.bottomRight,
           stops: const [0.0, 0.5, 1.0],
         ),
-        borderRadius: BorderRadius.circular(24).rt,
+        borderRadius: BorderRadius.circular(20).rt,
         boxShadow: [
           BoxShadow(
             color: AppColors.primary.withValues(alpha: 0.4),
@@ -301,7 +298,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           : Icon(
                               _getWeatherIcon(),
                               color: AppColors.white,
-                              size: 36.st,
+                              size: 30.st,
                             ),
                     ),
                   ],
@@ -328,53 +325,53 @@ class _HomePageState extends ConsumerState<HomePage> {
                           ),
                         )
                       : weatherError != null
-                          ? Center(
+                      ? Center(
+                          child: AppText(
+                            'weather_error'.tr(context),
+                            style: Get.bodyMedium.px14.w600.copyWith(
+                              color: AppColors.white,
+                            ),
+                          ),
+                        )
+                      : Row(
+                          children: [
+                            Icon(
+                              Icons.location_on_rounded,
+                              color: AppColors.white,
+                              size: 20.st,
+                            ),
+                            8.horizontalGap,
+                            Expanded(
                               child: AppText(
-                                'weather_error'.tr(context),
+                                weather?.location ?? 'Unknown',
                                 style: Get.bodyMedium.px14.w600.copyWith(
                                   color: AppColors.white,
+                                  letterSpacing: 0.3,
                                 ),
                               ),
-                            )
-                          : Row(
-                              children: [
-                                Icon(
-                                  Icons.location_on_rounded,
-                                  color: AppColors.white,
-                                  size: 20.st,
-                                ),
-                                8.horizontalGap,
-                                Expanded(
-                                  child: AppText(
-                                    weather?.location ?? 'Unknown',
-                                    style: Get.bodyMedium.px14.w600.copyWith(
-                                      color: AppColors.white,
-                                      letterSpacing: 0.3,
-                                    ),
-                                  ),
-                                ),
-                                Container(
-                                  height: 24.rt,
-                                  width: 1.5,
-                                  color: AppColors.white.withValues(alpha: 0.4),
-                                  margin:
-                                      const EdgeInsets.symmetric(horizontal: 12)
-                                          .rt,
-                                ),
-                                Icon(
-                                  Icons.thermostat_rounded,
-                                  color: AppColors.white,
-                                  size: 20.st,
-                                ),
-                                6.horizontalGap,
-                                AppText(
-                                  '${weather?.temperatureC.toStringAsFixed(1) ?? '--'}°C',
-                                  style: Get.bodyMedium.px14.w700.copyWith(
-                                    color: AppColors.white,
-                                  ),
-                                ),
-                              ],
                             ),
+                            Container(
+                              height: 24.rt,
+                              width: 1.5,
+                              color: AppColors.white.withValues(alpha: 0.4),
+                              margin: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ).rt,
+                            ),
+                            Icon(
+                              Icons.thermostat_rounded,
+                              color: AppColors.white,
+                              size: 20.st,
+                            ),
+                            6.horizontalGap,
+                            AppText(
+                              '${weather?.temperatureC.toStringAsFixed(1) ?? '--'}°C',
+                              style: Get.bodyMedium.px14.w700.copyWith(
+                                color: AppColors.white,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ],
             ),
@@ -398,11 +395,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
                 ),
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const ArticlesPage()),
-                  );
+                  Get.to(ArticlesPage());
                 },
               ),
             ),
@@ -451,10 +444,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   colors: [Color(0xFFD32F2F), Color(0xFFE57373)],
                 ),
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const CartPage()),
-                  );
+                  Get.to(CartPage());
                 },
               ),
             ),
@@ -605,8 +595,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           padding: const EdgeInsets.all(32).rt,
           child: Column(
             children: [
-              Icon(Icons.error_outline,
-                  color: Colors.red, size: 48.st),
+              Icon(Icons.error_outline, color: Colors.red, size: 48.st),
               16.verticalGap,
               AppText(
                 'error_loading_products'.tr(context),

@@ -59,15 +59,12 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     // Show a minimal loading state while initializing
     if (!_isInitialized) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator.adaptive()),
       );
     }
 
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _pages,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
@@ -90,15 +87,11 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(
-                index: 0,
-                icon: Icons.home_rounded,
-                label: 'home',
-              ),
+              _buildNavItem(index: 0, icon: Icons.home_rounded, label: 'home'),
               _buildNavItem(
                 index: 1,
                 icon: Icons.store_rounded,
-                label: 'marketplace',
+                label: 'Market',
               ),
               _buildNavItem(
                 index: 2,
@@ -135,20 +128,19 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
         behavior: HitTestBehavior.opaque,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(
-            horizontal: 12.rt,
-            vertical: 6.rt,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: 12.rt, vertical: 6.rt),
           decoration: BoxDecoration(
-            color: isActive ? AppColors.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(12).rt,
+            color: isActive
+                ? AppColors.primary.withOpacity(0.9)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(16).rt,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icon,
-                size: 22.st,
+                size: 20.st,
                 color: isActive
                     ? AppColors.white
                     : Get.disabledColor.withValues(alpha: 0.5),
@@ -169,4 +161,3 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     );
   }
 }
-

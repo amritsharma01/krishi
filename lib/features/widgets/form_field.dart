@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:krishi/core/services/get.dart';
 
 class AppTextFormField extends StatelessWidget {
   const AppTextFormField({
@@ -30,6 +31,8 @@ class AppTextFormField extends StatelessWidget {
     this.radius = 13,
     this.onSelected,
     this.onSubmitted,
+    this.isSearchField = false,
+    this.onClear,
   });
 
   final bool toHide;
@@ -58,6 +61,8 @@ class AppTextFormField extends StatelessWidget {
   final List<String>? suggestions;
   final dynamic Function(String)? onSubmitted;
   final dynamic Function(String)? onSelected;
+  final bool isSearchField;
+  final VoidCallback? onClear;
 
   @override
   Widget build(BuildContext context) {
@@ -112,11 +117,35 @@ class AppTextFormField extends StatelessWidget {
               readOnly: readOnly,
               maxLines: maxLine,
               decoration: InputDecoration(
+                prefixIcon: isSearchField
+                    ? Icon(
+                        Icons.search,
+                        color: Get.disabledColor.withValues(alpha: 0.5),
+                        size: 20,
+                      )
+                    : prefixIcon,
+
+                suffixIcon:
+                    isSearchField &&
+                        controller != null &&
+                        controller!.text.isNotEmpty
+                    ? GestureDetector(
+                        onTap: () {
+                          controller!.clear();
+                          if (onClear != null) onClear!();
+                        },
+                        child: Icon(
+                          Icons.clear,
+                          color: Get.disabledColor.withValues(alpha: 0.5),
+                          size: 20,
+                        ),
+                      )
+                    : suffixIcon,
+
                 hintText: hintText,
                 hintStyle: hintTextStyle,
                 icon: icon,
-                prefixIcon: prefixIcon,
-                suffixIcon: suffixIcon,
+
                 fillColor: fillColor,
                 filled: fillColor != null,
                 contentPadding: contentPadding,

@@ -11,7 +11,7 @@ class Product {
   final String description;
   final int unit;
   final String unitName;
-  final int unitsAvailable;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -28,29 +28,37 @@ class Product {
     required this.description,
     required this.unit,
     required this.unitName,
-    required this.unitsAvailable,
     required this.createdAt,
     required this.updatedAt,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
-    return Product(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      seller: json['seller'] as int,
-      sellerEmail: json['seller_email'] as String,
-      sellerPhoneNumber: json['seller_phone_number'] as String?,
-      category: json['category'] as int,
-      categoryName: json['category_name'] as String,
-      image: json['image'] as String?,
-      price: json['price'].toString(),
-      description: json['description'] as String,
-      unit: json['unit'] as int,
-      unitName: json['unit_name'] as String,
-      unitsAvailable: json['units_available'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-    );
+    try {
+      return Product(
+        id: (json['id'] as int?) ?? 0,
+        name: (json['name'] as String?) ?? '',
+        seller: (json['seller'] as int?) ?? 0,
+        sellerEmail: (json['seller_email'] as String?) ?? '',
+        sellerPhoneNumber: json['seller_phone_number'] as String?,
+        category: (json['category'] as int?) ?? 0,
+        categoryName: (json['category_name'] as String?) ?? '',
+        image: json['image'] as String?,
+        price: json['price']?.toString() ?? '0',
+        description: (json['description'] as String?) ?? '',
+        unit: (json['unit'] as int?) ?? 0,
+        unitName: (json['unit_name'] as String?) ?? '',
+        createdAt: json['created_at'] != null
+            ? DateTime.parse(json['created_at'] as String)
+            : DateTime.now(),
+        updatedAt: json['updated_at'] != null
+            ? DateTime.parse(json['updated_at'] as String)
+            : DateTime.now(),
+      );
+    } catch (e) {
+      print('❌ Error parsing Product JSON: $e');
+      print('📦 JSON data: $json');
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -67,7 +75,6 @@ class Product {
       'description': description,
       'unit': unit,
       'unit_name': unitName,
-      'units_available': unitsAvailable,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -75,4 +82,3 @@ class Product {
 
   double get priceAsDouble => double.tryParse(price) ?? 0.0;
 }
-

@@ -73,15 +73,73 @@ class AuthService extends ChangeNotifier {
       try {
         final data = await apiService.authenticateWithGoogleMobile(idToken);
 
-        // Extract the Django auth token
-        final String? authToken = data['token'] as String?;
+        if (kDebugMode) {
+          print('[AuthService] Backend response received');
+          print('[AuthService] Response keys: ${data.keys.toList()}');
+          print('[AuthService] Full response: $data');
+        }
 
-        if (authToken != null) {
+        // Extract the Django auth token
+        // Try different possible field names
+        final String? authToken =
+            data['token'] as String? ??
+            data['access_token'] as String? ??
+            data['id_token'] as String?;
+
+        if (kDebugMode) {
+          print(
+            '[AuthService] Extracted token: ${authToken != null ? "YES (length: ${authToken.length})" : "NO"}',
+          );
+          if (authToken != null) {
+            print(
+              '[AuthService] Token preview: ${authToken.substring(0, authToken.length > 20 ? 20 : authToken.length)}...',
+            );
+          }
+        }
+
+        if (authToken != null && authToken.isNotEmpty) {
           if (kDebugMode) {
             print('[AuthService] Backend authentication successful');
           }
           // Store the Django auth token
           await tokenStorage.saveTokens(authToken, '');
+
+          // Verify token was saved correctly - try multiple times to ensure it's written
+          String? savedToken;
+          for (int i = 0; i < 3; i++) {
+            savedToken = await tokenStorage.getAccessToken();
+            if (savedToken != null && savedToken.isNotEmpty) {
+              break;
+            }
+            if (kDebugMode && i < 2) {
+              print(
+                '[AuthService] Token not found, retrying... (attempt ${i + 1}/3)',
+              );
+            }
+            await Future.delayed(const Duration(milliseconds: 100));
+          }
+
+          if (kDebugMode) {
+            print('[AuthService] Token verification result:');
+            print('[AuthService] Token length: ${savedToken?.length ?? 0}');
+            if (savedToken != null) {
+              print(
+                '[AuthService] Token preview: ${savedToken.substring(0, savedToken.length > 20 ? 20 : savedToken.length)}...',
+              );
+            } else {
+              print('[AuthService] ❌ Token is null!');
+            }
+          }
+
+          if (savedToken == null || savedToken.isEmpty) {
+            if (kDebugMode) {
+              print(
+                '[AuthService] ERROR: Token was not saved correctly after multiple attempts',
+              );
+            }
+            return false;
+          }
+
           await login();
           return true;
         } else {

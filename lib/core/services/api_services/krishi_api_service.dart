@@ -21,10 +21,14 @@ class KrishiApiService {
   // ==================== Authentication ====================
 
   /// Authenticate with Google (Mobile)
+  /// Sends the Google id_token in the request body
+  /// Backend responds with a token that should be used for subsequent requests
   Future<Map<String, dynamic>> authenticateWithGoogleMobile(
     String idToken,
   ) async {
     try {
+      // Send Google id_token in request body
+      // This is a public endpoint that doesn't require authentication
       final response = await apiManager.post(
         ApiEndpoints.googleMobile,
         data: {'id_token': idToken},
@@ -38,7 +42,7 @@ class KrishiApiService {
   /// Get current user profile
   Future<User> getCurrentUser() async {
     try {
-      final response = await apiManager.get(ApiEndpoints.me);
+      final response = await apiManager.post(ApiEndpoints.me);
       return User.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -160,7 +164,8 @@ class KrishiApiService {
   Future<List<Category>> getCategories() async {
     try {
       final response = await apiManager.get(ApiEndpoints.categories);
-      return (response.data as List<dynamic>)
+      final data = response.data as Map<String, dynamic>;
+      return (data['results'] as List<dynamic>)
           .map((json) => Category.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
@@ -172,7 +177,8 @@ class KrishiApiService {
   Future<List<Unit>> getUnits() async {
     try {
       final response = await apiManager.get(ApiEndpoints.units);
-      return (response.data as List<dynamic>)
+      final data = response.data as Map<String, dynamic>;
+      return (data['results'] as List<dynamic>)
           .map((json) => Unit.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
@@ -222,7 +228,7 @@ class KrishiApiService {
     required String price,
     required String description,
     required int unit,
-    required int unitsAvailable,
+
     String? imagePath,
   }) async {
     try {
@@ -233,7 +239,6 @@ class KrishiApiService {
         'price': price,
         'description': description,
         'unit': unit,
-        'units_available': unitsAvailable,
         if (imagePath != null) 'image': await MultipartFile.fromFile(imagePath),
       });
 
@@ -241,8 +246,13 @@ class KrishiApiService {
         ApiEndpoints.products,
         data: formData,
       );
+
+      // Debug: Print the response to see what we're getting
+      print('📦 Create Product Response: ${response.data}');
+
       return Product.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
+      print('❌ Error parsing product response: $e');
       rethrow;
     }
   }
@@ -256,7 +266,6 @@ class KrishiApiService {
     String? price,
     String? description,
     int? unit,
-    int? unitsAvailable,
     String? imagePath,
   }) async {
     try {
@@ -273,11 +282,7 @@ class KrishiApiService {
         formData.fields.add(MapEntry('description', description));
       }
       if (unit != null) formData.fields.add(MapEntry('unit', unit.toString()));
-      if (unitsAvailable != null) {
-        formData.fields.add(
-          MapEntry('units_available', unitsAvailable.toString()),
-        );
-      }
+
       if (imagePath != null) {
         formData.files.add(
           MapEntry('image', await MultipartFile.fromFile(imagePath)),

@@ -38,32 +38,73 @@ class ApiManager {
             print('📋 Request headers: ${options.headers}');
           }
 
-          // List of public endpoints that don't require authentication
-          final publicEndpoints = [
+          // Endpoints that are public for GET requests only
+          final publicGetEndpoints = [
             'categories/',
             'units/',
             'weather/current/',
             'products/',
             'knowledge/articles/',
             'news/',
-            'auth/google/mobile/',
           ];
 
-          // Check if the path starts with any public endpoint
-          final isPublic = publicEndpoints.any(
+          // Endpoints that are public for all methods (including POST)
+          final alwaysPublicEndpoints = [
+            'auth/google/mobile/', // Google auth is public (sends id_token in body)
+          ];
+
+          // HTTP methods that require authentication (write operations)
+          final writeMethods = ['POST', 'PATCH', 'PUT', 'DELETE'];
+          final isWriteOperation = writeMethods.contains(options.method);
+
+          // Check if it's a public GET endpoint
+          final isPublicGetEndpoint = publicGetEndpoints.any(
             (endpoint) =>
                 options.path.startsWith(endpoint) ||
                 options.path.startsWith('/$endpoint'),
           );
 
-          // Only add auth token for non-public endpoints
-          if (!isPublic) {
+          // Check if it's always public (any method)
+          final isAlwaysPublic = alwaysPublicEndpoints.any(
+            (endpoint) =>
+                options.path.startsWith(endpoint) ||
+                options.path.startsWith('/$endpoint'),
+          );
+
+          // Require auth if:
+          // 1. It's a write operation (POST, PATCH, PUT, DELETE), OR
+          // 2. It's a GET/read operation to a non-public endpoint
+          // Exception: Always public endpoints never require auth
+          final requiresAuth =
+              !isAlwaysPublic && (isWriteOperation || !isPublicGetEndpoint);
+
+          if (requiresAuth) {
             final accessToken = await tokenStorage.getAccessToken();
-            if (accessToken != null) {
-              // Krishi API uses "Token" auth scheme instead of "Bearer"
+
+            if (kDebugMode) {
+              print('🔐 Auth required for: ${options.method} ${options.path}');
+              print(
+                '🔑 Token retrieved: ${accessToken != null ? "YES (length: ${accessToken.length})" : "NO"}',
+              );
+              if (accessToken != null) {
+                print(
+                  '🔑 Token preview: ${accessToken.substring(0, accessToken.length > 30 ? 30 : accessToken.length)}...',
+                );
+              }
+            }
+
+            if (accessToken != null && accessToken.isNotEmpty) {
+              // Krishi API uses "Token" format for stored tokens
               options.headers['Authorization'] = 'Token $accessToken';
               if (kDebugMode) {
-                print('🔑 Added auth token to request');
+                print(
+                  '✅ Authorization header set: Token ${accessToken.substring(0, accessToken.length > 20 ? 20 : accessToken.length)}...',
+                );
+              }
+            } else {
+              if (kDebugMode) {
+                print('❌ Auth required but no token found or token is empty');
+                print('❌ This request will likely fail with 401 Unauthorized');
               }
             }
           } else {

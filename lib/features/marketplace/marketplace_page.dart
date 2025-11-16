@@ -9,6 +9,7 @@ import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/cart/cart_page.dart';
 import 'package:krishi/features/marketplace/add_edit_product_page.dart';
 import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/features/widgets/form_field.dart';
 import 'package:krishi/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,7 +24,7 @@ class MarketplacePage extends ConsumerStatefulWidget {
 class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   bool isBuyTab = true;
   final TextEditingController _searchController = TextEditingController();
-  
+
   List<Product> buyProducts = [];
   List<Product> userListings = [];
   bool isLoadingBuyProducts = true;
@@ -110,7 +111,6 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       body: SafeArea(
         child: Column(
           children: [
-            16.verticalGap,
             // Tab Selector
             _buildTabSelector(),
             16.verticalGap,
@@ -129,18 +129,12 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       automaticallyImplyLeading: false,
       backgroundColor: Get.scaffoldBackgroundColor,
       elevation: 0,
-      title: AppText(
-        'marketplace'.tr(context),
-        style: Get.bodyLarge.px22.w700.copyWith(color: Get.disabledColor),
-      ),
+
       actions: [
         IconButton(
           icon: Icon(Icons.shopping_cart_outlined, color: Get.disabledColor),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CartPage()),
-            );
+            Get.to(CartPage());
           },
         ),
         8.horizontalGap,
@@ -242,56 +236,23 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
           padding: const EdgeInsets.symmetric(horizontal: 16).rt,
           child: Column(
             children: [
-              // Search Bar
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12).rt,
-                decoration: BoxDecoration(
-                  color: Get.cardColor,
-                  borderRadius: BorderRadius.circular(8).rt,
-                  border: Border.all(
-                    color: Get.disabledColor.withValues(alpha: 0.2),
-                    width: 1,
-                  ),
+              AppTextFormField(
+                controller: _searchController,
+                isSearchField: true,
+                hintText: 'search_products'.tr(context),
+                hintTextStyle: Get.bodyMedium.px14.copyWith(
+                  color: Get.disabledColor.withValues(alpha: 0.5),
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.search,
-                      color: Get.disabledColor.withValues(alpha: 0.5),
-                      size: 20.st,
-                    ),
-                    12.horizontalGap,
-                    Expanded(
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          hintText: 'search_products'.tr(context),
-                          hintStyle: Get.bodyMedium.px14.copyWith(
-                            color: Get.disabledColor.withValues(alpha: 0.5),
-                          ),
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.zero,
-                        ),
-                        style: Get.bodyMedium.px14,
-                        onSubmitted: (_) => _loadBuyProducts(),
-                      ),
-                    ),
-                    if (_searchController.text.isNotEmpty)
-                      GestureDetector(
-                        onTap: () {
-                          _searchController.clear();
-                          _loadBuyProducts();
-                        },
-                        child: Icon(
-                          Icons.clear,
-                          color: Get.disabledColor.withValues(alpha: 0.5),
-                          size: 20.st,
-                        ),
-                      ),
-                  ],
-                ),
+                fillColor: Get.cardColor,
+                radius: 8,
+                onChanged: (_) => setState(() {}),
+                onSubmitted: (_) => _loadBuyProducts(),
+                onClear: () {
+                  setState(() {});
+                  _loadBuyProducts();
+                },
               ),
+
               16.verticalGap,
               // Products Grid
               if (isLoadingBuyProducts)
@@ -333,7 +294,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12.rt,
                     mainAxisSpacing: 12.rt,
-                    childAspectRatio: 0.8,
+                    childAspectRatio: 0.65,
                   ),
                   itemCount: buyProducts.length,
                   itemBuilder: (context, index) {
@@ -361,12 +322,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
               // Add New Product Button
               GestureDetector(
                 onTap: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const AddEditProductPage(),
-                    ),
-                  );
+                  final result = await Get.to(AddEditProductPage());
                   if (result == true) {
                     _loadUserListings();
                   }
@@ -466,7 +422,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     return Container(
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(16).rt,
+        borderRadius: BorderRadius.circular(20).rt,
         border: Border.all(
           color: Get.disabledColor.withValues(alpha: 0.08),
           width: 1,
@@ -474,7 +430,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
+            blurRadius: 5,
             offset: const Offset(0, 2),
           ),
         ],
@@ -486,7 +442,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
           // Product Image
           Container(
             width: double.infinity,
-            height: 110.rt,
+            height: 112.ht,
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.only(
@@ -508,7 +464,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                           child: Icon(
                             Icons.image_not_supported,
                             color: AppColors.primary.withValues(alpha: 0.3),
-                            size: 42.st,
+                            size: 40.st,
                           ),
                         );
                       },
@@ -553,7 +509,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                       2.verticalGap,
                       AppText(
                         'Rs. ${product.price}/${product.unitName}',
-                        style: Get.bodyMedium.px14.w800.copyWith(
+                        style: Get.bodyMedium.px16.w800.copyWith(
                           color: AppColors.primary,
                         ),
                         maxLines: 1,
@@ -566,7 +522,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                       try {
                         final apiService = ref.read(krishiApiServiceProvider);
                         await apiService.addToCart(
-                            productId: product.id, quantity: 1);
+                          productId: product.id,
+                          quantity: 1,
+                        );
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -625,71 +583,72 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   }
 
   void _showDeleteConfirmation(Product product) {
+    if (!mounted) return;
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Get.cardColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16).rt,
-        ),
-        title: AppText(
-          'delete_product'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(
-            color: Get.disabledColor,
+      barrierDismissible: true,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: Get.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        ),
-        content: AppText(
-          'delete_confirmation'.tr(context),
-          style: Get.bodyMedium.px14.copyWith(
-            color: Get.disabledColor.withValues(alpha: 0.7),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: AppText(
-              'cancel'.tr(context),
-              style: Get.bodyMedium.px14.w600.copyWith(
-                color: Get.disabledColor,
-              ),
+          title: Text(
+            'delete_product'.tr(context),
+            style: Get.bodyLarge.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          TextButton(
-            onPressed: () async {
-              try {
-                final apiService = ref.read(krishiApiServiceProvider);
-                await apiService.deleteProduct(product.id);
-                Navigator.pop(context);
-                _loadUserListings();
-                if (mounted) {
+          content: Text(
+            'delete_confirmation'.tr(context),
+            style: Get.bodyMedium.copyWith(
+              fontSize: 14,
+              color: Get.disabledColor.withOpacity(0.7),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(
+                'cancel'.tr(context),
+                style: TextStyle(color: Get.disabledColor),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                try {
+                  final apiService = ref.read(krishiApiServiceProvider);
+                  await apiService.deleteProduct(product.id);
+
+                  if (!mounted) return;
+
+                  Navigator.pop(dialogContext);
+                  _loadUserListings();
+
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('product_deleted'.tr(context)),
+                    const SnackBar(
+                      content: Text("Product deleted"),
                       backgroundColor: Colors.green,
                     ),
                   );
-                }
-              } catch (e) {
-                Navigator.pop(context);
-                if (mounted) {
+                } catch (e) {
+                  if (!mounted) return;
+                  Navigator.pop(dialogContext);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('error_deleting_product'.tr(context)),
+                    const SnackBar(
+                      content: Text("Error deleting product"),
                       backgroundColor: Colors.red,
                     ),
                   );
                 }
-              }
-            },
-            child: AppText(
-              'delete'.tr(context),
-              style: Get.bodyMedium.px14.w600.copyWith(
-                color: Colors.red,
-              ),
+              },
+              child: const Text("Delete", style: TextStyle(color: Colors.red)),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      },
     );
   }
 
@@ -786,7 +745,8 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => AddEditProductPage(product: listing),
+                      builder: (context) =>
+                          AddEditProductPage(product: listing),
                     ),
                   );
                   if (result == true) {
@@ -808,7 +768,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
               ),
               8.horizontalGap,
               GestureDetector(
-                onTap: () => _showDeleteConfirmation(listing),
+                onTap: () {
+                  _showDeleteConfirmation(listing);
+                },
                 child: Container(
                   padding: const EdgeInsets.all(8).rt,
                   decoration: BoxDecoration(

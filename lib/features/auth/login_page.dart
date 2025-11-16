@@ -35,34 +35,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         Get.offAll(const MainNavigation());
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('signin_success'.tr(context)),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        Get.snackbar('signin_success'.tr(context));
       } else if (mounted) {
         // User cancelled or authentication failed
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('google_signin_cancelled'.tr(context)),
-            backgroundColor: Colors.orange,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        Get.snackbar('google_signin_cancelled'.tr(context));
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${'google_signin_failed'.tr(context)}: ${e.toString()}',
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
-          ),
-        );
+        Get.snackbar('${'google_signin_failed'.tr(context)}: ${e.toString()}');
       }
     } finally {
       if (mounted) {
@@ -90,7 +70,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   // Logo/Icon
                   Container(
                     width: 100.wt,
-                    height: 100.ht,
+                    height: 80.ht,
                     decoration: BoxDecoration(
                       color: AppColors.primary,
                       borderRadius: BorderRadius.circular(30).rt,
@@ -109,14 +89,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   // App Name
                   AppText(
                     'krishi'.tr(context),
-                    style: Get.bodyLarge.px36.w700.primary,
+                    style: Get.bodyLarge.px28.w700.primary,
                   ),
 
                   12.verticalGap,
 
                   AppText(
                     'welcome_back'.tr(context),
-                    style: Get.bodyMedium.px16.copyWith(
+                    style: Get.bodyMedium.px14.copyWith(
                       color: Get.disabledColor.o6,
                     ),
                   ),
@@ -143,7 +123,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     onTap: _isLoading ? null : _handleGoogleSignIn,
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16).rt,
+                      height: 40.ht,
+                      padding: const EdgeInsets.symmetric(vertical: 6).rt,
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(15).rt,
@@ -188,7 +169,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 16.horizontalGap,
                                 AppText(
                                   'sign_in_with_google'.tr(context),
-                                  style: Get.bodyMedium.px17.w600.copyWith(
+                                  style: Get.bodyMedium.px14.w600.copyWith(
                                     color: Get.disabledColor,
                                   ),
                                 ),
@@ -197,14 +178,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
 
-                  40.verticalGap,
+                  30.verticalGap,
 
                   // Additional Info
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20).rt,
                     child: AppText(
                       'auth_info'.tr(context),
-                      style: Get.bodySmall.px11.copyWith(
+                      style: Get.bodySmall.px10.copyWith(
                         color: Get.disabledColor.o5,
                       ),
                       textAlign: TextAlign.center,

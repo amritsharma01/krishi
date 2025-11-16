@@ -21,8 +21,7 @@ class AddEditProductPage extends ConsumerStatefulWidget {
   const AddEditProductPage({super.key, this.product});
 
   @override
-  ConsumerState<AddEditProductPage> createState() =>
-      _AddEditProductPageState();
+  ConsumerState<AddEditProductPage> createState() => _AddEditProductPageState();
 }
 
 class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
@@ -31,13 +30,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   final _priceController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _unitsAvailableController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
   File? _selectedImage;
   Category? selectedCategory;
   Unit? selectedUnit;
-  
+
   List<Category> categories = [];
   List<Unit> units = [];
   bool isLoadingCategories = true;
@@ -48,22 +46,18 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   void initState() {
     super.initState();
     _loadData();
-    
+
     if (widget.product != null) {
       _nameController.text = widget.product!.name;
       _priceController.text = widget.product!.price;
       _descriptionController.text = widget.product!.description;
       _phoneController.text = widget.product!.sellerPhoneNumber ?? '';
-      _unitsAvailableController.text = widget.product!.unitsAvailable.toString();
     }
   }
 
   Future<void> _loadData() async {
-    await Future.wait([
-      _loadCategories(),
-      _loadUnits(),
-    ]);
-    
+    await Future.wait([_loadCategories(), _loadUnits()]);
+
     // Set selected category and unit if editing
     if (widget.product != null) {
       selectedCategory = categories.firstWhere(
@@ -146,7 +140,6 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     _priceController.dispose();
     _descriptionController.dispose();
     _phoneController.dispose();
-    _unitsAvailableController.dispose();
     super.dispose();
   }
 
@@ -275,11 +268,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                color: AppColors.primary,
-                size: 32.st,
-              ),
+              child: Icon(icon, color: AppColors.primary, size: 32.st),
             ),
             12.verticalGap,
             AppText(
@@ -297,22 +286,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   Future<void> _saveProduct() async {
     if (_formKey.currentState!.validate()) {
       if (selectedCategory == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('select_category'.tr(context)),
-            backgroundColor: Colors.red,
-          ),
-        );
+        Get.snackbar('select_category'.tr(context));
         return;
       }
 
       if (selectedUnit == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('select_unit'.tr(context)),
-            backgroundColor: Colors.red,
-          ),
-        );
+        Get.snackbar('select_unit'.tr(context));
         return;
       }
 
@@ -330,7 +309,6 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             price: _priceController.text,
             description: _descriptionController.text,
             unit: selectedUnit!.id,
-            unitsAvailable: int.parse(_unitsAvailableController.text),
             imagePath: _selectedImage?.path,
           );
         } else {
@@ -343,13 +321,15 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             price: _priceController.text,
             description: _descriptionController.text,
             unit: selectedUnit!.id,
-            unitsAvailable: int.parse(_unitsAvailableController.text),
+
             imagePath: _selectedImage?.path,
           );
         }
 
         if (mounted) {
-          Navigator.pop(context, true); // Return true to indicate success
+          setState(() => isSaving = false);
+
+          // Show success message before popping
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(
@@ -358,16 +338,28 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                     : 'product_updated'.tr(context),
               ),
               backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
             ),
           );
+
+          // Pop after a short delay to let the snackbar show
+          Future.delayed(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              Navigator.pop(context, true); // Return true to indicate success
+            }
+          });
         }
       } catch (e) {
+        print('Error saving product: $e');
         if (mounted) {
           setState(() => isSaving = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('error_saving_product'.tr(context)),
+              content: Text(
+                '${'error_saving_product'.tr(context)}: ${e.toString()}',
+              ),
               backgroundColor: Colors.red,
+              duration: const Duration(seconds: 4),
             ),
           );
         }
@@ -395,9 +387,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         ),
       ),
       body: isLoadingCategories || isLoadingUnits
-          ? Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
+          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
           : Form(
               key: _formKey,
               child: SingleChildScrollView(
@@ -435,67 +425,75 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                 ),
                               )
                             : (widget.product?.image != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(14).rt,
-                                    child: Image.network(
-                                      Get.baseUrl + widget.product!.image!,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                        return Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons.add_photo_alternate_outlined,
-                                              size: 48.st,
-                                              color: AppColors.primary
-                                                  .withValues(alpha: 0.5),
-                                            ),
-                                            12.verticalGap,
-                                            AppText(
-                                              'tap_to_add_image'.tr(context),
-                                              style:
-                                                  Get.bodyMedium.px14.copyWith(
-                                                color: Get.disabledColor
-                                                    .withValues(alpha: 0.6),
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(
+                                        14,
+                                      ).rt,
+                                      child: Image.network(
+                                        Get.baseUrl + widget.product!.image!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons
+                                                    .add_photo_alternate_outlined,
+                                                size: 48.st,
+                                                color: AppColors.primary
+                                                    .withValues(alpha: 0.5),
                                               ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                        if (loadingProgress == null) {
-                                          return child;
-                                        }
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            color: AppColors.primary,
+                                              12.verticalGap,
+                                              AppText(
+                                                'tap_to_add_image'.tr(context),
+                                                style: Get.bodyMedium.px14
+                                                    .copyWith(
+                                                      color: Get.disabledColor
+                                                          .withValues(
+                                                            alpha: 0.6,
+                                                          ),
+                                                    ),
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                              if (loadingProgress == null) {
+                                                return child;
+                                              }
+                                              return Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      color: AppColors.primary,
+                                                    ),
+                                              );
+                                            },
+                                      ),
+                                    )
+                                  : Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.add_photo_alternate_outlined,
+                                          size: 48.st,
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.5,
                                           ),
-                                        );
-                                      },
-                                    ),
-                                  )
-                                : Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.add_photo_alternate_outlined,
-                                        size: 48.st,
-                                        color: AppColors.primary
-                                            .withValues(alpha: 0.5),
-                                      ),
-                                      12.verticalGap,
-                                      AppText(
-                                        'tap_to_add_image'.tr(context),
-                                        style: Get.bodyMedium.px14.copyWith(
-                                          color: Get.disabledColor
-                                              .withValues(alpha: 0.6),
                                         ),
-                                      ),
-                                    ],
-                                  )),
+                                        12.verticalGap,
+                                        AppText(
+                                          'tap_to_add_image'.tr(context),
+                                          style: Get.bodyMedium.px14.copyWith(
+                                            color: Get.disabledColor.withValues(
+                                              alpha: 0.6,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )),
                       ),
                     ),
                     24.verticalGap,
@@ -572,11 +570,13 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                       items: categories.isEmpty
                           ? null
                           : categories
-                              .map((cat) => DropdownMenuItem(
+                                .map(
+                                  (cat) => DropdownMenuItem(
                                     value: cat,
                                     child: Text(cat.name),
-                                  ))
-                              .toList(),
+                                  ),
+                                )
+                                .toList(),
                       onChanged: categories.isEmpty
                           ? null
                           : (value) {
@@ -610,7 +610,8 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                   ),
                                 ),
                                 keyboardType: TextInputType.numberWithOptions(
-                                    decimal: true),
+                                  decimal: true,
+                                ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'required'.tr(context);
@@ -647,11 +648,13 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                 items: units.isEmpty
                                     ? null
                                     : units
-                                        .map((unit) => DropdownMenuItem(
+                                          .map(
+                                            (unit) => DropdownMenuItem(
                                               value: unit,
                                               child: Text(unit.name),
-                                            ))
-                                        .toList(),
+                                            ),
+                                          )
+                                          .toList(),
                                 onChanged: units.isEmpty
                                     ? null
                                     : (value) {
@@ -662,35 +665,6 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                           ),
                         ),
                       ],
-                    ),
-                    16.verticalGap,
-
-                    // Units Available
-                    AppText(
-                      'units_available'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    TextFormField(
-                      controller: _unitsAvailableController,
-                      decoration: InputDecoration(
-                        hintText: '0',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'required_field'.tr(context);
-                        }
-                        if (int.tryParse(value) == null) {
-                          return 'invalid_number'.tr(context);
-                        }
-                        return null;
-                      },
                     ),
                     16.verticalGap,
 
@@ -742,7 +716,9 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                 ),
                               )
                             : AppText(
-                                isEdit ? 'update'.tr(context) : 'save'.tr(context),
+                                isEdit
+                                    ? 'update'.tr(context)
+                                    : 'save'.tr(context),
                                 style: Get.bodyMedium.px16.w700.copyWith(
                                   color: AppColors.white,
                                 ),
