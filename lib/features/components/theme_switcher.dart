@@ -1,6 +1,5 @@
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
-import 'package:krishi/core/extensions/color_extensions.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
@@ -108,28 +107,51 @@ class ThemeSwitcher extends ConsumerWidget {
               },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8).rt,
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8).rt,
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : Get.cardColor,
-            borderRadius: BorderRadius.circular(10).rt,
+            gradient: isSelected
+                ? LinearGradient(
+                    colors: [
+                      AppColors.primary,
+                      AppColors.primary.withValues(alpha: 0.85),
+                    ],
+                  )
+                : null,
+            color: isSelected ? null : Get.cardColor,
+            borderRadius: BorderRadius.circular(12).rt,
             border: Border.all(
-              color: isSelected ? AppColors.primary : Get.disabledColor.o2,
-              width: 1.5,
+              color: isSelected
+                  ? AppColors.primary
+                  : Get.disabledColor.withValues(alpha: 0.1),
+              width: isSelected ? 0 : 1,
             ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icon,
-                color: isSelected ? AppColors.white : Get.disabledColor.o7,
-                size: 20.st,
+                color: isSelected
+                    ? AppColors.white
+                    : Get.disabledColor.withValues(alpha: 0.7),
+                size: 24.st,
               ),
-              6.verticalGap,
+              8.verticalGap,
               AppText(
                 label.tr(context),
-                style: Get.bodySmall.px11.w600.copyWith(
-                  color: isSelected ? AppColors.white : Get.disabledColor.o7,
+                style: Get.bodySmall.px12.w600.copyWith(
+                  color: isSelected
+                      ? AppColors.white
+                      : Get.disabledColor.withValues(alpha: 0.8),
                 ),
               ),
             ],

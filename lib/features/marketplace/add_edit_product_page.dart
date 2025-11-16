@@ -8,6 +8,7 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/components/selection_dialog.dart';
 import 'package:krishi/models/category.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/models/unit.dart';
@@ -91,10 +92,17 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
       print('Error loading categories: $e');
       if (mounted) {
         setState(() {
-          categories = [];
+          // Set default "general" category when loading fails
+          categories = [
+            Category(id: 0, name: 'general', createdAt: DateTime.now()),
+          ];
+          selectedCategory = categories.first;
           isLoadingCategories = false;
         });
-        Get.snackbar('error_loading_categories'.tr(Get.context), color: Colors.red);
+        Get.snackbar(
+          'error_loading_categories'.tr(Get.context),
+          color: Colors.red,
+        );
       }
     }
   }
@@ -114,7 +122,9 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
       print('Error loading units: $e');
       if (mounted) {
         setState(() {
-          units = [];
+          // Set default "general" unit when loading fails
+          units = [Unit(id: 0, name: 'general', createdAt: DateTime.now())];
+          selectedUnit = units.first;
           isLoadingUnits = false;
         });
         Get.snackbar('error_loading_units'.tr(Get.context), color: Colors.red);
@@ -264,6 +274,38 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     );
   }
 
+  void _showCategoryDialog() {
+    SelectionDialog.show<Category>(
+      context: context,
+      title: 'select_category'.tr(context),
+      items: categories,
+      selectedItem: selectedCategory,
+      getItemName: (category) => category.name,
+      getItemId: (category) => category.id,
+      onItemSelected: (category) {
+        setState(() {
+          selectedCategory = category;
+        });
+      },
+    );
+  }
+
+  void _showUnitDialog() {
+    SelectionDialog.show<Unit>(
+      context: context,
+      title: 'select_unit'.tr(context),
+      items: units,
+      selectedItem: selectedUnit,
+      getItemName: (unit) => unit.name,
+      getItemId: (unit) => unit.id,
+      onItemSelected: (unit) {
+        setState(() {
+          selectedUnit = unit;
+        });
+      },
+    );
+  }
+
   Future<void> _saveProduct() async {
     if (_formKey.currentState!.validate()) {
       if (selectedCategory == null) {
@@ -320,14 +362,19 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
 
           // Pop after a short delay to let the snackbar show
           Future.delayed(const Duration(milliseconds: 500), () {
-            Navigator.of(Get.context).pop(true); // Return true to indicate success
+            Navigator.of(
+              Get.context,
+            ).pop(true); // Return true to indicate success
           });
         }
       } catch (e) {
         print('Error saving product: $e');
         if (mounted) {
           setState(() => isSaving = false);
-          Get.snackbar('error_saving_product'.tr(Get.context), color: Colors.red);
+          Get.snackbar(
+            'error_saving_product'.tr(Get.context),
+            color: Colors.red,
+          );
         }
       }
     }
@@ -369,98 +416,154 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                       ),
                     ),
                     12.verticalGap,
-                    GestureDetector(
-                      onTap: _showImageSourceDialog,
-                      child: Container(
-                        width: double.infinity,
-                        height: 200.rt,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(16).rt,
-                          border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.2),
-                            width: 2,
+                    Stack(
+                      children: [
+                        GestureDetector(
+                          onTap: _showImageSourceDialog,
+                          child: Container(
+                            width: double.infinity,
+                            height: 200.rt,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.05),
+                              borderRadius: BorderRadius.circular(16).rt,
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.2),
+                                width: 2,
+                              ),
+                            ),
+                            child: _selectedImage != null
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(14).rt,
+                                    child: Image.file(
+                                      _selectedImage!,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                    ),
+                                  )
+                                : (widget.product?.image != null
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            14,
+                                          ).rt,
+                                          child: Image.network(
+                                            Get.baseUrl +
+                                                widget.product!.image!,
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            height: double.infinity,
+                                            errorBuilder:
+                                                (context, error, stackTrace) {
+                                                  return Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .add_photo_alternate_outlined,
+                                                        size: 48.st,
+                                                        color: AppColors.primary
+                                                            .withValues(
+                                                              alpha: 0.5,
+                                                            ),
+                                                      ),
+                                                      12.verticalGap,
+                                                      AppText(
+                                                        'tap_to_add_image'.tr(
+                                                          context,
+                                                        ),
+                                                        style: Get
+                                                            .bodyMedium
+                                                            .px14
+                                                            .copyWith(
+                                                              color: Get
+                                                                  .disabledColor
+                                                                  .withValues(
+                                                                    alpha: 0.6,
+                                                                  ),
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                            loadingBuilder:
+                                                (
+                                                  context,
+                                                  child,
+                                                  loadingProgress,
+                                                ) {
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  }
+                                                  return Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                          color:
+                                                              AppColors.primary,
+                                                        ),
+                                                  );
+                                                },
+                                          ),
+                                        )
+                                      : Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              Icons
+                                                  .add_photo_alternate_outlined,
+                                              size: 48.st,
+                                              color: AppColors.primary
+                                                  .withValues(alpha: 0.5),
+                                            ),
+                                            12.verticalGap,
+                                            AppText(
+                                              'tap_to_add_image'.tr(context),
+                                              style: Get.bodyMedium.px14
+                                                  .copyWith(
+                                                    color: Get.disabledColor
+                                                        .withValues(alpha: 0.6),
+                                                  ),
+                                            ),
+                                          ],
+                                        )),
                           ),
                         ),
-                        child: _selectedImage != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(14).rt,
-                                child: Image.file(
-                                  _selectedImage!,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : (widget.product?.image != null
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(
-                                        14,
-                                      ).rt,
-                                      child: Image.network(
-                                        Get.baseUrl + widget.product!.image!,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) {
-                                          return Column(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons
-                                                    .add_photo_alternate_outlined,
-                                                size: 48.st,
-                                                color: AppColors.primary
-                                                    .withValues(alpha: 0.5),
-                                              ),
-                                              12.verticalGap,
-                                              AppText(
-                                                'tap_to_add_image'.tr(context),
-                                                style: Get.bodyMedium.px14
-                                                    .copyWith(
-                                                      color: Get.disabledColor
-                                                          .withValues(
-                                                            alpha: 0.6,
-                                                          ),
-                                                    ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                        loadingBuilder:
-                                            (context, child, loadingProgress) {
-                                              if (loadingProgress == null) {
-                                                return child;
-                                              }
-                                              return Center(
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      color: AppColors.primary,
-                                                    ),
-                                              );
-                                            },
+                        if (_selectedImage != null)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _selectedImage = null;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(8).rt,
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.3,
                                       ),
-                                    )
-                                  : Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.add_photo_alternate_outlined,
-                                          size: 48.st,
-                                          color: AppColors.primary.withValues(
-                                            alpha: 0.5,
-                                          ),
-                                        ),
-                                        12.verticalGap,
-                                        AppText(
-                                          'tap_to_add_image'.tr(context),
-                                          style: Get.bodyMedium.px14.copyWith(
-                                            color: Get.disabledColor.withValues(
-                                              alpha: 0.6,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    )),
-                      ),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Icon(
+                                  Icons.close,
+                                  color: AppColors.white,
+                                  size: 18.st,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     24.verticalGap,
 
@@ -523,31 +626,42 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                       ),
                     ),
                     8.verticalGap,
-                    DropdownButtonFormField<Category>(
-                      value: selectedCategory,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(
+                    GestureDetector(
+                      onTap: () => _showCategoryDialog(),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 16,
+                        ).rt,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Get.disabledColor.withValues(alpha: 0.2),
+                            width: 1,
+                          ),
                           borderRadius: BorderRadius.circular(12).rt,
                         ),
-                        hintText: categories.isEmpty
-                            ? 'no_categories_available'.tr(context)
-                            : 'select_category'.tr(context),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: AppText(
+                                selectedCategory?.name ??
+                                    'select_category'.tr(context),
+                                style: Get.bodyMedium.px15.copyWith(
+                                  color: selectedCategory != null
+                                      ? Get.disabledColor
+                                      : Get.disabledColor.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                ),
+                              ),
+                            ),
+                            Icon(
+                              Icons.arrow_drop_down,
+                              color: Get.disabledColor.withValues(alpha: 0.5),
+                            ),
+                          ],
+                        ),
                       ),
-                      items: categories.isEmpty
-                          ? null
-                          : categories
-                                .map(
-                                  (cat) => DropdownMenuItem(
-                                    value: cat,
-                                    child: Text(cat.name),
-                                  ),
-                                )
-                                .toList(),
-                      onChanged: categories.isEmpty
-                          ? null
-                          : (value) {
-                              setState(() => selectedCategory = value);
-                            },
                     ),
                     16.verticalGap,
 
@@ -601,31 +715,46 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                 ),
                               ),
                               8.verticalGap,
-                              DropdownButtonFormField<Unit>(
-                                value: selectedUnit,
-                                decoration: InputDecoration(
-                                  border: OutlineInputBorder(
+                              GestureDetector(
+                                onTap: () => _showUnitDialog(),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
+                                  ).rt,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Get.disabledColor.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                      width: 1,
+                                    ),
                                     borderRadius: BorderRadius.circular(12).rt,
                                   ),
-                                  hintText: units.isEmpty
-                                      ? 'no_units_available'.tr(context)
-                                      : 'select_unit'.tr(context),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: AppText(
+                                          selectedUnit?.name ??
+                                              'select_unit'.tr(context),
+                                          style: Get.bodyMedium.px15.copyWith(
+                                            color: selectedUnit != null
+                                                ? Get.disabledColor
+                                                : Get.disabledColor.withValues(
+                                                    alpha: 0.5,
+                                                  ),
+                                          ),
+                                        ),
+                                      ),
+                                      Icon(
+                                        Icons.arrow_drop_down,
+                                        color: Get.disabledColor.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                items: units.isEmpty
-                                    ? null
-                                    : units
-                                          .map(
-                                            (unit) => DropdownMenuItem(
-                                              value: unit,
-                                              child: Text(unit.name),
-                                            ),
-                                          )
-                                          .toList(),
-                                onChanged: units.isEmpty
-                                    ? null
-                                    : (value) {
-                                        setState(() => selectedUnit = value);
-                                      },
                               ),
                             ],
                           ),

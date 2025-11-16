@@ -27,6 +27,10 @@ class AppTranslations {
       'en': 'Logout',
       'ne': 'लगआउट',
     },
+    'logout_confirmation': {
+      'en': 'Are you sure you want to logout?',
+      'ne': 'के तपाईं निश्चित रूपमा लगआउट गर्न चाहनुहुन्छ?',
+    },
     
     // Form Fields
     'phone_number': {

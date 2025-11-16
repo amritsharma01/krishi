@@ -10,6 +10,7 @@ import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/auth/login_page.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/button.dart';
+import 'package:krishi/features/components/dialog_box.dart';
 import 'package:krishi/features/components/language_switcher.dart';
 import 'package:krishi/features/components/platform_switcher.dart';
 import 'package:krishi/features/components/settings_tile.dart';
@@ -244,11 +245,19 @@ class _AccountPageState extends ConsumerState<AccountPage> {
 
                   // Logout Button
                   AppButton(
-                    onTap: () async {
-                      await ref.read(authServiceProvider).logout();
-                      if (context.mounted) {
-                        Get.offAll(const LoginPage());
-                      }
+                    onTap: () {
+                      AppDialog.showConfirmation(
+                        title: 'logout'.tr(context),
+                        content: 'logout_confirmation'.tr(context),
+                        confirmText: 'logout'.tr(context),
+                        confirmColor: Colors.red,
+                        onConfirm: () async {
+                          await ref.read(authServiceProvider).logout();
+                          if (context.mounted) {
+                            Get.offAll(const LoginPage());
+                          }
+                        },
+                      );
                     },
                     text: 'logout'.tr(context),
                     bgcolor: Colors.red,
@@ -271,14 +280,24 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     if (isLoading) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20).rt,
+        padding: const EdgeInsets.all(24).rt,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.primary, AppColors.primary.o8],
+            colors: [
+              AppColors.primary,
+              AppColors.primary.withValues(alpha: 0.85),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16).rt,
+          borderRadius: BorderRadius.circular(20).rt,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Center(child: CircularProgressIndicator(color: AppColors.white)),
       );
@@ -287,14 +306,24 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     if (error != null) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(20).rt,
+        padding: const EdgeInsets.all(24).rt,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [AppColors.primary, AppColors.primary.o8],
+            colors: [
+              AppColors.primary,
+              AppColors.primary.withValues(alpha: 0.85),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          borderRadius: BorderRadius.circular(16).rt,
+          borderRadius: BorderRadius.circular(20).rt,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
         child: Column(
           children: [
@@ -306,15 +335,23 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               textAlign: TextAlign.center,
             ),
             16.verticalGap,
-            ElevatedButton(
-              onPressed: _loadUserProfile,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.white,
-                foregroundColor: AppColors.primary,
-              ),
-              child: AppText(
-                'retry'.tr(context),
-                style: Get.bodyMedium.px14.w600,
+            GestureDetector(
+              onTap: _loadUserProfile,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ).rt,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(10).rt,
+                ),
+                child: AppText(
+                  'retry'.tr(context),
+                  style: Get.bodyMedium.px14.w600.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
             ),
           ],
@@ -324,78 +361,139 @@ class _AccountPageState extends ConsumerState<AccountPage> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20).rt,
+      padding: const EdgeInsets.all(24).rt,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.o8],
+          colors: [
+            AppColors.primary,
+            AppColors.primary.withValues(alpha: 0.85),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16).rt,
+        borderRadius: BorderRadius.circular(20).rt,
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          // Profile Image
-          if (currentUser?.profile?.profileImage != null)
-            CircleAvatar(
-              radius: 40.rt,
-              backgroundImage: NetworkImage(
-                Get.baseUrl + currentUser!.profile!.profileImage!,
-              ),
-              backgroundColor: AppColors.white.o3,
-            )
-          else
-            CircleAvatar(
-              radius: 40.rt,
-              backgroundColor: AppColors.white.o3,
-              child: Icon(Icons.person, size: 40.st, color: AppColors.white),
+          // Profile Image with border
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.white, width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 12,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
-          16.verticalGap,
+            child: currentUser?.profile?.profileImage != null
+                ? CircleAvatar(
+                    radius: 50.rt,
+                    backgroundColor: AppColors.white,
+                    backgroundImage: NetworkImage(
+                      Get.baseUrl + currentUser!.profile!.profileImage!,
+                    ),
+                    onBackgroundImageError: (exception, stackTrace) {
+                      // Handle image error
+                    },
+                  )
+                : CircleAvatar(
+                    radius: 50.rt,
+                    backgroundColor: AppColors.white.withValues(alpha: 0.2),
+                    child: Icon(
+                      Icons.person,
+                      size: 50.st,
+                      color: AppColors.white,
+                    ),
+                  ),
+          ),
+          20.verticalGap,
           // User Name
           AppText(
             currentUser?.profile?.fullName ?? currentUser?.email ?? 'User',
-            style: Get.bodyLarge.px20.w700.copyWith(color: AppColors.white),
+            style: Get.bodyLarge.px22.w700.copyWith(color: AppColors.white),
             textAlign: TextAlign.center,
           ),
-          6.verticalGap,
+          8.verticalGap,
           // User Email
           AppText(
             currentUser?.email ?? '',
-            style: Get.bodyMedium.px13.copyWith(color: AppColors.white.o8),
+            style: Get.bodyMedium.px14.copyWith(
+              color: AppColors.white.withValues(alpha: 0.9),
+            ),
             textAlign: TextAlign.center,
           ),
           if (currentUser?.profile?.phoneNumber != null) ...[
-            6.verticalGap,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.phone, color: AppColors.white.o8, size: 14.st),
-                6.horizontalGap,
-                AppText(
-                  currentUser!.profile!.phoneNumber!,
-                  style: Get.bodySmall.px12.copyWith(color: AppColors.white.o8),
-                ),
-              ],
+            12.verticalGap,
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ).rt,
+              decoration: BoxDecoration(
+                color: AppColors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12).rt,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.phone_outlined,
+                    color: AppColors.white,
+                    size: 16.st,
+                  ),
+                  8.horizontalGap,
+                  AppText(
+                    currentUser!.profile!.phoneNumber!,
+                    style: Get.bodyMedium.px13.w600.copyWith(
+                      color: AppColors.white,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
           if (currentUser?.profile?.address != null) ...[
-            6.verticalGap,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.location_on, color: AppColors.white.o8, size: 14.st),
-                6.horizontalGap,
-                Flexible(
-                  child: AppText(
-                    currentUser!.profile!.address!,
-                    style: Get.bodySmall.px12.copyWith(
-                      color: AppColors.white.o8,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
+            8.verticalGap,
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ).rt,
+              decoration: BoxDecoration(
+                color: AppColors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12).rt,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.location_on_outlined,
+                    color: AppColors.white,
+                    size: 16.st,
                   ),
-                ),
-              ],
+                  8.horizontalGap,
+                  Flexible(
+                    child: AppText(
+                      currentUser!.profile!.address!,
+                      style: Get.bodyMedium.px13.w600.copyWith(
+                        color: AppColors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ],

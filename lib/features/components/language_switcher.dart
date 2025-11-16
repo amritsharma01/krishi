@@ -1,6 +1,5 @@
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
-import 'package:krishi/core/extensions/color_extensions.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
@@ -98,24 +97,48 @@ class LanguageSwitcher extends ConsumerWidget {
               },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8).rt,
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12).rt,
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : Get.cardColor,
-            borderRadius: BorderRadius.circular(10).rt,
+            gradient: isSelected
+                ? LinearGradient(
+                    colors: [
+                      AppColors.primary,
+                      AppColors.primary.withValues(alpha: 0.85),
+                    ],
+                  )
+                : null,
+            color: isSelected ? null : Get.cardColor,
+            borderRadius: BorderRadius.circular(12).rt,
             border: Border.all(
-              color: isSelected ? AppColors.primary : Get.disabledColor.o2,
-              width: 1.5,
+              color: isSelected
+                  ? AppColors.primary
+                  : Get.disabledColor.withValues(alpha: 0.1),
+              width: isSelected ? 0 : 1,
             ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : null,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(flag, style: TextStyle(fontSize: 20.st)),
-              8.horizontalGap,
+              Text(
+                flag,
+                style: TextStyle(fontSize: 22.st),
+              ),
+              10.horizontalGap,
               AppText(
                 label.tr(context),
-                style: Get.bodyMedium.px13.w600.copyWith(
-                  color: isSelected ? AppColors.white : Get.disabledColor.o7,
+                style: Get.bodyMedium.px14.w600.copyWith(
+                  color: isSelected
+                      ? AppColors.white
+                      : Get.disabledColor.withValues(alpha: 0.8),
                 ),
               ),
             ],
