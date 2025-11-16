@@ -549,9 +549,17 @@ class AppTranslations {
       'en': 'Error loading products',
       'ne': 'उत्पादनहरू लोड गर्दा त्रुटि',
     },
+    'error_loading_products_subtitle': {
+      'en': 'Unable to load products. Please check your connection and try again.',
+      'ne': 'उत्पादनहरू लोड गर्न सकिएन। कृपया आफ्नो जडान जाँच गर्नुहोस् र पुनः प्रयास गर्नुहोस्।',
+    },
     'no_products_available': {
       'en': 'No products available',
       'ne': 'कुनै उत्पादन उपलब्ध छैन',
+    },
+    'no_products_subtitle': {
+      'en': 'There are no products available at the moment. Pull down to refresh or tap retry.',
+      'ne': 'यस समयमा कुनै उत्पादनहरू उपलब्ध छैनन्। ताजा पार्न तल खिच्नुहोस् वा पुनः प्रयास गर्नुहोस्।',
     },
     'added_to_cart': {
       'en': 'Added to cart',
@@ -565,9 +573,17 @@ class AppTranslations {
       'en': 'Error loading your listings',
       'ne': 'तपाईंको सूची लोड गर्दा त्रुटि',
     },
+    'error_loading_listings_subtitle': {
+      'en': 'Unable to load your listings. Please check your connection and try again.',
+      'ne': 'तपाईंको सूची लोड गर्न सकिएन। कृपया आफ्नो जडान जाँच गर्नुहोस् र पुनः प्रयास गर्नुहोस्।',
+    },
     'no_listings_yet': {
       'en': 'No listings yet',
       'ne': 'अझै कुनै सूची छैन',
+    },
+    'no_listings_subtitle': {
+      'en': 'You haven\'t added any products yet. Start selling by adding your first product!',
+      'ne': 'तपाईंले अहिलेसम्म कुनै उत्पादनहरू थप्नुभएको छैन। आफ्नो पहिलो उत्पादन थपेर बिक्री सुरु गर्नुहोस्!',
     },
     'product_deleted': {
       'en': 'Product deleted successfully',
@@ -584,6 +600,10 @@ class AppTranslations {
     'retry': {
       'en': 'Retry',
       'ne': 'पुन: प्रयास गर्नुहोस्',
+    },
+    'problem_fetching_data': {
+      'en': 'Problem fetching data',
+      'ne': 'डाटा ल्याउँदा समस्या',
     },
     'error_loading_cart': {
       'en': 'Error loading cart',
@@ -617,9 +637,45 @@ class AppTranslations {
       'en': 'Confirm',
       'ne': 'पुष्टि गर्नुहोस्',
     },
+    'ok': {
+      'en': 'OK',
+      'ne': 'ठीक छ',
+    },
     'address': {
       'en': 'Address',
       'ne': 'ठेगाना',
+    },
+    'order_summary': {
+      'en': 'Order Summary',
+      'ne': 'अर्डर सारांश',
+    },
+    'delivery_information': {
+      'en': 'Delivery Information',
+      'ne': 'डेलिभरी जानकारी',
+    },
+    'enter_full_name': {
+      'en': 'Enter full name',
+      'ne': 'पूरा नाम प्रविष्ट गर्नुहोस्',
+    },
+    'enter_address': {
+      'en': 'Enter address',
+      'ne': 'ठेगाना प्रविष्ट गर्नुहोस्',
+    },
+    'contact_information': {
+      'en': 'Contact Information',
+      'ne': 'सम्पर्क जानकारी',
+    },
+    'enter_phone_number': {
+      'en': 'Enter phone number',
+      'ne': 'फोन नम्बर प्रविष्ट गर्नुहोस्',
+    },
+    'total_amount': {
+      'en': 'Total Amount',
+      'ne': 'कुल रकम',
+    },
+    'confirm_order': {
+      'en': 'Confirm Order',
+      'ne': 'अर्डर पुष्टि गर्नुहोस्',
     },
     'error_loading_categories': {
       'en': 'Error loading categories',
@@ -713,17 +769,37 @@ class AppTranslations {
       'en': 'No articles available',
       'ne': 'कुनै लेखहरू उपलब्ध छैन',
     },
+    'no_articles_subtitle': {
+      'en': 'There are no articles available at the moment. Pull down to refresh or tap retry.',
+      'ne': 'यस समयमा कुनै लेखहरू उपलब्ध छैनन्। ताजा पार्न तल खिच्नुहोस् वा पुनः प्रयास गर्नुहोस्।',
+    },
     'no_news_available': {
       'en': 'No news available',
       'ne': 'कुनै समाचार उपलब्ध छैन',
+    },
+    'no_news_subtitle': {
+      'en': 'There are no news available at the moment. Pull down to refresh or tap retry.',
+      'ne': 'यस समयमा कुनै समाचार उपलब्ध छैनन्। ताजा पार्न तल खिच्नुहोस् वा पुनः प्रयास गर्नुहोस्।',
     },
     'error_loading_articles': {
       'en': 'Error loading articles',
       'ne': 'लेखहरू लोड गर्दा त्रुटि',
     },
+    'error_loading_articles_subtitle': {
+      'en': 'Unable to load articles. Please check your connection and try again.',
+      'ne': 'लेखहरू लोड गर्न सकिएन। कृपया आफ्नो जडान जाँच गर्नुहोस् र पुनः प्रयास गर्नुहोस्।',
+    },
     'error_loading_news': {
       'en': 'Error loading news',
       'ne': 'समाचार लोड गर्दा त्रुटि',
+    },
+    'error_loading_news_subtitle': {
+      'en': 'Unable to load news. Please check your connection and try again.',
+      'ne': 'समाचार लोड गर्न सकिएन। कृपया आफ्नो जडान जाँच गर्नुहोस् र पुनः प्रयास गर्नुहोस्।',
+    },
+    'error_loading_cart_subtitle': {
+      'en': 'Unable to load cart. Please check your connection and try again.',
+      'ne': 'कार्ट लोड गर्न सकिएन। कृपया आफ्नो जडान जाँच गर्नुहोस् र पुनः प्रयास गर्नुहोस्।',
     },
     'yesterday': {
       'en': 'Yesterday',

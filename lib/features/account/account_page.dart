@@ -8,12 +8,12 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/auth/login_page.dart';
-import 'package:krishi/features/widgets/app_text.dart';
-import 'package:krishi/features/widgets/button.dart';
-import 'package:krishi/features/widgets/language_switcher.dart';
-import 'package:krishi/features/widgets/platform_switcher.dart';
-import 'package:krishi/features/widgets/settings_tile.dart';
-import 'package:krishi/features/widgets/theme_switcher.dart';
+import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/components/button.dart';
+import 'package:krishi/features/components/language_switcher.dart';
+import 'package:krishi/features/components/platform_switcher.dart';
+import 'package:krishi/features/components/settings_tile.dart';
+import 'package:krishi/features/components/theme_switcher.dart';
 import 'package:krishi/models/user_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -135,18 +135,11 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                     decoration: BoxDecoration(
                       color: Colors.orange.o1,
                       borderRadius: BorderRadius.circular(10).rt,
-                      border: Border.all(
-                        color: Colors.orange.o3,
-                        width: 1,
-                      ),
+                      border: Border.all(color: Colors.orange.o3, width: 1),
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.code,
-                          color: Colors.orange,
-                          size: 18.st,
-                        ),
+                        Icon(Icons.code, color: Colors.orange, size: 18.st),
                         8.horizontalGap,
                         AppText(
                           'developer_settings'.tr(context),
@@ -281,18 +274,13 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         padding: const EdgeInsets.all(20).rt,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              AppColors.primary,
-              AppColors.primary.o8,
-            ],
+            colors: [AppColors.primary, AppColors.primary.o8],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(16).rt,
         ),
-        child: Center(
-          child: CircularProgressIndicator(color: AppColors.white),
-        ),
+        child: Center(child: CircularProgressIndicator(color: AppColors.white)),
       );
     }
 
@@ -302,10 +290,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         padding: const EdgeInsets.all(20).rt,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              AppColors.primary,
-              AppColors.primary.o8,
-            ],
+            colors: [AppColors.primary, AppColors.primary.o8],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -342,10 +327,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       padding: const EdgeInsets.all(20).rt,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.primary,
-            AppColors.primary.o8,
-          ],
+          colors: [AppColors.primary, AppColors.primary.o8],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -358,35 +340,28 @@ class _AccountPageState extends ConsumerState<AccountPage> {
             CircleAvatar(
               radius: 40.rt,
               backgroundImage: NetworkImage(
-                  Get.baseUrl + currentUser!.profile!.profileImage!),
+                Get.baseUrl + currentUser!.profile!.profileImage!,
+              ),
               backgroundColor: AppColors.white.o3,
             )
           else
             CircleAvatar(
               radius: 40.rt,
               backgroundColor: AppColors.white.o3,
-              child: Icon(
-                Icons.person,
-                size: 40.st,
-                color: AppColors.white,
-              ),
+              child: Icon(Icons.person, size: 40.st, color: AppColors.white),
             ),
           16.verticalGap,
           // User Name
           AppText(
             currentUser?.profile?.fullName ?? currentUser?.email ?? 'User',
-            style: Get.bodyLarge.px20.w700.copyWith(
-              color: AppColors.white,
-            ),
+            style: Get.bodyLarge.px20.w700.copyWith(color: AppColors.white),
             textAlign: TextAlign.center,
           ),
           6.verticalGap,
           // User Email
           AppText(
             currentUser?.email ?? '',
-            style: Get.bodyMedium.px13.copyWith(
-              color: AppColors.white.o8,
-            ),
+            style: Get.bodyMedium.px13.copyWith(color: AppColors.white.o8),
             textAlign: TextAlign.center,
           ),
           if (currentUser?.profile?.phoneNumber != null) ...[
@@ -398,9 +373,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                 6.horizontalGap,
                 AppText(
                   currentUser!.profile!.phoneNumber!,
-                  style: Get.bodySmall.px12.copyWith(
-                    color: AppColors.white.o8,
-                  ),
+                  style: Get.bodySmall.px12.copyWith(color: AppColors.white.o8),
                 ),
               ],
             ),

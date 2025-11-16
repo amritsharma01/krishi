@@ -5,7 +5,7 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
-import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/features/components/app_text.dart';
 import 'package:flutter/material.dart';
 
 class SupportPage extends StatelessWidget {
@@ -264,8 +264,11 @@ class SupportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildContactRow(BuildContext context,
-      {required IconData icon, required String text}) {
+  Widget _buildContactRow(
+    BuildContext context, {
+    required IconData icon,
+    required String text,
+  }) {
     return Row(
       children: [
         Icon(icon, color: AppColors.primary, size: 20.st),
@@ -282,4 +285,3 @@ class SupportPage extends StatelessWidget {
     );
   }
 }
-

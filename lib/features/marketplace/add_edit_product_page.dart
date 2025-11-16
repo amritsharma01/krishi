@@ -7,7 +7,7 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
-import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/models/category.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/models/unit.dart';
@@ -94,13 +94,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
           categories = [];
           isLoadingCategories = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load categories: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
+        Get.snackbar('error_loading_categories'.tr(Get.context), color: Colors.red);
       }
     }
   }
@@ -123,13 +117,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
           units = [];
           isLoadingUnits = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load units: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
+        Get.snackbar('error_loading_units'.tr(Get.context), color: Colors.red);
       }
     }
   }
@@ -158,14 +146,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         });
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('error_picking_image'.tr(context)),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      Get.snackbar('error_picking_image'.tr(Get.context), color: Colors.red);
     }
   }
 
@@ -211,7 +192,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                         icon: Icons.camera_alt_rounded,
                         label: 'camera'.tr(context),
                         onTap: () {
-                          Navigator.pop(context);
+                          Get.pop();
                           _pickImage(ImageSource.camera);
                         },
                       ),
@@ -222,7 +203,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                         icon: Icons.photo_library_rounded,
                         label: 'gallery'.tr(context),
                         onTap: () {
-                          Navigator.pop(context);
+                          Get.pop();
                           _pickImage(ImageSource.gallery);
                         },
                       ),
@@ -329,39 +310,24 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         if (mounted) {
           setState(() => isSaving = false);
 
-          // Show success message before popping
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                widget.product == null
-                    ? 'product_added'.tr(context)
-                    : 'product_updated'.tr(context),
-              ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
+          // Show success message
+          Get.snackbar(
+            widget.product == null
+                ? 'product_added'.tr(Get.context)
+                : 'product_updated'.tr(Get.context),
+            color: Colors.green,
           );
 
           // Pop after a short delay to let the snackbar show
           Future.delayed(const Duration(milliseconds: 500), () {
-            if (mounted) {
-              Navigator.pop(context, true); // Return true to indicate success
-            }
+            Navigator.of(Get.context).pop(true); // Return true to indicate success
           });
         }
       } catch (e) {
         print('Error saving product: $e');
         if (mounted) {
           setState(() => isSaving = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '${'error_saving_product'.tr(context)}: ${e.toString()}',
-              ),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 4),
-            ),
-          );
+          Get.snackbar('error_saving_product'.tr(Get.context), color: Colors.red);
         }
       }
     }
@@ -383,7 +349,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Get.disabledColor),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.pop(),
         ),
       ),
       body: isLoadingCategories || isLoadingUnits

@@ -10,7 +10,7 @@ import 'package:krishi/features/account/account_page.dart';
 import 'package:krishi/features/home/home_page.dart';
 import 'package:krishi/features/marketplace/marketplace_page.dart';
 import 'package:krishi/features/support/support_page.dart';
-import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/features/components/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

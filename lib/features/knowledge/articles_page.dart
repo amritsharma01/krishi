@@ -8,7 +8,9 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
-import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/components/empty_state.dart';
+import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/models/article.dart';
 
 class ArticlesPage extends ConsumerStatefulWidget {
@@ -63,7 +65,7 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Get.disabledColor),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.pop(),
         ),
         title: AppText(
           'kishan_gyaan'.tr(context),
@@ -76,58 +78,21 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
 
   Widget _buildBody() {
     if (isLoading) {
-      return Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      );
+      return Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     if (hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 64.st),
-            16.verticalGap,
-            AppText(
-              'error_loading_articles'.tr(context),
-              style: Get.bodyMedium.px14.copyWith(color: Colors.red),
-            ),
-            16.verticalGap,
-            ElevatedButton(
-              onPressed: _loadArticles,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.white,
-              ),
-              child: AppText(
-                'retry'.tr(context),
-                style: Get.bodyMedium.px14.w600,
-              ),
-            ),
-          ],
-        ),
+      return ErrorState(
+        subtitle: 'error_loading_articles_subtitle'.tr(context),
+        onRetry: _loadArticles,
       );
     }
 
     if (articles.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.article_outlined,
-              size: 80.st,
-              color: Get.disabledColor.withValues(alpha: 0.3),
-            ),
-            24.verticalGap,
-            AppText(
-              'no_articles_available'.tr(context),
-              style: Get.bodyLarge.px18.w600.copyWith(
-                color: Get.disabledColor.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-        ),
+      return EmptyState(
+        title: 'no_articles_available'.tr(context),
+        subtitle: 'no_articles_subtitle'.tr(context),
+        icon: Icons.article_outlined,
       );
     }
 
@@ -198,7 +163,7 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
                         color: AppColors.primary,
                         value: loadingProgress.expectedTotalBytes != null
                             ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
+                                  loadingProgress.expectedTotalBytes!
                             : null,
                       ),
                     ),
@@ -279,4 +244,3 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
     }
   }
 }
-

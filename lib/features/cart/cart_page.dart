@@ -6,7 +6,10 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
-import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/features/cart/checkout_page.dart';
+import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/components/empty_state.dart';
+import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/models/cart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,23 +26,10 @@ class _CartPageState extends ConsumerState<CartPage> {
   bool isLoading = true;
   String? error;
 
-  // Checkout form controllers
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-
   @override
   void initState() {
     super.initState();
     _loadCart();
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _addressController.dispose();
-    _phoneController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadCart() async {
@@ -75,14 +65,10 @@ class _CartPageState extends ConsumerState<CartPage> {
       await apiService.updateCartItem(itemId: item.id, quantity: newQuantity);
       _loadCart();
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('error_updating_quantity'.tr(context)),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      Get.snackbar(
+        'error_updating_quantity'.tr(Get.context),
+        color: Colors.red,
+      );
     }
   }
 
@@ -91,145 +77,18 @@ class _CartPageState extends ConsumerState<CartPage> {
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.removeCartItem(itemId);
       _loadCart();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('item_removed'.tr(context)),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
+      Get.snackbar('item_removed'.tr(Get.context), color: Colors.green);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('error_removing_item'.tr(context)),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      Get.snackbar('error_removing_item'.tr(Get.context), color: Colors.red);
     }
   }
 
-  void _showCheckoutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Get.cardColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: AppText(
-          'checkout'.tr(context),
-          style: Get.bodyLarge.copyWith(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'full_name'.tr(context),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-
-              TextField(
-                controller: _addressController,
-                decoration: InputDecoration(
-                  labelText: 'address'.tr(context),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                maxLines: 3,
-              ),
-
-              TextField(
-                controller: _phoneController,
-                decoration: InputDecoration(
-                  labelText: 'phone_number'.tr(context),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                keyboardType: TextInputType.phone,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: AppText(
-              'cancel'.tr(context),
-              style: Get.bodyMedium.copyWith(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: _processCheckout,
-            child: AppText(
-              'confirm'.tr(context),
-              style: Get.bodyMedium.copyWith(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _processCheckout() async {
-    if (_nameController.text.isEmpty ||
-        _addressController.text.isEmpty ||
-        _phoneController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('fill_all_fields'.tr(context)),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      await apiService.checkout(
-        buyerName: _nameController.text,
-        buyerAddress: _addressController.text,
-        buyerPhoneNumber: _phoneController.text,
-      );
-
-      if (mounted) {
-        Navigator.pop(context); // Close dialog
-        Navigator.pop(context); // Return to previous page
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('checkout_success'.tr(context)),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('checkout_error'.tr(context)),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
+  void _navigateToCheckout() {
+    if (cart == null || cart!.items.isEmpty) return;
+    Get.to(CheckoutPage(cart: cart!)).then((_) {
+      // Reload cart after returning from checkout
+      _loadCart();
+    });
   }
 
   @override
@@ -246,7 +105,7 @@ class _CartPageState extends ConsumerState<CartPage> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Get.disabledColor),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.pop(),
         ),
       ),
       body: _buildBody(),
@@ -262,35 +121,18 @@ class _CartPageState extends ConsumerState<CartPage> {
     }
 
     if (error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 64.st),
-            16.verticalGap,
-            AppText(
-              'error_loading_cart'.tr(context),
-              style: Get.bodyMedium.px14.copyWith(color: Colors.red),
-            ),
-            16.verticalGap,
-            ElevatedButton(
-              onPressed: _loadCart,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.white,
-              ),
-              child: AppText(
-                'retry'.tr(context),
-                style: Get.bodyMedium.px14.w600,
-              ),
-            ),
-          ],
-        ),
+      return ErrorState(
+        subtitle: 'error_loading_cart_subtitle'.tr(context),
+        onRetry: _loadCart,
       );
     }
 
     if (cart == null || cart!.items.isEmpty) {
-      return _buildEmptyCart();
+      return EmptyState(
+        title: 'empty_cart'.tr(context),
+        subtitle: 'start_shopping'.tr(context),
+        icon: Icons.shopping_cart_outlined,
+      );
     }
 
     return RefreshIndicator(
@@ -301,40 +143,6 @@ class _CartPageState extends ConsumerState<CartPage> {
         itemBuilder: (context, index) {
           return _buildCartItem(cart!.items[index]);
         },
-      ),
-    );
-  }
-
-  Widget _buildEmptyCart() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(32).rt,
-            decoration: BoxDecoration(
-              color: Get.cardColor,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.shopping_cart_outlined,
-              size: 80.st,
-              color: Get.disabledColor.withValues(alpha: 0.3),
-            ),
-          ),
-          24.verticalGap,
-          AppText(
-            'empty_cart'.tr(context),
-            style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
-          ),
-          12.verticalGap,
-          AppText(
-            'start_shopping'.tr(context),
-            style: Get.bodyMedium.px14.copyWith(
-              color: Get.disabledColor.withValues(alpha: 0.6),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -555,7 +363,7 @@ class _CartPageState extends ConsumerState<CartPage> {
             ),
             16.verticalGap,
             GestureDetector(
-              onTap: _showCheckoutDialog,
+              onTap: _navigateToCheckout,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14).rt,

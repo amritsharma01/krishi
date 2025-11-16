@@ -9,8 +9,10 @@ import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/cart/cart_page.dart';
 import 'package:krishi/features/knowledge/articles_page.dart';
 import 'package:krishi/features/knowledge/news_page.dart';
-import 'package:krishi/features/widgets/app_text.dart';
-import 'package:krishi/features/widgets/notification_icon.dart';
+import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/components/empty_state.dart';
+import 'package:krishi/features/components/error_state.dart';
+import 'package:krishi/features/components/notification_icon.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/models/weather.dart';
 import 'package:flutter/material.dart';
@@ -427,10 +429,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
                 ),
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const NewsPage()),
-                  );
+                  Get.to(const NewsPage());
                 },
               ),
             ),
@@ -590,34 +589,17 @@ class _HomePageState extends ConsumerState<HomePage> {
     }
 
     if (productsError != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32).rt,
-          child: Column(
-            children: [
-              Icon(Icons.error_outline, color: Colors.red, size: 48.st),
-              16.verticalGap,
-              AppText(
-                'error_loading_products'.tr(context),
-                style: Get.bodyMedium.px14.copyWith(color: Colors.red),
-              ),
-            ],
-          ),
-        ),
+      return ErrorState(
+        subtitle: 'error_loading_products_subtitle'.tr(context),
+        onRetry: _loadTrendingProducts,
       );
     }
 
     if (trendingProducts.isEmpty) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32).rt,
-          child: AppText(
-            'no_products_available'.tr(context),
-            style: Get.bodyMedium.px14.copyWith(
-              color: Get.disabledColor.withValues(alpha: 0.6),
-            ),
-          ),
-        ),
+      return EmptyState(
+        title: 'no_products_available'.tr(context),
+        subtitle: 'no_products_subtitle'.tr(context),
+        icon: Icons.shopping_bag_outlined,
       );
     }
 
@@ -761,23 +743,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               try {
                 final apiService = ref.read(krishiApiServiceProvider);
                 await apiService.addToCart(productId: product.id, quantity: 1);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('added_to_cart'.tr(context)),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
+                Get.snackbar('added_to_cart'.tr(Get.context), color: Colors.green);
               } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('error_adding_to_cart'.tr(context)),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
+                Get.snackbar('error_adding_to_cart'.tr(Get.context), color: Colors.red);
               }
             },
             child: Container(

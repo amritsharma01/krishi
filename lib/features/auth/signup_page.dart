@@ -8,7 +8,7 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/navigation/main_navigation.dart';
-import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/features/components/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,35 +35,16 @@ class _SignupPageState extends ConsumerState<SignupPage> {
         Get.offAll(const MainNavigation());
 
         // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('signup_success'.tr(context)),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      } else if (mounted) {
+        Get.snackbar('signup_success'.tr(Get.context), color: Colors.green);
+      } else {
         // User cancelled or authentication failed
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('google_signin_cancelled'.tr(context)),
-            backgroundColor: Colors.orange,
-            duration: const Duration(seconds: 3),
-          ),
-        );
+        Get.snackbar('google_signin_cancelled'.tr(Get.context), color: Colors.orange);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${'google_signin_failed'.tr(context)}: ${e.toString()}',
-            ),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
-          ),
-        );
-      }
+      Get.snackbar(
+        '${'google_signin_failed'.tr(Get.context)}: ${e.toString()}',
+        color: Colors.red,
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);

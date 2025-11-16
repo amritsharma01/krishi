@@ -8,7 +8,7 @@ import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
-import '../../core/core_service_providers.dart';
+import '../../../core/core_service_providers.dart';
 import 'app_text.dart';
 
 class PlatformSwitcher extends StatelessWidget {
@@ -20,7 +20,7 @@ class PlatformSwitcher extends StatelessWidget {
       valueListenable: platformProvider,
       builder: (context, platform, child) {
         final isAndroid = platform == PlatformStyle.Material;
-        
+
         return Row(
           children: [
             _buildPlatformOption(
@@ -61,14 +61,10 @@ class PlatformSwitcher extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8).rt,
           decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.primary
-                : Get.cardColor,
+            color: isSelected ? AppColors.primary : Get.cardColor,
             borderRadius: BorderRadius.circular(10).rt,
             border: Border.all(
-              color: isSelected
-                  ? AppColors.primary
-                  : Get.disabledColor.o2,
+              color: isSelected ? AppColors.primary : Get.disabledColor.o2,
               width: 1.5,
             ),
           ),
@@ -77,18 +73,14 @@ class PlatformSwitcher extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                color: isSelected
-                    ? AppColors.white
-                    : Get.disabledColor.o7,
+                color: isSelected ? AppColors.white : Get.disabledColor.o7,
                 size: 20.st,
               ),
               8.horizontalGap,
               AppText(
                 label.tr(context),
                 style: Get.bodyMedium.px13.w600.copyWith(
-                  color: isSelected
-                      ? AppColors.white
-                      : Get.disabledColor.o7,
+                  color: isSelected ? AppColors.white : Get.disabledColor.o7,
                 ),
               ),
             ],
@@ -98,4 +90,3 @@ class PlatformSwitcher extends StatelessWidget {
     );
   }
 }
-

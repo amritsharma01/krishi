@@ -8,40 +8,50 @@ import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/core_service_providers.dart';
+import '../../../core/core_service_providers.dart';
 import 'app_text.dart';
 
-class LanguageSwitcher extends ConsumerWidget {
-  const LanguageSwitcher({super.key});
+class ThemeSwitcher extends ConsumerWidget {
+  const ThemeSwitcher({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final langProvider = ref.watch(languageProvider);
-    final isLoading = langProvider.isLoading;
-    
+    final themeProvider = ref.watch(themeModeProvider);
+    final isLoading = themeProvider.isLoading;
+
     return Stack(
       children: [
         Opacity(
           opacity: isLoading ? 0.5 : 1.0,
           child: Row(
             children: [
-              _buildLanguageOption(
+              _buildThemeOption(
                 context,
                 ref,
-                'english',
-                '🇬🇧',
+                'light',
+                Icons.light_mode_outlined,
                 0,
-                langProvider.index == 0,
+                themeProvider.index == 0,
                 isLoading,
               ),
-              12.horizontalGap,
-              _buildLanguageOption(
+              8.horizontalGap,
+              _buildThemeOption(
                 context,
                 ref,
-                'nepali',
-                '🇳🇵',
+                'dark',
+                Icons.dark_mode_outlined,
                 1,
-                langProvider.index == 1,
+                themeProvider.index == 1,
+                isLoading,
+              ),
+              8.horizontalGap,
+              _buildThemeOption(
+                context,
+                ref,
+                'system',
+                Icons.brightness_auto_outlined,
+                2,
+                themeProvider.index == 2,
                 isLoading,
               ),
             ],
@@ -68,7 +78,9 @@ class LanguageSwitcher extends ConsumerWidget {
                   height: 20.st,
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.primary,
+                    ),
                   ),
                 ),
               ),
@@ -78,49 +90,46 @@ class LanguageSwitcher extends ConsumerWidget {
     );
   }
 
-  Widget _buildLanguageOption(
+  Widget _buildThemeOption(
     BuildContext context,
     WidgetRef ref,
     String label,
-    String flag,
+    IconData icon,
     int index,
     bool isSelected,
     bool isDisabled,
   ) {
     return Expanded(
       child: GestureDetector(
-        onTap: isDisabled ? null : () {
-          ref.read(languageProvider).toggleLanguage(index);
-        },
+        onTap: isDisabled
+            ? null
+            : () {
+                ref.read(themeModeProvider).toggleTheme(index);
+              },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8).rt,
           decoration: BoxDecoration(
-            color: isSelected
-                ? AppColors.primary
-                : Get.cardColor,
+            color: isSelected ? AppColors.primary : Get.cardColor,
             borderRadius: BorderRadius.circular(10).rt,
             border: Border.all(
-              color: isSelected
-                  ? AppColors.primary
-                  : Get.disabledColor.o2,
+              color: isSelected ? AppColors.primary : Get.disabledColor.o2,
               width: 1.5,
             ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                flag,
-                style: TextStyle(fontSize: 20.st),
+              Icon(
+                icon,
+                color: isSelected ? AppColors.white : Get.disabledColor.o7,
+                size: 20.st,
               ),
-              8.horizontalGap,
+              6.verticalGap,
               AppText(
                 label.tr(context),
-                style: Get.bodyMedium.px13.w600.copyWith(
-                  color: isSelected
-                      ? AppColors.white
-                      : Get.disabledColor.o7,
+                style: Get.bodySmall.px11.w600.copyWith(
+                  color: isSelected ? AppColors.white : Get.disabledColor.o7,
                 ),
               ),
             ],
@@ -130,4 +139,3 @@ class LanguageSwitcher extends ConsumerWidget {
     );
   }
 }
-
