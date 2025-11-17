@@ -8,6 +8,7 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/auth/login_page.dart';
+import 'package:krishi/features/account/edit_profile_page.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/button.dart';
 import 'package:krishi/features/components/dialog_box.dart';
@@ -188,9 +189,16 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                       size: 16.st,
                       color: Get.disabledColor.o5,
                     ),
-                    onTap: () {
-                      // TODO: Navigate to edit profile
-                    },
+                    onTap: currentUser == null
+                        ? null
+                        : () async {
+                            final updated = await Get.to(
+                              EditProfilePage(user: currentUser!),
+                            );
+                            if (updated == true) {
+                              _loadUserProfile();
+                            }
+                          },
                   ),
 
                   12.verticalGap,
@@ -359,143 +367,190 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       );
     }
 
+    final profileImage = currentUser?.profile?.profileImage;
+    final fullName = currentUser?.profile?.fullName ?? currentUser?.email ?? 'User';
+    final email = currentUser?.email ?? '';
+    final phone = currentUser?.profile?.phoneNumber;
+    final address = currentUser?.profile?.address;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24).rt,
+      padding: const EdgeInsets.all(20).rt,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary,
-            AppColors.primary.withValues(alpha: 0.85),
+            AppColors.primary.withValues(alpha: 0.95),
+            AppColors.primary.withValues(alpha: 0.8),
+            AppColors.primary.withValues(alpha: 0.7),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20).rt,
+        borderRadius: BorderRadius.circular(24).rt,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: AppColors.primary.withValues(alpha: 0.28),
+            blurRadius: 25,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile Image with border
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.white, width: 4),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 12,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: currentUser?.profile?.profileImage != null
-                ? CircleAvatar(
-                    radius: 50.rt,
-                    backgroundColor: AppColors.white,
-                    backgroundImage: NetworkImage(
-                      Get.imageUrl(currentUser!.profile!.profileImage),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildProfileAvatar(profileImage),
+              16.horizontalGap,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppText(
+                            fullName,
+                            style: Get.bodyLarge.px20.w700.copyWith(
+                              color: AppColors.white,
+                            ),
+                            maxLines: 1,
+                          ),
+                        ),
+                        if (currentUser != null)
+                          Material(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            shape: const CircleBorder(),
+                            child: IconButton(
+                              onPressed: () async {
+                                final updated = await Get.to(
+                                  EditProfilePage(user: currentUser!),
+                                );
+                                if (updated == true) {
+                                  _loadUserProfile();
+                                }
+                              },
+                              icon: Icon(
+                                Icons.edit_outlined,
+                                color: AppColors.white,
+                                size: 18.st,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    onBackgroundImageError: (exception, stackTrace) {
-                      // Handle image error
-                    },
-                  )
-                : CircleAvatar(
-                    radius: 50.rt,
-                    backgroundColor: AppColors.white.withValues(alpha: 0.2),
-                    child: Icon(
-                      Icons.person,
-                      size: 50.st,
-                      color: AppColors.white,
-                    ),
-                  ),
-          ),
-          20.verticalGap,
-          // User Name
-          AppText(
-            currentUser?.profile?.fullName ?? currentUser?.email ?? 'User',
-            style: Get.bodyLarge.px22.w700.copyWith(color: AppColors.white),
-            textAlign: TextAlign.center,
-          ),
-          8.verticalGap,
-          // User Email
-          AppText(
-            currentUser?.email ?? '',
-            style: Get.bodyMedium.px14.copyWith(
-              color: AppColors.white.withValues(alpha: 0.9),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          if (currentUser?.profile?.phoneNumber != null) ...[
-            12.verticalGap,
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ).rt,
-              decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12).rt,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.phone_outlined,
-                    color: AppColors.white,
-                    size: 16.st,
-                  ),
-                  8.horizontalGap,
-                  AppText(
-                    currentUser!.profile!.phoneNumber!,
-                    style: Get.bodyMedium.px13.w600.copyWith(
-                      color: AppColors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          if (currentUser?.profile?.address != null) ...[
-            8.verticalGap,
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ).rt,
-              decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12).rt,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.location_on_outlined,
-                    color: AppColors.white,
-                    size: 16.st,
-                  ),
-                  8.horizontalGap,
-                  Flexible(
-                    child: AppText(
-                      currentUser!.profile!.address!,
-                      style: Get.bodyMedium.px13.w600.copyWith(
-                        color: AppColors.white,
+                    6.verticalGap,
+                    AppText(
+                      email,
+                      style: Get.bodyMedium.px13.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.9),
                       ),
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
+                      maxLines: 1,
                     ),
-                  ),
-                ],
+                    12.verticalGap,
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildInfoPill(
+                          icon: Icons.phone_outlined,
+                          label: phone ?? 'add_phone_hint'.tr(context),
+                          muted: phone == null,
+                        ),
+                        _buildInfoPill(
+                          icon: Icons.location_on_outlined,
+                          label: address ?? 'add_address_hint'.tr(context),
+                          muted: address == null,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileAvatar(String? imagePath) {
+    final size = 72.rt;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 3),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: imagePath != null
+            ? Image.network(
+                Get.imageUrl(imagePath),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return const Center(child: CircularProgressIndicator(color: Colors.white));
+                },
+              )
+            : _buildAvatarPlaceholder(),
+      ),
+    );
+  }
+
+  Widget _buildAvatarPlaceholder() {
+    return Container(
+      color: AppColors.white.withValues(alpha: 0.15),
+      child: Icon(
+        Icons.person_outline_rounded,
+        color: AppColors.white.withValues(alpha: 0.8),
+        size: 38.st,
+      ),
+    );
+  }
+
+  Widget _buildInfoPill({
+    required IconData icon,
+    required String label,
+    bool muted = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8).rt,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: muted ? 0.08 : 0.18),
+        borderRadius: BorderRadius.circular(14).rt,
+        border: Border.all(
+          color: Colors.white.withValues(alpha: muted ? 0.12 : 0.25),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: AppColors.white,
+            size: 16.st,
+          ),
+          8.horizontalGap,
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: Get.width * 0.45),
+            child: AppText(
+              label,
+              style: Get.bodySmall.px12.w600.copyWith(
+                color: AppColors.white.withValues(alpha: muted ? 0.7 : 1),
+              ),
+              maxLines: 2,
             ),
-          ],
+          ),
         ],
       ),
     );

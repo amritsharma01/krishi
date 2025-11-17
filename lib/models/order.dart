@@ -13,6 +13,7 @@ class Order {
   final String buyerAddress;
   final String buyerPhoneNumber;
   final String status;
+  final String? statusDisplay;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -31,6 +32,7 @@ class Order {
     required this.buyerAddress,
     required this.buyerPhoneNumber,
     required this.status,
+    this.statusDisplay,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -51,6 +53,7 @@ class Order {
       buyerAddress: json['buyer_address'] as String,
       buyerPhoneNumber: json['buyer_phone_number'] as String,
       status: json['status'] as String,
+      statusDisplay: json['status_display'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -72,6 +75,7 @@ class Order {
       'buyer_address': buyerAddress,
       'buyer_phone_number': buyerPhoneNumber,
       'status': status,
+      'status_display': statusDisplay,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };

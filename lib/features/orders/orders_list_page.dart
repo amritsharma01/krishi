@@ -1,0 +1,369 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:krishi/core/configs/app_colors.dart';
+import 'package:krishi/core/core_service_providers.dart';
+import 'package:krishi/core/extensions/border_radius.dart';
+import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/extensions/padding.dart';
+import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
+import 'package:krishi/core/services/get.dart';
+import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/components/empty_state.dart';
+import 'package:krishi/features/components/error_state.dart';
+import 'package:krishi/models/order.dart';
+
+class OrdersListPage extends ConsumerStatefulWidget {
+  final bool showSales;
+
+  const OrdersListPage.sales({super.key}) : showSales = true;
+  const OrdersListPage.purchases({super.key}) : showSales = false;
+
+  @override
+  ConsumerState<OrdersListPage> createState() => _OrdersListPageState();
+}
+
+class _OrdersListPageState extends ConsumerState<OrdersListPage> {
+  final _dateFormat = DateFormat('MMM d, yyyy • h:mm a');
+  List<Order> orders = [];
+  bool isLoading = true;
+  String? error;
+  final Set<int> _completingOrders = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrders();
+  }
+
+  Future<void> _loadOrders() async {
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final result = widget.showSales
+          ? await apiService.getMySales()
+          : await apiService.getMyPurchases();
+      if (mounted) {
+        setState(() {
+          orders = result;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          error = e.toString();
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _completeOrder(Order order) async {
+    if (_completingOrders.contains(order.id)) return;
+
+    setState(() {
+      _completingOrders.add(order.id);
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      await apiService.completeOrder(order.id);
+      if (!mounted) return;
+      Get.snackbar('order_marked_complete'.tr(context), color: Colors.green);
+      _completingOrders.remove(order.id);
+      _loadOrders();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _completingOrders.remove(order.id);
+      });
+      Get.snackbar('order_complete_failed'.tr(context), color: Colors.red);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title =
+        widget.showSales ? 'received_orders'.tr(context) : 'placed_orders'.tr(context);
+
+    return Scaffold(
+      backgroundColor: Get.scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: AppText(
+          title,
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+        ),
+        backgroundColor: Get.scaffoldBackgroundColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Get.disabledColor),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: RefreshIndicator(
+        onRefresh: _loadOrders,
+        child: isLoading
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  80.verticalGap,
+                  Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+                ],
+              )
+            : error != null
+                ? Padding(
+                    padding: const EdgeInsets.all(16).rt,
+                    child: ErrorState(
+                      title: 'problem_fetching_data'.tr(context),
+                      subtitle: error,
+                      onRetry: _loadOrders,
+                    ),
+                  )
+                : orders.isEmpty
+                    ? Padding(
+                        padding: const EdgeInsets.all(16).rt,
+                        child: EmptyState(
+                          title: widget.showSales
+                              ? 'no_sales'.tr(context)
+                              : 'no_purchases'.tr(context),
+                          subtitle: widget.showSales
+                              ? 'no_sales_message'.tr(context)
+                              : 'no_purchases_message'.tr(context),
+                        ),
+                      )
+                    : ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(16).rt,
+                        itemBuilder: (_, index) => _buildOrderCard(orders[index]),
+                        separatorBuilder: (_, __) => 12.verticalGap,
+                        itemCount: orders.length,
+                      ),
+      ),
+    );
+  }
+
+  Widget _buildOrderCard(Order order) {
+    final status = order.status.toLowerCase();
+    final isCompleted = status == 'completed';
+    final isCompleting = _completingOrders.contains(order.id);
+    final displayStatus = (order.statusDisplay != null &&
+            order.statusDisplay!.trim().isNotEmpty)
+        ? order.statusDisplay!
+        : _capitalize(order.status);
+    final (Color bgColor, Color textColor, Color borderColor) = _statusColors(status);
+    return Container(
+      padding: const EdgeInsets.all(16).rt,
+      decoration: BoxDecoration(
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(16).rt,
+        border: Border.all(
+          color: isCompleted ? bgColor : Get.disabledColor.withValues(alpha: 0.08),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: AppText(
+                  order.productName,
+                  style: Get.bodyMedium.px16.w700.copyWith(
+                    color: Get.disabledColor,
+                  ),
+                  maxLines: 1,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4).rt,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(12).rt,
+                  border: Border.all(color: borderColor, width: 1),
+                ),
+                child: AppText(
+                  displayStatus,
+                  style: Get.bodySmall.px12.w700.copyWith(
+                    color: textColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          8.verticalGap,
+          AppText(
+            _dateFormat.format(order.createdAt.toLocal()),
+            style: Get.bodySmall.px12.w500.copyWith(
+              color: Get.disabledColor.withValues(alpha: 0.6),
+            ),
+          ),
+          12.verticalGap,
+          Row(
+            children: [
+              _buildInfoChip(
+                icon: Icons.paid_rounded,
+                label: '${order.totalAmountAsDouble.toStringAsFixed(2)} NPR',
+              ),
+              8.horizontalGap,
+              _buildInfoChip(
+                icon: Icons.shopping_cart_rounded,
+                label: '${order.quantity} pcs',
+              ),
+            ],
+          ),
+          12.verticalGap,
+          Divider(color: Get.disabledColor.withValues(alpha: 0.12)),
+          12.verticalGap,
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                widget.showSales ? Icons.person_outline : Icons.person,
+                color: Get.disabledColor.withValues(alpha: 0.6),
+                size: 18.st,
+              ),
+              8.horizontalGap,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      widget.showSales ? order.buyerName : order.sellerEmail,
+                      style: Get.bodyMedium.px14.w600.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    2.verticalGap,
+                    AppText(
+                      widget.showSales ? order.buyerPhoneNumber : order.buyerEmail,
+                      style: Get.bodySmall.px12.w500.copyWith(
+                        color: Get.disabledColor.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (_canComplete(order)) ...[
+            16.verticalGap,
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: isCompleting ? null : () => _completeOrder(order),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12).rt,
+                  side: BorderSide(color: AppColors.primary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12).rt,
+                  ),
+                ),
+                child: isCompleting
+                    ? SizedBox(
+                        height: 18.st,
+                        width: 18.st,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : AppText(
+                        'mark_as_complete'.tr(context),
+                        style: Get.bodyMedium.px13.w700.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoChip({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6).rt,
+      decoration: BoxDecoration(
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(12).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 16.st,
+            color: Get.disabledColor.withValues(alpha: 0.7),
+          ),
+          6.horizontalGap,
+          AppText(
+            label,
+            style: Get.bodySmall.px12.w600.copyWith(
+              color: Get.disabledColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  bool _canComplete(Order order) =>
+      !widget.showSales && order.status.toLowerCase() == 'pending';
+
+  (Color, Color, Color) _statusColors(String status) {
+    switch (status) {
+      case 'completed':
+        return (
+          Colors.green.withValues(alpha: 0.15),
+          Colors.green.shade800,
+          Colors.green.withValues(alpha: 0.3)
+        );
+      case 'processing':
+      case 'in_progress':
+        return (
+          Colors.blue.withValues(alpha: 0.15),
+          Colors.blue.shade800,
+          Colors.blue.withValues(alpha: 0.3)
+        );
+      case 'cancelled':
+      case 'rejected':
+        return (
+          Colors.red.withValues(alpha: 0.15),
+          Colors.red.shade800,
+          Colors.red.withValues(alpha: 0.3)
+        );
+      case 'pending':
+      default:
+        return (
+          Colors.orange.withValues(alpha: 0.15),
+          Colors.orange.shade800,
+          Colors.orange.withValues(alpha: 0.3)
+        );
+    }
+  }
+
+  String _capitalize(String value) =>
+      value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
+}
+
+

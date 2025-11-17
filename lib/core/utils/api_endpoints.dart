@@ -42,4 +42,6 @@ final class ApiEndpoints {
   static const String orders = "orders/";
   static String orderDetail(int id) => "orders/$id/";
   static String completeOrder(int id) => "orders/$id/complete/";
+  static const String myPurchases = "orders/my_purchases/";
+  static const String mySales = "orders/my_sales/";
 }

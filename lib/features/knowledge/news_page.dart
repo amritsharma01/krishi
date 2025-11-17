@@ -11,6 +11,7 @@ import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
+import 'package:krishi/features/knowledge/news_detail_page.dart';
 import 'package:krishi/models/article.dart';
 
 class NewsPage extends ConsumerStatefulWidget {
@@ -109,24 +110,28 @@ class _NewsPageState extends ConsumerState<NewsPage> {
   }
 
   Widget _buildNewsCard(Article article) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.rt),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.circular(16).rt,
-        border: Border.all(
-          color: Get.disabledColor.withValues(alpha: 0.08),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return GestureDetector(
+      onTap: () {
+        Get.to(NewsDetailPage(news: article));
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16.rt),
+        decoration: BoxDecoration(
+          color: Get.cardColor,
+          borderRadius: BorderRadius.circular(16).rt,
+          border: Border.all(
+            color: Get.disabledColor.withValues(alpha: 0.08),
+            width: 1,
           ),
-        ],
-      ),
-      child: Column(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (article.image != null)
@@ -226,6 +231,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
           ),
         ],
       ),
+    ),
     );
   }
 

@@ -42,7 +42,7 @@ class KrishiApiService {
   /// Get current user profile
   Future<User> getCurrentUser() async {
     try {
-      final response = await apiManager.post(ApiEndpoints.me);
+      final response = await apiManager.get(ApiEndpoints.me);
       return User.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -164,10 +164,18 @@ class KrishiApiService {
   Future<List<Category>> getCategories() async {
     try {
       final response = await apiManager.get(ApiEndpoints.categories);
-      final data = response.data as Map<String, dynamic>;
-      return (data['results'] as List<dynamic>)
-          .map((json) => Category.fromJson(json as Map<String, dynamic>))
-          .toList();
+      // API returns array directly according to documentation
+      if (response.data is List) {
+        return (response.data as List<dynamic>)
+            .map((json) => Category.fromJson(json as Map<String, dynamic>))
+            .toList();
+      } else {
+        // Fallback for paginated response
+        final data = response.data as Map<String, dynamic>;
+        return (data['results'] as List<dynamic>)
+            .map((json) => Category.fromJson(json as Map<String, dynamic>))
+            .toList();
+      }
     } catch (e) {
       rethrow;
     }
@@ -177,10 +185,18 @@ class KrishiApiService {
   Future<List<Unit>> getUnits() async {
     try {
       final response = await apiManager.get(ApiEndpoints.units);
-      final data = response.data as Map<String, dynamic>;
-      return (data['results'] as List<dynamic>)
-          .map((json) => Unit.fromJson(json as Map<String, dynamic>))
-          .toList();
+      // API returns array directly according to documentation
+      if (response.data is List) {
+        return (response.data as List<dynamic>)
+            .map((json) => Unit.fromJson(json as Map<String, dynamic>))
+            .toList();
+      } else {
+        // Fallback for paginated response
+        final data = response.data as Map<String, dynamic>;
+        return (data['results'] as List<dynamic>)
+            .map((json) => Unit.fromJson(json as Map<String, dynamic>))
+            .toList();
+      }
     } catch (e) {
       rethrow;
     }
@@ -477,6 +493,30 @@ class KrishiApiService {
     try {
       final response = await apiManager.post(ApiEndpoints.completeOrder(id));
       return Order.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get my purchases (orders where user is the buyer)
+  Future<List<Order>> getMyPurchases() async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.myPurchases);
+      return (response.data as List<dynamic>)
+          .map((json) => Order.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get my sales (orders where user is the seller)
+  Future<List<Order>> getMySales() async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.mySales);
+      return (response.data as List<dynamic>)
+          .map((json) => Order.fromJson(json as Map<String, dynamic>))
+          .toList();
     } catch (e) {
       rethrow;
     }

@@ -6,9 +6,11 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
-import 'package:krishi/features/cart/cart_page.dart';
 import 'package:krishi/features/knowledge/articles_page.dart';
 import 'package:krishi/features/knowledge/news_page.dart';
+import 'package:krishi/features/marketplace/product_detail_page.dart';
+import 'package:krishi/features/orders/orders_list_page.dart';
+import 'package:krishi/features/soil_testing/soil_testing_page.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
@@ -28,10 +30,14 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   Weather? weather;
   List<Product> trendingProducts = [];
+  int receivedOrdersCount = 0;
+  int placedOrdersCount = 0;
   bool isLoadingWeather = true;
   bool isLoadingProducts = true;
+  bool isLoadingOrders = true;
   String? weatherError;
   String? productsError;
+  String? ordersError;
 
   @override
   void initState() {
@@ -40,7 +46,39 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _loadData() async {
-    await Future.wait([_loadWeather(), _loadTrendingProducts()]);
+    await Future.wait([
+      _loadWeather(),
+      _loadTrendingProducts(),
+      _loadOrdersCounts(),
+    ]);
+  }
+
+  Future<void> _loadOrdersCounts() async {
+    setState(() {
+      isLoadingOrders = true;
+      ordersError = null;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final receivedOrders = await apiService.getMySales();
+      final placedOrders = await apiService.getMyPurchases();
+
+      if (mounted) {
+        setState(() {
+          receivedOrdersCount = receivedOrders.length;
+          placedOrdersCount = placedOrders.length;
+          isLoadingOrders = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          ordersError = e.toString();
+          isLoadingOrders = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadWeather() async {
@@ -130,8 +168,13 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                   20.verticalGap,
 
-                  // Four Feature Cards
-                  _buildFeatureCards(),
+                  // Orders Tiles (Received and Placed)
+                  _buildOrdersTiles(),
+
+                  20.verticalGap,
+
+                  // Horizontal Feature Tiles
+                  _buildHorizontalTiles(),
 
                   24.verticalGap,
 
@@ -159,25 +202,10 @@ class _HomePageState extends ConsumerState<HomePage> {
       elevation: 0,
       title: Row(
         children: [
-          // Agriculture Icon
-          Container(
-            padding: const EdgeInsets.all(8).rt,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary,
-                  AppColors.primary.withValues(alpha: 0.7),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12).rt,
-            ),
-            child: Icon(
-              Icons.agriculture_rounded,
-              color: AppColors.white,
-              size: 24.st,
-            ),
+          SizedBox(
+            height: 40.rt,
+            width: 40.rt,
+            child: Image.asset('assets/logo.png', fit: BoxFit.contain),
           ),
           12.horizontalGap,
           // Krishi Text
@@ -383,96 +411,67 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _buildFeatureCards() {
-    return Column(
+  Widget _buildOrdersTiles() {
+    return Row(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: _buildFeatureCard(
-                title: 'kishan_gyaan',
-                subtitle: 'farming_knowledge',
-                icon: Icons.local_library_rounded,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
-                ),
-                onTap: () {
-                  Get.to(ArticlesPage());
-                },
-              ),
+        Expanded(
+          child: _buildOrderCard(
+            title: 'received_orders',
+            subtitle: 'orders_as_seller',
+            count: receivedOrdersCount,
+            icon: Icons.inventory_2_rounded,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
             ),
-            12.horizontalGap,
-            Expanded(
-              child: _buildFeatureCard(
-                title: 'your_activity',
-                subtitle: 'track_activity',
-                icon: Icons.timeline_rounded,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFF6F00), Color(0xFFFF8F00)],
-                ),
-                onTap: () {
-                  // TODO: Navigate to Activity page
-                },
-              ),
-            ),
-          ],
+            onTap: () {
+              // Navigate to received orders (my sales)
+              Get.to(const OrdersListPage.sales());
+            },
+            isLoading: isLoadingOrders,
+          ),
         ),
-        12.verticalGap,
-        Row(
-          children: [
-            Expanded(
-              child: _buildFeatureCard(
-                title: 'news_information',
-                subtitle: 'latest_updates',
-                icon: Icons.article_rounded,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
-                ),
-                onTap: () {
-                  Get.to(const NewsPage());
-                },
-              ),
+        12.horizontalGap,
+        Expanded(
+          child: _buildOrderCard(
+            title: 'placed_orders',
+            subtitle: 'orders_as_buyer',
+            count: placedOrdersCount,
+            icon: Icons.shopping_bag_rounded,
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
             ),
-            12.horizontalGap,
-            Expanded(
-              child: _buildFeatureCard(
-                title: 'view_cart',
-                subtitle: 'items_in_cart',
-                icon: Icons.shopping_cart_rounded,
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFD32F2F), Color(0xFFE57373)],
-                ),
-                onTap: () {
-                  Get.to(CartPage());
-                },
-              ),
-            ),
-          ],
+            onTap: () {
+              // Navigate to placed orders (my purchases)
+              Get.to(const OrdersListPage.purchases());
+            },
+            isLoading: isLoadingOrders,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildFeatureCard({
+  Widget _buildOrderCard({
     required String title,
     required String subtitle,
+    required int count,
     required IconData icon,
     required Gradient gradient,
-    int? badge,
     required VoidCallback onTap,
+    required bool isLoading,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 120.rt,
+        height: 130.ht,
         padding: const EdgeInsets.all(16).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(20).rt,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 10,
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 12,
               offset: const Offset(0, 4),
             ),
           ],
@@ -481,41 +480,33 @@ class _HomePageState extends ConsumerState<HomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10).rt,
-                  decoration: BoxDecoration(
-                    gradient: gradient,
-                    borderRadius: BorderRadius.circular(12).rt,
-                  ),
-                  child: Icon(icon, color: AppColors.white, size: 22.st),
-                ),
-                if (badge != null)
-                  Positioned(
-                    top: -4,
-                    right: -4,
-                    child: Container(
-                      padding: const EdgeInsets.all(4).rt,
-                      decoration: BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Get.cardColor, width: 2),
-                      ),
-                      child: AppText(
-                        '$badge',
-                        style: Get.bodySmall.px10.w700.copyWith(
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
+            Container(
+              padding: const EdgeInsets.all(12).rt,
+              decoration: BoxDecoration(
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(14).rt,
+              ),
+              child: Icon(icon, color: AppColors.white, size: 24.st),
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                isLoading
+                    ? SizedBox(
+                        width: 40.st,
+                        height: 28.st,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : AppText(
+                        '$count',
+                        style: Get.bodyLarge.px28.w800.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                      ),
+                4.verticalGap,
                 AppText(
                   title.tr(context),
                   style: Get.bodyMedium.px13.w700.copyWith(
@@ -531,6 +522,117 @@ class _HomePageState extends ConsumerState<HomePage> {
                   maxLines: 1,
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHorizontalTiles() {
+    return Column(
+      children: [
+        _buildHorizontalTile(
+          title: 'soil_testing',
+          subtitle: 'test_soil_quality',
+          icon: Icons.science_rounded,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF5E35B1), Color(0xFF7E57C2)],
+          ),
+          onTap: () {
+            Get.to(const SoilTestingPage());
+          },
+        ),
+        12.verticalGap,
+        _buildHorizontalTile(
+          title: 'kishan_gyaan',
+          subtitle: 'farming_knowledge',
+          icon: Icons.local_library_rounded,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF6F00), Color(0xFFFF8F00)],
+          ),
+          onTap: () {
+            Get.to(ArticlesPage());
+          },
+        ),
+        12.verticalGap,
+        _buildHorizontalTile(
+          title: 'news_information',
+          subtitle: 'latest_updates',
+          icon: Icons.article_rounded,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFD32F2F), Color(0xFFE57373)],
+          ),
+          onTap: () {
+            Get.to(const NewsPage());
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHorizontalTile({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Gradient gradient,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16).rt,
+        decoration: BoxDecoration(
+          color: Get.cardColor,
+          borderRadius: BorderRadius.circular(16).rt,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14).rt,
+              decoration: BoxDecoration(
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(12).rt,
+              ),
+              child: Icon(icon, color: AppColors.white, size: 26.st),
+            ),
+            16.horizontalGap,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    title.tr(context),
+                    style: Get.bodyMedium.px15.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  4.verticalGap,
+                  AppText(
+                    subtitle.tr(context),
+                    style: Get.bodySmall.px12.w500.copyWith(
+                      color: Get.disabledColor.withValues(alpha: 0.6),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              size: 18.st,
+              color: Get.disabledColor.withValues(alpha: 0.4),
             ),
           ],
         ),
@@ -635,147 +737,210 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
       child: Row(
         children: [
-          // Product Image
-          Container(
-            width: 80.rt,
-            height: 80.rt,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.12),
-                  AppColors.primary.withValues(alpha: 0.06),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(12).rt,
-            ),
-            child: product.image != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    child: Image.network(
-                      Get.imageUrl(product.image),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            size: 32.st,
-                          ),
-                        );
-                      },
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
-                            strokeWidth: 2,
-                          ),
-                        );
-                      },
-                    ),
-                  )
-                : Center(
-                    child: Icon(
-                      Icons.image_not_supported,
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      size: 32.st,
-                    ),
-                  ),
-          ),
-          16.horizontalGap,
-          // Product Details
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  product.name,
-                  style: Get.bodyMedium.px15.w700.copyWith(
-                    color: Get.disabledColor,
-                  ),
-                  maxLines: 1,
-                ),
-                4.verticalGap,
-                Row(
-                  children: [
-                    Icon(
-                      Icons.person_outline_rounded,
-                      color: Get.disabledColor.withValues(alpha: 0.5),
-                      size: 14.st,
-                    ),
-                    4.horizontalGap,
-                    Expanded(
-                      child: AppText(
-                        product.sellerEmail,
-                        style: Get.bodySmall.px11.w500.copyWith(
-                          color: Get.disabledColor.withValues(alpha: 0.6),
-                        ),
-                        maxLines: 1,
-                      ),
-                    ),
-                  ],
-                ),
-                8.verticalGap,
-                Row(
-                  children: [
-                    AppText(
-                      'Rs. ${product.price}',
-                      style: Get.bodyMedium.px18.w800.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    AppText(
-                      '/${product.unitName}',
-                      style: Get.bodySmall.px11.w500.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Add to Cart Button
+          // Product Image - Tappable for navigation
           GestureDetector(
-            onTap: () async {
-              try {
-                final apiService = ref.read(krishiApiServiceProvider);
-                await apiService.addToCart(productId: product.id, quantity: 1);
-                Get.snackbar('added_to_cart'.tr(Get.context), color: Colors.green);
-              } catch (e) {
-                Get.snackbar('error_adding_to_cart'.tr(Get.context), color: Colors.red);
-              }
+            onTap: () {
+              Get.to(ProductDetailPage(product: product));
             },
             child: Container(
-              padding: const EdgeInsets.all(12).rt,
+              width: 80.rt,
+              height: 80.rt,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primary,
-                    AppColors.primary.withValues(alpha: 0.8),
+                    AppColors.primary.withValues(alpha: 0.12),
+                    AppColors.primary.withValues(alpha: 0.06),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(12).rt,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+              ),
+              child: product.image != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12).rt,
+                      child: Image.network(
+                        Get.imageUrl(product.image),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              size: 32.st,
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                              strokeWidth: 2,
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Center(
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        size: 32.st,
+                      ),
+                    ),
+            ),
+          ),
+          16.horizontalGap,
+          // Product Details - Tappable for navigation
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                Get.to(ProductDetailPage(product: product));
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    product.name,
+                    style: Get.bodyMedium.px15.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
+                    maxLines: 1,
+                  ),
+                  4.verticalGap,
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person_outline_rounded,
+                        color: Get.disabledColor.withValues(alpha: 0.5),
+                        size: 14.st,
+                      ),
+                      4.horizontalGap,
+                      Expanded(
+                        child: AppText(
+                          product.sellerEmail,
+                          style: Get.bodySmall.px11.w500.copyWith(
+                            color: Get.disabledColor.withValues(alpha: 0.6),
+                          ),
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  8.verticalGap,
+                  Row(
+                    children: [
+                      AppText(
+                        'Rs. ${product.price}',
+                        style: Get.bodyMedium.px18.w800.copyWith(
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      AppText(
+                        '/${product.unitName}',
+                        style: Get.bodySmall.px11.w500.copyWith(
+                          color: Get.disabledColor.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              child: Icon(
-                Icons.add_shopping_cart_rounded,
-                color: AppColors.white,
-                size: 20.st,
-              ),
             ),
           ),
+          // Add to Cart Button - Separate action
+          _CartButton(product: product),
         ],
+      ),
+    );
+  }
+}
+
+class _CartButton extends ConsumerStatefulWidget {
+  final Product product;
+
+  const _CartButton({required this.product});
+
+  @override
+  ConsumerState<_CartButton> createState() => _CartButtonState();
+}
+
+class _CartButtonState extends ConsumerState<_CartButton> {
+  bool isLoading = false;
+  bool isAdded = false;
+
+  Future<void> _addToCart() async {
+    if (isLoading || isAdded) return;
+
+    setState(() => isLoading = true);
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      await apiService.addToCart(productId: widget.product.id, quantity: 1);
+
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+          isAdded = true;
+        });
+        Get.snackbar('added_to_cart'.tr(Get.context), color: Colors.green);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => isLoading = false);
+        Get.snackbar('error_adding_to_cart'.tr(Get.context), color: Colors.red);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _addToCart,
+      child: Container(
+        padding: const EdgeInsets.all(12).rt,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isAdded
+                ? [Colors.green.shade500, Colors.green.shade600]
+                : [AppColors.primary, AppColors.primary.withValues(alpha: 0.8)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12).rt,
+          boxShadow: [
+            BoxShadow(
+              color: (isAdded ? Colors.green : AppColors.primary).withValues(
+                alpha: 0.3,
+              ),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: isLoading
+              ? SizedBox(
+                  key: const ValueKey('loading'),
+                  width: 20.st,
+                  height: 20.st,
+                  child: CircularProgressIndicator(
+                    color: AppColors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : Icon(
+                  isAdded
+                      ? Icons.check_circle
+                      : Icons.add_shopping_cart_rounded,
+                  key: ValueKey(isAdded ? 'added' : 'add'),
+                  color: AppColors.white,
+                  size: 20.st,
+                ),
+        ),
       ),
     );
   }
