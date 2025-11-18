@@ -478,9 +478,15 @@ class _HomePageState extends ConsumerState<HomePage> {
     required VoidCallback onTap,
     required bool isLoading,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
+    final canInteract = !isLoading;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: canInteract ? onTap : null,
+        borderRadius: BorderRadius.circular(20).rt,
+        splashColor: AppColors.primary.withValues(alpha: 0.12),
+        highlightColor: AppColors.primary.withValues(alpha: 0.08),
+        child: Container(
         height: 130.ht,
         padding: const EdgeInsets.all(16).rt,
         decoration: BoxDecoration(
@@ -543,10 +549,12 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
           ],
         ),
+        ),
       ),
     );
   }
 
+  // ignore: unused_element
   Widget _buildHorizontalTiles() {
     return Column(
       children: [
@@ -1293,6 +1301,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildTrendingProductsHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1333,6 +1342,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildTrendingProductsList() {
     if (isLoadingProducts) {
       return Center(

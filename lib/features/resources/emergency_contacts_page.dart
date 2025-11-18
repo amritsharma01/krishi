@@ -4,7 +4,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
-import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
@@ -149,27 +148,37 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
             final isSelected = _selectedType == entry.key;
             return Padding(
               padding: EdgeInsets.only(right: 8.w),
-              child: FilterChip(
-                label: AppText(
-                  entry.value,
-                  style: Get.bodySmall.copyWith(
-                    color: isSelected ? Colors.white : Colors.red.shade700,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                selected: isSelected,
-                onSelected: (selected) {
+              child: GestureDetector(
+                onTap: () {
                   setState(() {
                     _selectedType = entry.key;
                   });
                   _loadContacts(contactType: entry.key);
                 },
-                backgroundColor: Colors.white,
-                selectedColor: Colors.red.shade700,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20).rt,
-                  side: BorderSide(
-                    color: isSelected ? Colors.red.shade700 : Colors.grey.shade300,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.red.shade700 : Colors.white,
+                    borderRadius: BorderRadius.circular(20).rt,
+                    border: Border.all(
+                      color: isSelected ? Colors.red.shade700 : Colors.grey.shade300,
+                    ),
+                    boxShadow: [
+                      if (isSelected)
+                        BoxShadow(
+                          color: Colors.red.shade700.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                    ],
+                  ),
+                  child: AppText(
+                    entry.value,
+                    style: Get.bodySmall.copyWith(
+                      color: isSelected ? Colors.white : Colors.red.shade700,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),

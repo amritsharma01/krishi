@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
@@ -90,10 +91,7 @@ class ServiceProviderDetailPage extends StatelessWidget {
               padding: const EdgeInsets.all(24).rt,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    typeColor,
-                    typeColor.withValues(alpha: 0.7),
-                  ],
+                  colors: [typeColor, typeColor.withValues(alpha: 0.7)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -113,11 +111,7 @@ class ServiceProviderDetailPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Icon(
-                      typeIcon,
-                      size: 48.st,
-                      color: typeColor,
-                    ),
+                    child: Icon(typeIcon, size: 48.st, color: typeColor),
                   ),
                   16.verticalGap,
                   AppText(
@@ -140,11 +134,7 @@ class ServiceProviderDetailPage extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          typeIcon,
-                          color: Colors.white,
-                          size: 18.st,
-                        ),
+                        Icon(typeIcon, color: Colors.white, size: 18.st),
                         8.horizontalGap,
                         AppText(
                           provider.serviceTypeDisplay,
@@ -196,10 +186,7 @@ class ServiceProviderDetailPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Description
-                  AppText(
-                    'about'.tr(context),
-                    style: Get.bodyLarge.px18.w700,
-                  ),
+                  AppText('about'.tr(context), style: Get.bodyLarge.px18.w700),
                   12.verticalGap,
                   Container(
                     width: double.infinity,
@@ -210,9 +197,7 @@ class ServiceProviderDetailPage extends StatelessWidget {
                     ),
                     child: AppText(
                       provider.description,
-                      style: Get.bodyMedium.px14.w400.copyWith(
-                        height: 1.6,
-                      ),
+                      style: Get.bodyMedium.px14.w400.copyWith(height: 1.6),
                     ),
                   ),
                   24.verticalGap,
@@ -364,9 +349,7 @@ class ServiceProviderDetailPage extends StatelessWidget {
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(12).rt,
-          border: Border.all(
-            color: iconColor.withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: iconColor.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -376,11 +359,7 @@ class ServiceProviderDetailPage extends StatelessWidget {
                 color: iconColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10).rt,
               ),
-              child: Icon(
-                icon,
-                color: iconColor,
-                size: 24.st,
-              ),
+              child: Icon(icon, color: iconColor, size: 24.st),
             ),
             16.horizontalGap,
             Expanded(
@@ -394,18 +373,11 @@ class ServiceProviderDetailPage extends StatelessWidget {
                     ),
                   ),
                   4.verticalGap,
-                  AppText(
-                    value,
-                    style: Get.bodyMedium.px14.w600,
-                  ),
+                  AppText(value, style: Get.bodyMedium.px14.w600),
                 ],
               ),
             ),
-            Icon(
-              Icons.open_in_new_rounded,
-              color: iconColor,
-              size: 20.st,
-            ),
+            Icon(Icons.open_in_new_rounded, color: iconColor, size: 20.st),
           ],
         ),
       ),
@@ -433,11 +405,7 @@ class ServiceProviderDetailPage extends StatelessWidget {
               color: iconColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10).rt,
             ),
-            child: Icon(
-              icon,
-              color: iconColor,
-              size: 24.st,
-            ),
+            child: Icon(icon, color: iconColor, size: 24.st),
           ),
           16.horizontalGap,
           Expanded(
@@ -447,14 +415,11 @@ class ServiceProviderDetailPage extends StatelessWidget {
                 AppText(
                   title,
                   style: Get.bodySmall.px12.w600.copyWith(
-                    color: Get.theme.hintColor,
+                    color: Get.disabledColor.withValues(alpha: 0.6),
                   ),
                 ),
                 6.verticalGap,
-                AppText(
-                  value,
-                  style: Get.bodyMedium.px14.w500,
-                ),
+                AppText(value, style: Get.bodyMedium.px14.w500),
               ],
             ),
           ),
@@ -463,4 +428,3 @@ class ServiceProviderDetailPage extends StatelessWidget {
     );
   }
 }
-

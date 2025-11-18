@@ -113,45 +113,63 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
       {'key': 'cancelled', 'label': 'cancelled'.tr(context)},
     ];
 
-    return Container(
-      height: 50.ht,
-      padding: const EdgeInsets.symmetric(vertical: 8).rt,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16).rt,
-        itemCount: filters.length,
-        separatorBuilder: (_, __) => 8.horizontalGap,
-        itemBuilder: (context, index) {
-          final filter = filters[index];
-          final isSelected = selectedFilter == filter['key'];
-          final count = filter['key'] == 'all' 
-              ? orders.length 
-              : orders.where((o) => o.status.toLowerCase() == filter['key']).length;
-
-          return FilterChip(
-            label: AppText(
-              '${filter['label']} ($count)',
-              style: Get.bodySmall.px12.w600.copyWith(
-                color: isSelected ? Colors.white : Get.disabledColor,
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).rt,
+      child: Row(
+        children: filters
+            .map(
+              (filter) => Padding(
+                padding: EdgeInsets.only(right: 8.rt),
+                child: _buildFilterPill(filter),
               ),
-            ),
-            selected: isSelected,
-            onSelected: (selected) {
-              setState(() {
-                selectedFilter = filter['key']!;
-                _filterOrders();
-              });
-            },
-            backgroundColor: Get.cardColor,
-            selectedColor: AppColors.primary,
-            checkmarkColor: Colors.white,
-            side: BorderSide(
-              color: isSelected ? AppColors.primary : Get.disabledColor.withValues(alpha: 0.2),
-              width: 1,
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8).rt,
-          );
-        },
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget _buildFilterPill(Map<String, String> filter) {
+    final isSelected = selectedFilter == filter['key'];
+    final count = filter['key'] == 'all'
+        ? orders.length
+        : orders.where((o) => o.status.toLowerCase() == filter['key']).length;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedFilter = filter['key']!;
+          _filterOrders();
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8).rt,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary
+              : Get.cardColor,
+          borderRadius: BorderRadius.circular(20).rt,
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : Get.disabledColor.withValues(alpha: 0.2),
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+          ],
+        ),
+        child: AppText(
+          '${filter['label']} ($count)',
+          style: Get.bodySmall.px12.w600.copyWith(
+            color: isSelected ? Colors.white : Get.disabledColor,
+          ),
+        ),
       ),
     );
   }
@@ -416,6 +434,36 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                     ),
                   ),
                 ),
+                if (!widget.showSales) ...[
+                  12.horizontalGap,
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: isCompleting ? null : () => _completeOrder(order),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12).rt,
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12).rt,
+                        ),
+                      ),
+                      child: isCompleting
+                          ? SizedBox(
+                              height: 18.st,
+                              width: 18.st,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : AppText(
+                              'mark_as_complete'.tr(context),
+                              style: Get.bodyMedium.px13.w700.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
+                  ),
+                ],
               ],
             ),
           ],

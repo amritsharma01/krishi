@@ -9,7 +9,6 @@ import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/cart/cart_page.dart';
 import 'package:krishi/features/marketplace/add_edit_product_page.dart';
 import 'package:krishi/features/marketplace/product_detail_page.dart';
-import 'package:krishi/features/seller/seller_profile_page.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/dialog_box.dart';
 import 'package:krishi/features/components/empty_state.dart';

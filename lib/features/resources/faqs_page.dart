@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi/core/core_service_providers.dart';
+import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
@@ -66,36 +67,31 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? ErrorState(
-                  message: _error!,
-                  onRetry: _loadFAQs,
-                )
-              : _faqs.isEmpty
-                  ? EmptyState(
-                      message: 'no_faqs_found'.tr(context),
-                      icon: Icons.help_outline_rounded,
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _loadFAQs,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _faqs.length,
-                        itemBuilder: (context, index) {
-                          final faq = _faqs[index];
-                          final isExpanded = _expandedIndex == index;
-                          return _buildFAQCard(faq, index, isExpanded);
-                        },
-                      ),
-                    ),
+          ? ErrorState(title: _error!, onRetry: _loadFAQs)
+          : _faqs.isEmpty
+          ? EmptyState(
+              title: 'no_faqs_found'.tr(context),
+              icon: Icons.help_outline_rounded,
+            )
+          : RefreshIndicator(
+              onRefresh: _loadFAQs,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: _faqs.length,
+                itemBuilder: (context, index) {
+                  final faq = _faqs[index];
+                  final isExpanded = _expandedIndex == index;
+                  return _buildFAQCard(faq, index, isExpanded);
+                },
+              ),
+            ),
     );
   }
 
   Widget _buildFAQCard(FAQ faq, int index, bool isExpanded) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14).rt,
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14).rt),
       elevation: 2,
       child: InkWell(
         onTap: () {
@@ -133,8 +129,9 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
                       faq.question,
                       style: Get.bodyMedium.px15.w600,
                       maxLines: isExpanded ? null : 2,
-                      overflow:
-                          isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                      overflow: isExpanded
+                          ? TextOverflow.visible
+                          : TextOverflow.ellipsis,
                     ),
                   ),
                   8.horizontalGap,
@@ -197,4 +194,3 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
     );
   }
 }
-

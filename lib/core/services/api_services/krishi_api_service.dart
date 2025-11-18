@@ -20,6 +20,24 @@ class KrishiApiService {
 
   KrishiApiService(this.apiManager);
 
+  List<T> _parseListResponse<T>(
+    dynamic data,
+    T Function(Map<String, dynamic>) mapper,
+  ) {
+    if (data is List) {
+      return data.map((json) => mapper(json as Map<String, dynamic>)).toList();
+    }
+    if (data is Map<String, dynamic>) {
+      final results = data['results'];
+      if (results is List) {
+        return results
+            .map((json) => mapper(json as Map<String, dynamic>))
+            .toList();
+      }
+    }
+    throw const FormatException('Unexpected list response format');
+  }
+
   // ==================== Authentication ====================
 
   /// Authenticate with Google (Mobile)
@@ -630,9 +648,7 @@ class KrishiApiService {
         ApiEndpoints.videos,
         queryParameters: queryParams,
       );
-      return (response.data as List)
-          .map((json) => Video.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return _parseListResponse(response.data, Video.fromJson);
     } catch (e) {
       rethrow;
     }
@@ -656,9 +672,7 @@ class KrishiApiService {
         ApiEndpoints.cropCalendar,
         queryParameters: queryParams,
       );
-      return (response.data as List)
-          .map((json) => CropCalendar.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return _parseListResponse(response.data, CropCalendar.fromJson);
     } catch (e) {
       rethrow;
     }
@@ -678,9 +692,7 @@ class KrishiApiService {
   Future<List<Expert>> getExperts() async {
     try {
       final response = await apiManager.get(ApiEndpoints.experts);
-      return (response.data as List)
-          .map((json) => Expert.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return _parseListResponse(response.data, Expert.fromJson);
     } catch (e) {
       rethrow;
     }
@@ -704,9 +716,7 @@ class KrishiApiService {
         ApiEndpoints.serviceProviders,
         queryParameters: queryParams,
       );
-      return (response.data as List)
-          .map((json) => ServiceProvider.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return _parseListResponse(response.data, ServiceProvider.fromJson);
     } catch (e) {
       rethrow;
     }
@@ -730,9 +740,7 @@ class KrishiApiService {
         ApiEndpoints.contacts,
         queryParameters: queryParams,
       );
-      return (response.data as List)
-          .map((json) => Contact.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return _parseListResponse(response.data, Contact.fromJson);
     } catch (e) {
       rethrow;
     }

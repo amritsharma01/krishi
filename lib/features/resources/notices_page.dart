@@ -5,13 +5,11 @@ import 'package:intl/intl.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
-import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/resources/notice_detail_page.dart';
 import 'package:krishi/models/resources.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class NoticesPage extends ConsumerStatefulWidget {
   const NoticesPage({super.key});
@@ -143,27 +141,37 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
             final isSelected = _selectedFilter == entry.key;
             return Padding(
               padding: EdgeInsets.only(right: 8.w),
-              child: FilterChip(
-                label: AppText(
-                  entry.value,
-                  style: Get.bodySmall.copyWith(
-                    color: isSelected ? Colors.white : Get.primaryColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                selected: isSelected,
-                onSelected: (selected) {
+              child: GestureDetector(
+                onTap: () {
                   setState(() {
                     _selectedFilter = entry.key;
                   });
                   _loadNotices(noticeType: entry.key);
                 },
-                backgroundColor: Colors.white,
-                selectedColor: Get.primaryColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20).rt,
-                  side: BorderSide(
-                    color: isSelected ? Get.primaryColor : Colors.grey.shade300,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  decoration: BoxDecoration(
+                    color: isSelected ? Get.primaryColor : Colors.white,
+                    borderRadius: BorderRadius.circular(20).rt,
+                    border: Border.all(
+                      color: isSelected ? Get.primaryColor : Colors.grey.shade300,
+                    ),
+                    boxShadow: [
+                      if (isSelected)
+                        BoxShadow(
+                          color: Get.primaryColor.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                    ],
+                  ),
+                  child: AppText(
+                    entry.value,
+                    style: Get.bodySmall.copyWith(
+                      color: isSelected ? Colors.white : Get.primaryColor,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),

@@ -275,8 +275,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
 
   Widget _buildProductCard() {
     final productDetails = order!.productDetails;
-    final hasImage = productDetails?.image != null && 
-                     productDetails!.image!.isNotEmpty;
+    final imageUrl = productDetails?.image ?? '';
+    final hasImage = imageUrl.isNotEmpty;
     
     return Container(
       padding: const EdgeInsets.all(16).rt,
@@ -297,7 +297,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
             borderRadius: BorderRadius.circular(12).rt,
             child: hasImage
                 ? Image.network(
-                    productDetails!.image!,
+                    imageUrl,
                     width: 80.st,
                     height: 80.st,
                     fit: BoxFit.cover,
