@@ -586,7 +586,7 @@ class AppTranslations {
     'completed': {'en': 'Completed', 'ne': 'पूरा भयो'},
     'add_phone_hint': {'en': 'Add phone number', 'ne': 'फोन नम्बर थप्नुहोस्'},
     'add_address_hint': {'en': 'Add address', 'ne': 'ठेगाना थप्नुहोस्'},
-    'seller_information': {'en': 'Seller', 'ne': 'विक्रेता'},
+    'seller_information': {'en': 'Seller Information', 'ne': 'विक्रेता जानकारी'},
     'mark_as_complete': {
       'en': 'Mark as complete',
       'ne': 'पुरा भएको चिन्ह लगाउनुहोस्',
@@ -599,6 +599,92 @@ class AppTranslations {
       'en': 'Failed to mark order as complete',
       'ne': 'अर्डर पूरा भएको चिन्ह लगाउन असफल',
     },
+
+    // Order Status and Actions
+    'order_details': {'en': 'Order Details', 'ne': 'अर्डर विवरण'},
+    'order_status': {'en': 'Order Status', 'ne': 'अर्डर स्थिति'},
+    'order_information': {'en': 'Order Information', 'ne': 'अर्डर जानकारी'},
+    'buyer_information': {'en': 'Buyer Information', 'ne': 'क्रेता जानकारी'},
+    'seller_info': {'en': 'Seller Information', 'ne': 'विक्रेता जानकारी'},
+    'order_id': {'en': 'Order ID', 'ne': 'अर्डर ID'},
+    'order_date': {'en': 'Order Date', 'ne': 'अर्डर मिति'},
+    'unit_price': {'en': 'Unit Price', 'ne': 'एकाइ मूल्य'},
+    'view_details': {'en': 'View Details', 'ne': 'विवरण हेर्नुहोस्'},
+    'order_not_found': {'en': 'Order not found', 'ne': 'अर्डर फेला परेन'},
+    'processing': {'en': 'Processing...', 'ne': 'प्रशोधन हुँदैछ...'},
+    
+    // Order Actions
+    'accept_order': {'en': 'Accept Order', 'ne': 'अर्डर स्वीकार गर्नुहोस्'},
+    'cancel_order': {'en': 'Cancel Order', 'ne': 'अर्डर रद्द गर्नुहोस्'},
+    'mark_in_transit': {'en': 'Mark In Transit', 'ne': 'ट्रान्जिटमा चिन्ह लगाउनुहोस्'},
+    'mark_delivered': {'en': 'Mark Delivered', 'ne': 'डेलिभर भएको चिन्ह लगाउनुहोस्'},
+    'cancel_order_confirm': {
+      'en': 'Are you sure you want to cancel this order?',
+      'ne': 'के तपाईं यो अर्डर रद्द गर्न निश्चित हुनुहुन्छ?',
+    },
+    'yes': {'en': 'Yes', 'ne': 'हो'},
+    'no': {'en': 'No', 'ne': 'होइन'},
+    
+    // Order Status Messages
+    'order_accepted': {
+      'en': 'Order accepted successfully',
+      'ne': 'अर्डर सफलतापूर्वक स्वीकार गरियो',
+    },
+    'order_accept_failed': {
+      'en': 'Failed to accept order',
+      'ne': 'अर्डर स्वीकार गर्न असफल',
+    },
+    'order_marked_in_transit': {
+      'en': 'Order marked as in transit',
+      'ne': 'अर्डर ट्रान्जिटमा रहेको चिन्ह लगाइयो',
+    },
+    'order_transit_failed': {
+      'en': 'Failed to mark order as in transit',
+      'ne': 'अर्डर ट्रान्जिटमा चिन्ह लगाउन असफल',
+    },
+    'order_delivered': {
+      'en': 'Order marked as delivered',
+      'ne': 'अर्डर डेलिभर भएको चिन्ह लगाइयो',
+    },
+    'order_deliver_failed': {
+      'en': 'Failed to mark order as delivered',
+      'ne': 'अर्डर डेलिभर भएको चिन्ह लगाउन असफल',
+    },
+    'order_completed': {
+      'en': 'Order completed successfully',
+      'ne': 'अर्डर सफलतापूर्वक पूरा भयो',
+    },
+    'order_cancelled': {
+      'en': 'Order cancelled successfully',
+      'ne': 'अर्डर सफलतापूर्वक रद्द गरियो',
+    },
+    'order_cancel_failed': {
+      'en': 'Failed to cancel order',
+      'ne': 'अर्डर रद्द गर्न असफल',
+    },
+    
+    // Order Statuses
+    'accepted': {'en': 'Accepted', 'ne': 'स्वीकृत'},
+    'in_transit': {'en': 'In Transit', 'ne': 'ट्रान्जिटमा'},
+    'delivered': {'en': 'Delivered', 'ne': 'डेलिभर भयो'},
+    'cancelled': {'en': 'Cancelled', 'ne': 'रद्द गरियो'},
+    
+    // Contact Actions
+    'call_buyer': {'en': 'Call Buyer', 'ne': 'खरीददारलाई कल गर्नुहोस्'},
+    'call_seller': {'en': 'Call Seller', 'ne': 'विक्रेतालाई कल गर्नुहोस्'},
+    'whatsapp': {'en': 'WhatsApp', 'ne': 'व्हाट्सएप'},
+    'call_failed': {'en': 'Unable to make call', 'ne': 'कल गर्न असमर्थ'},
+    'whatsapp_failed': {'en': 'Unable to open WhatsApp', 'ne': 'व्हाट्सएप खोल्न असमर्थ'},
+    
+    // Status Reversal
+    'mark_accepted': {'en': 'Revert to Accepted', 'ne': 'स्वीकृतमा फर्कनुहोस्'},
+    'mark_pending': {'en': 'Revert to Pending', 'ne': 'पेन्डिङमा फर्कनुहोस्'},
+    'cannot_revert_pending': {
+      'en': 'Cannot revert to pending status',
+      'ne': 'पेन्डिङ स्थितिमा फर्कन सकिँदैन',
+    },
+    'no_phone': {'en': 'No phone', 'ne': 'फोन छैन'},
+    'all': {'en': 'All', 'ne': 'सबै'},
 
     // Soil Testing
     'soil_testing': {'en': 'Soil Testing', 'ne': 'माटो परीक्षण'},

@@ -9,6 +9,7 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/seller/seller_profile_page.dart';
 import 'package:krishi/models/comment.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/models/review.dart';
@@ -495,54 +496,75 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   Widget _buildSellerInfo() {
     final phone = widget.product.sellerPhoneNumber;
     return _sectionCard(
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 26.rt,
-            backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-            child: Icon(Icons.store_rounded, color: AppColors.primary),
-          ),
-          16.horizontalGap,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  'seller_information'.tr(context),
-                  style: Get.bodySmall.px11.w600.copyWith(
-                    color: Get.disabledColor.withValues(alpha: 0.6),
-                  ),
-                ),
-                4.verticalGap,
-                AppText(
-                  widget.product.sellerEmail,
-                  style: Get.bodyMedium.px15.w700.copyWith(
-                    color: Get.disabledColor,
-                  ),
-                ),
-                if (phone != null && phone.isNotEmpty) ...[
-                  4.verticalGap,
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.phone_outlined,
-                        size: 14.st,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SellerProfilePage(
+                sellerId: widget.product.seller,
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12).rt,
+        child: Padding(
+          padding: const EdgeInsets.all(4).rt,
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 26.rt,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                child: Icon(Icons.store_rounded, color: AppColors.primary),
+              ),
+              16.horizontalGap,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      'seller_information'.tr(context),
+                      style: Get.bodySmall.px11.w600.copyWith(
                         color: Get.disabledColor.withValues(alpha: 0.6),
                       ),
-                      6.horizontalGap,
-                      AppText(
-                        phone,
-                        style: Get.bodySmall.px12.w600.copyWith(
-                          color: Get.disabledColor.withValues(alpha: 0.7),
-                        ),
+                    ),
+                    4.verticalGap,
+                    AppText(
+                      widget.product.sellerEmail,
+                      style: Get.bodyMedium.px15.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    if (phone != null && phone.isNotEmpty) ...[
+                      4.verticalGap,
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.phone_outlined,
+                            size: 14.st,
+                            color: Get.disabledColor.withValues(alpha: 0.6),
+                          ),
+                          6.horizontalGap,
+                          AppText(
+                            phone,
+                            style: Get.bodySmall.px12.w600.copyWith(
+                              color: Get.disabledColor.withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
-                  ),
-                ],
-              ],
-            ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 16.st,
+                color: Get.disabledColor.withValues(alpha: 0.3),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

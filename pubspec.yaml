@@ -50,6 +50,9 @@ dependencies:
   skeletonizer: ^2.1.0+1
   fluttertoast:
   image_picker: ^1.0.7
+  url_launcher: ^6.3.0
+  cached_network_image: ^3.3.1
+  intl: ^0.19.0
 
   # Responsiveness
   flutter_screenutil: ^5.6.0

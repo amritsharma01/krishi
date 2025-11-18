@@ -10,6 +10,13 @@ import 'package:krishi/features/knowledge/articles_page.dart';
 import 'package:krishi/features/knowledge/news_page.dart';
 import 'package:krishi/features/marketplace/product_detail_page.dart';
 import 'package:krishi/features/orders/orders_list_page.dart';
+import 'package:krishi/features/resources/crop_calendar_page.dart';
+import 'package:krishi/features/resources/emergency_contacts_page.dart';
+import 'package:krishi/features/resources/experts_page.dart';
+import 'package:krishi/features/resources/notices_page.dart';
+import 'package:krishi/features/resources/service_providers_page.dart';
+import 'package:krishi/features/resources/videos_page.dart';
+import 'package:krishi/features/seller/seller_profile_page.dart';
 import 'package:krishi/features/soil_testing/soil_testing_page.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
@@ -168,22 +175,33 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                   20.verticalGap,
 
-                  // Orders Tiles (Received and Placed)
+                  // Top Row: Received Order and Placed Order (2-column)
                   _buildOrdersTiles(),
 
                   20.verticalGap,
 
-                  // Horizontal Feature Tiles
-                  _buildHorizontalTiles(),
+                  // Main Services: Soil Test and Notices (2-column)
+                  _buildMainServices(),
+
+                  20.verticalGap,
+
+                  // Services: Experts, Providers, Contacts (3-column)
+                  _buildServicesGrid(),
+
+                  20.verticalGap,
+
+                  // Knowledge Base: Krishi Gyan, News, Videos, Crop Calendars (2-column grid)
+                  _buildKnowledgeBaseGrid(),
 
                   24.verticalGap,
 
-                  // Trending Products Section
-                  _buildTrendingProductsHeader(),
+                  // Government Schemes Section
+                  _buildGovernmentSchemesSection(),
 
-                  16.verticalGap,
+                  20.verticalGap,
 
-                  _buildTrendingProductsList(),
+                  // Market Prices Section
+                  _buildMarketPricesSection(),
 
                   20.verticalGap,
                 ],
@@ -640,6 +658,641 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  // Main Services Section
+  Widget _buildMainServices() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          'main_services'.tr(context),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+        ),
+        12.verticalGap,
+        _buildMainServiceCard(
+          title: 'soil_testing',
+          description: 'test_soil_quality',
+          icon: Icons.science_rounded,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF5E35B1), Color(0xFF7E57C2)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          onTap: () {
+            Get.to(const SoilTestingPage());
+          },
+        ),
+        12.verticalGap,
+        _buildMainServiceCard(
+          title: 'notices',
+          description: 'important_announcements',
+          icon: Icons.notifications_active_rounded,
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFF6F00), Color(0xFFFF8F00)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          onTap: () {
+            Get.to(const NoticesPage());
+          },
+        ),
+      ],
+    );
+  }
+
+  // Services and Directory Section
+  Widget _buildServicesGrid() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          'services_directory'.tr(context),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+        ),
+        12.verticalGap,
+        Row(
+          children: [
+            Expanded(
+              child: _buildDirectoryCard(
+                title: 'agri_experts',
+                icon: Icons.people_rounded,
+                color: const Color(0xFF00897B),
+                onTap: () {
+                  Get.to(const ExpertsPage());
+                },
+              ),
+            ),
+            12.horizontalGap,
+            Expanded(
+              child: _buildDirectoryCard(
+                title: 'service_providers',
+                icon: Icons.business_rounded,
+                color: const Color(0xFF1565C0),
+                onTap: () {
+                  Get.to(const ServiceProvidersPage());
+                },
+              ),
+            ),
+            12.horizontalGap,
+            Expanded(
+              child: _buildDirectoryCard(
+                title: 'emergency_contacts',
+                icon: Icons.emergency_rounded,
+                color: const Color(0xFFC62828),
+                onTap: () {
+                  Get.to(const EmergencyContactsPage());
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Knowledge Base Section (2x2 Grid)
+  Widget _buildKnowledgeBaseGrid() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          'knowledge_base'.tr(context),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+        ),
+        12.verticalGap,
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.0,
+          children: [
+            _buildKnowledgeCard(
+              title: 'Krishi Gyan',
+              subtitle: 'Farming Knowledge',
+              icon: Icons.local_library_rounded,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF6A1B9A), Color(0xFF9C27B0)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              onTap: () {
+                Get.to(ArticlesPage());
+              },
+            ),
+            _buildKnowledgeCard(
+              title: 'News & Info',
+              subtitle: 'Latest Updates',
+              icon: Icons.article_rounded,
+              gradient: const LinearGradient(
+                colors: [Color(0xFFD32F2F), Color(0xFFE57373)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              onTap: () {
+                Get.to(const NewsPage());
+              },
+            ),
+            _buildKnowledgeCard(
+              title: 'Videos',
+              subtitle: 'Watch & Learn',
+              icon: Icons.video_library_rounded,
+              gradient: const LinearGradient(
+                colors: [Color(0xFFE65100), Color(0xFFFF6F00)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              onTap: () {
+                Get.to(const VideosPage());
+              },
+            ),
+            _buildKnowledgeCard(
+              title: 'Crop Calendar',
+              subtitle: 'Planting Guide',
+              icon: Icons.calendar_month_rounded,
+              gradient: const LinearGradient(
+                colors: [Color(0xFF558B2F), Color(0xFF8BC34A)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              onTap: () {
+                Get.to(const CropCalendarPage());
+              },
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // Main Service Card with description
+  Widget _buildMainServiceCard({
+    required String title,
+    required String description,
+    required IconData icon,
+    required Gradient gradient,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16).rt,
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(16).rt,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14).rt,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                borderRadius: BorderRadius.circular(14).rt,
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 32.st,
+              ),
+            ),
+            16.horizontalGap,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    title.tr(context),
+                    style: Get.bodyLarge.px16.w700.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                  4.verticalGap,
+                  AppText(
+                    description.tr(context),
+                    style: Get.bodySmall.px12.w500.copyWith(
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Colors.white,
+              size: 18.st,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Directory Card (Compact)
+  Widget _buildDirectoryCard({
+    required String title,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8).rt,
+        decoration: BoxDecoration(
+          color: Get.cardColor,
+          borderRadius: BorderRadius.circular(14).rt,
+          border: Border.all(
+            color: color.withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.15),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10).rt,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12).rt,
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 28.st,
+              ),
+            ),
+            10.verticalGap,
+            AppText(
+              title.tr(context),
+              style: Get.bodySmall.px11.w600.copyWith(
+                color: Get.disabledColor,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Knowledge Base Card with subtitle
+  Widget _buildKnowledgeCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Gradient gradient,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(16).rt,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            // Background pattern
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Icon(
+                icon,
+                size: 100.st,
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(16).rt,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12).rt,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(12).rt,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: Colors.white,
+                      size: 32.st,
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        title,
+                        style: Get.bodyMedium.px14.w700.copyWith(
+                          color: Colors.white,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      2.verticalGap,
+                      AppText(
+                        subtitle,
+                        style: Get.bodySmall.px11.w500.copyWith(
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Government Schemes Section
+  Widget _buildGovernmentSchemesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            AppText(
+              'Government Schemes',
+              style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+            ),
+            GestureDetector(
+              onTap: () {
+                // TODO: Navigate to all schemes
+                Get.snackbar('Coming soon!');
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6).rt,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20).rt,
+                ),
+                child: Row(
+                  children: [
+                    AppText(
+                      'View All',
+                      style: Get.bodyMedium.px12.w600.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    4.horizontalGap,
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: AppColors.primary,
+                      size: 14.st,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        12.verticalGap,
+        _buildSchemeCard(
+          title: 'Subsidies',
+          description: 'Government subsidies for farmers',
+          icon: Icons.account_balance_wallet_rounded,
+          color: const Color(0xFF1976D2),
+          onTap: () {
+            Get.snackbar('Coming soon!');
+          },
+        ),
+        12.verticalGap,
+        _buildSchemeCard(
+          title: 'Programs',
+          description: 'Agricultural development programs',
+          icon: Icons.agriculture_rounded,
+          color: const Color(0xFF388E3C),
+          onTap: () {
+            Get.snackbar('Coming soon!');
+          },
+        ),
+      ],
+    );
+  }
+
+  // Market Prices Section
+  Widget _buildMarketPricesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            AppText(
+              'Market Prices',
+              style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+            ),
+            GestureDetector(
+              onTap: () {
+                // TODO: Navigate to all market prices
+                Get.snackbar('Coming soon!');
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6).rt,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20).rt,
+                ),
+                child: Row(
+                  children: [
+                    AppText(
+                      'View All',
+                      style: Get.bodyMedium.px12.w600.copyWith(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    4.horizontalGap,
+                    Icon(
+                      Icons.arrow_forward_rounded,
+                      color: AppColors.primary,
+                      size: 14.st,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        12.verticalGap,
+        Container(
+          padding: const EdgeInsets.all(16).rt,
+          decoration: BoxDecoration(
+            color: Get.cardColor,
+            borderRadius: BorderRadius.circular(16).rt,
+            border: Border.all(
+              color: Get.disabledColor.withValues(alpha: 0.1),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              _buildPriceItem('Rice', 'NPR 45/kg', Icons.rice_bowl_rounded, Colors.orange),
+              Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
+              _buildPriceItem('Wheat', 'NPR 38/kg', Icons.grain_rounded, Colors.amber),
+              Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
+              _buildPriceItem('Tomato', 'NPR 60/kg', Icons.local_pizza_rounded, Colors.red),
+              Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
+              _buildPriceItem('Potato', 'NPR 35/kg', Icons.emoji_food_beverage_rounded, Colors.brown),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Scheme Card Widget
+  Widget _buildSchemeCard({
+    required String title,
+    required String description,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16).rt,
+        decoration: BoxDecoration(
+          color: Get.cardColor,
+          borderRadius: BorderRadius.circular(16).rt,
+          border: Border.all(
+            color: color.withValues(alpha: 0.2),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12).rt,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12).rt,
+              ),
+              child: Icon(
+                icon,
+                color: color,
+                size: 28.st,
+              ),
+            ),
+            16.horizontalGap,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    title,
+                    style: Get.bodyMedium.px15.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
+                  ),
+                  4.verticalGap,
+                  AppText(
+                    description,
+                    style: Get.bodySmall.px12.w500.copyWith(
+                      color: Get.disabledColor.withValues(alpha: 0.7),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Get.disabledColor.withValues(alpha: 0.4),
+              size: 18.st,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Price Item Widget
+  Widget _buildPriceItem(String item, String price, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8).rt,
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8).rt,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10).rt,
+            ),
+            child: Icon(
+              icon,
+              color: color,
+              size: 24.st,
+            ),
+          ),
+          12.horizontalGap,
+          Expanded(
+            child: AppText(
+              item,
+              style: Get.bodyMedium.px14.w600.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+          ),
+          AppText(
+            price,
+            style: Get.bodyMedium.px14.w700.copyWith(
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildTrendingProductsHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -810,24 +1463,41 @@ class _HomePageState extends ConsumerState<HomePage> {
                     maxLines: 1,
                   ),
                   4.verticalGap,
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.person_outline_rounded,
-                        color: Get.disabledColor.withValues(alpha: 0.5),
-                        size: 14.st,
-                      ),
-                      4.horizontalGap,
-                      Expanded(
-                        child: AppText(
-                          product.sellerEmail,
-                          style: Get.bodySmall.px11.w500.copyWith(
-                            color: Get.disabledColor.withValues(alpha: 0.6),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SellerProfilePage(
+                            sellerId: product.seller,
                           ),
-                          maxLines: 1,
                         ),
-                      ),
-                    ],
+                      );
+                    },
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.person_outline_rounded,
+                          color: Get.disabledColor.withValues(alpha: 0.5),
+                          size: 14.st,
+                        ),
+                        4.horizontalGap,
+                        Expanded(
+                          child: AppText(
+                            product.sellerEmail,
+                            style: Get.bodySmall.px11.w500.copyWith(
+                              color: Get.disabledColor.withValues(alpha: 0.6),
+                            ),
+                            maxLines: 1,
+                          ),
+                        ),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 10.st,
+                          color: Get.disabledColor.withValues(alpha: 0.3),
+                        ),
+                      ],
+                    ),
                   ),
                   8.verticalGap,
                   Row(

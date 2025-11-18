@@ -48,7 +48,9 @@ class User {
   final String? firstName;
   final String? lastName;
   final bool isStaff;
+  final DateTime? dateJoined;
   final UserProfile? profile;
+  final List<dynamic>? sellerProducts;
 
   User({
     required this.id,
@@ -56,8 +58,21 @@ class User {
     this.firstName,
     this.lastName,
     required this.isStaff,
+    this.dateJoined,
     this.profile,
+    this.sellerProducts,
   });
+
+  String get displayName {
+    if (firstName != null && firstName!.isNotEmpty) {
+      final last = lastName ?? '';
+      return '$firstName $last'.trim();
+    }
+    if (profile?.fullName != null && profile!.fullName.isNotEmpty) {
+      return profile!.fullName;
+    }
+    return email;
+  }
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
@@ -66,9 +81,13 @@ class User {
       firstName: json['first_name'] as String?,
       lastName: json['last_name'] as String?,
       isStaff: json['is_staff'] as bool? ?? false,
+      dateJoined: json['date_joined'] != null
+          ? DateTime.parse(json['date_joined'] as String)
+          : null,
       profile: json['profile'] != null
           ? UserProfile.fromJson(json['profile'] as Map<String, dynamic>)
           : null,
+      sellerProducts: json['seller_products'] as List<dynamic>?,
     );
   }
 
@@ -79,7 +98,9 @@ class User {
       'first_name': firstName,
       'last_name': lastName,
       'is_staff': isStaff,
+      'date_joined': dateJoined?.toIso8601String(),
       'profile': profile?.toJson(),
+      'seller_products': sellerProducts,
     };
   }
 }

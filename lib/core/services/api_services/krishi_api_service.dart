@@ -6,8 +6,10 @@ import 'package:krishi/models/cart.dart';
 import 'package:krishi/models/category.dart';
 import 'package:krishi/models/comment.dart';
 import 'package:krishi/models/order.dart';
+import 'package:krishi/models/order_summary.dart';
 import 'package:krishi/models/paginated_response.dart';
 import 'package:krishi/models/product.dart';
+import 'package:krishi/models/resources.dart';
 import 'package:krishi/models/review.dart';
 import 'package:krishi/models/unit.dart';
 import 'package:krishi/models/user_profile.dart';
@@ -43,6 +45,16 @@ class KrishiApiService {
   Future<User> getCurrentUser() async {
     try {
       final response = await apiManager.get(ApiEndpoints.me);
+      return User.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get public user profile by user ID
+  Future<User> getUserProfile(int userId) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.userProfile(userId));
       return User.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -517,6 +529,242 @@ class KrishiApiService {
       return (response.data as List<dynamic>)
           .map((json) => Order.fromJson(json as Map<String, dynamic>))
           .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Accept an order (seller only)
+  Future<Order> acceptOrder(int id) async {
+    try {
+      final response = await apiManager.post(ApiEndpoints.acceptOrder(id));
+      return Order.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Cancel an order (buyer or seller)
+  Future<Order> cancelOrder(int id) async {
+    try {
+      final response = await apiManager.post(ApiEndpoints.cancelOrder(id));
+      return Order.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Mark order as delivered (seller only)
+  Future<Order> deliverOrder(int id) async {
+    try {
+      final response = await apiManager.post(ApiEndpoints.deliverOrder(id));
+      return Order.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Mark order as in transit (seller only)
+  Future<Order> markOrderInTransit(int id) async {
+    try {
+      final response = await apiManager.post(ApiEndpoints.markOrderInTransit(id));
+      return Order.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get buyer's purchases summary
+  Future<PurchasesSummary> getPurchasesSummary() async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.purchasesSummary);
+      return PurchasesSummary.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get seller's sales summary by category
+  Future<SalesSummary> getSalesSummary() async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.salesSummary);
+      return SalesSummary.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ==================== Resources ====================
+
+  /// Get all notices
+  Future<List<Notice>> getNotices({String? noticeType}) async {
+    try {
+      final queryParams = noticeType != null ? {'notice_type': noticeType} : null;
+      final response = await apiManager.get(
+        ApiEndpoints.notices,
+        queryParameters: queryParams,
+      );
+      return (response.data as List)
+          .map((json) => Notice.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get single notice
+  Future<Notice> getNoticeDetail(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.noticeDetail(id));
+      return Notice.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get all videos
+  Future<List<Video>> getVideos({String? category}) async {
+    try {
+      final queryParams = category != null ? {'category': category} : null;
+      final response = await apiManager.get(
+        ApiEndpoints.videos,
+        queryParameters: queryParams,
+      );
+      return (response.data as List)
+          .map((json) => Video.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get single video
+  Future<Video> getVideoDetail(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.videoDetail(id));
+      return Video.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get crop calendar
+  Future<List<CropCalendar>> getCropCalendar({String? cropType}) async {
+    try {
+      final queryParams = cropType != null ? {'crop_type': cropType} : null;
+      final response = await apiManager.get(
+        ApiEndpoints.cropCalendar,
+        queryParameters: queryParams,
+      );
+      return (response.data as List)
+          .map((json) => CropCalendar.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get single crop detail
+  Future<CropCalendar> getCropDetail(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.cropDetail(id));
+      return CropCalendar.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get all experts
+  Future<List<Expert>> getExperts() async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.experts);
+      return (response.data as List)
+          .map((json) => Expert.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get single expert
+  Future<Expert> getExpertDetail(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.expertDetail(id));
+      return Expert.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get all service providers
+  Future<List<ServiceProvider>> getServiceProviders({String? serviceType}) async {
+    try {
+      final queryParams = serviceType != null ? {'service_type': serviceType} : null;
+      final response = await apiManager.get(
+        ApiEndpoints.serviceProviders,
+        queryParameters: queryParams,
+      );
+      return (response.data as List)
+          .map((json) => ServiceProvider.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get single service provider
+  Future<ServiceProvider> getServiceProviderDetail(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.serviceProviderDetail(id));
+      return ServiceProvider.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get all contacts
+  Future<List<Contact>> getContacts({String? contactType}) async {
+    try {
+      final queryParams = contactType != null ? {'contact_type': contactType} : null;
+      final response = await apiManager.get(
+        ApiEndpoints.contacts,
+        queryParameters: queryParams,
+      );
+      return (response.data as List)
+          .map((json) => Contact.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get single contact
+  Future<Contact> getContactDetail(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.contactDetail(id));
+      return Contact.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get all FAQs
+  Future<List<FAQ>> getFAQs() async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.faqs);
+      return (response.data as List)
+          .map((json) => FAQ.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get single FAQ
+  Future<FAQ> getFAQDetail(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.faqDetail(id));
+      return FAQ.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

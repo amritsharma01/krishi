@@ -18,7 +18,7 @@ class AuthService extends ChangeNotifier {
     scopes: ['email', 'profile'],
     // Web Client ID from Google Cloud Console
     serverClientId:
-        '22500384416-5choujjs47148lfal8k3g2ugs0nic29j.apps.googleusercontent.com',
+        '318078992248-8o586u81irpfgkar3uqupc83tt6vrnl2.apps.googleusercontent.com',
   );
 
   AuthService(this.box, this.tokenStorage, this.apiService);
@@ -181,6 +181,7 @@ class AuthService extends ChangeNotifier {
 
   Future<void> logout() async {
     try {
+      // Sign out from Google
       await _googleSignIn.signOut();
     } catch (e) {
       // Ignore sign out errors
