@@ -4,7 +4,7 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/services/get.dart';
+import '../../../core/services/get.dart';
 import 'appicon.dart';
 
 class CartIcon extends ConsumerWidget {
@@ -48,4 +48,3 @@ class CartIcon extends ConsumerWidget {
     );
   }
 }
-

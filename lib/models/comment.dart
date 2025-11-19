@@ -4,6 +4,7 @@ class Comment {
   final String productName;
   final int user;
   final String userEmail;
+  final String? userName;
   final String text;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -14,6 +15,7 @@ class Comment {
     required this.productName,
     required this.user,
     required this.userEmail,
+    this.userName,
     required this.text,
     required this.createdAt,
     required this.updatedAt,
@@ -26,6 +28,7 @@ class Comment {
       productName: json['product_name'] as String,
       user: json['user'] as int,
       userEmail: json['user_email'] as String,
+      userName: json['user_name'] as String?,
       text: json['text'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
@@ -39,6 +42,7 @@ class Comment {
       'product_name': productName,
       'user': user,
       'user_email': userEmail,
+      'user_name': userName,
       'text': text,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),

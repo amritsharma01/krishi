@@ -6,8 +6,8 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 
-import '../../core/configs/app_colors.dart';
-import '../../core/services/get.dart';
+import '../../../core/configs/app_colors.dart';
+import '../../../core/services/get.dart';
 import 'appicon.dart';
 import 'app_text.dart';
 import 'progress_indicator.dart';

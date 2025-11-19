@@ -8,7 +8,10 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
-import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/components/empty_state.dart';
+import 'package:krishi/features/components/error_state.dart';
+import 'package:krishi/features/knowledge/news_detail_page.dart';
 import 'package:krishi/models/article.dart';
 
 class NewsPage extends ConsumerStatefulWidget {
@@ -63,7 +66,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Get.disabledColor),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Get.pop(),
         ),
         title: AppText(
           'news_information'.tr(context),
@@ -76,58 +79,21 @@ class _NewsPageState extends ConsumerState<NewsPage> {
 
   Widget _buildBody() {
     if (isLoading) {
-      return Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      );
+      return Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     if (hasError) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, color: Colors.red, size: 64.st),
-            16.verticalGap,
-            AppText(
-              'error_loading_news'.tr(context),
-              style: Get.bodyMedium.px14.copyWith(color: Colors.red),
-            ),
-            16.verticalGap,
-            ElevatedButton(
-              onPressed: _loadNews,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.white,
-              ),
-              child: AppText(
-                'retry'.tr(context),
-                style: Get.bodyMedium.px14.w600,
-              ),
-            ),
-          ],
-        ),
+      return ErrorState(
+        subtitle: 'error_loading_news_subtitle'.tr(context),
+        onRetry: _loadNews,
       );
     }
 
     if (news.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.newspaper_outlined,
-              size: 80.st,
-              color: Get.disabledColor.withValues(alpha: 0.3),
-            ),
-            24.verticalGap,
-            AppText(
-              'no_news_available'.tr(context),
-              style: Get.bodyLarge.px18.w600.copyWith(
-                color: Get.disabledColor.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-        ),
+      return EmptyState(
+        title: 'no_news_available'.tr(context),
+        subtitle: 'no_news_subtitle'.tr(context),
+        icon: Icons.newspaper_outlined,
       );
     }
 
@@ -144,7 +110,11 @@ class _NewsPageState extends ConsumerState<NewsPage> {
   }
 
   Widget _buildNewsCard(Article article) {
-    return Container(
+    return GestureDetector(
+      onTap: () {
+        Get.to(NewsDetailPage(news: article));
+      },
+      child: Container(
       margin: EdgeInsets.only(bottom: 16.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
@@ -171,7 +141,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
                 topRight: Radius.circular(16.rt),
               ),
               child: Image.network(
-                Get.baseUrl + article.image!,
+                Get.imageUrl(article.image),
                 width: double.infinity,
                 height: 200.rt,
                 fit: BoxFit.cover,
@@ -198,7 +168,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
                         color: AppColors.primary,
                         value: loadingProgress.expectedTotalBytes != null
                             ? loadingProgress.cumulativeBytesLoaded /
-                                loadingProgress.expectedTotalBytes!
+                                  loadingProgress.expectedTotalBytes!
                             : null,
                       ),
                     ),
@@ -261,6 +231,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -279,4 +250,3 @@ class _NewsPageState extends ConsumerState<NewsPage> {
     }
   }
 }
-

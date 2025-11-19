@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">krishi</string>
     <!-- Your Web Client ID from Google Cloud Console -->
-    <string name="default_web_client_id">22500384416-rjksqv8dbrigmt4e7brbtvrveukjdu67.apps.googleusercontent.com</string>
+    <string name="default_web_client_id">22500384416-5choujjs47148lfal8k3g2ugs0nic29j.apps.googleusercontent.com</string>
 </resources>
 

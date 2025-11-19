@@ -7,6 +7,7 @@ final class ApiEndpoints {
   static const String me = "auth/me/";
   static const String updateProfile = "auth/me/update/";
   static const String uploadAvatar = "auth/me/avatar/";
+  static String userProfile(int userId) => "auth/users/$userId/";
 
   // Weather
   static const String currentWeather = "weather/current/";
@@ -42,4 +43,28 @@ final class ApiEndpoints {
   static const String orders = "orders/";
   static String orderDetail(int id) => "orders/$id/";
   static String completeOrder(int id) => "orders/$id/complete/";
+  static String acceptOrder(int id) => "orders/$id/accept/";
+  static String cancelOrder(int id) => "orders/$id/cancel/";
+  static String deliverOrder(int id) => "orders/$id/deliver/";
+  static String markOrderInTransit(int id) => "orders/$id/mark_in_transit/";
+  static const String myPurchases = "orders/my_purchases/";
+  static const String mySales = "orders/my_sales/";
+  static const String purchasesSummary = "orders/purchases_summary/";
+  static const String salesSummary = "orders/sales_summary/";
+
+  // Resources endpoints
+  static const String notices = "resources/notices/";
+  static String noticeDetail(int id) => "resources/notices/$id/";
+  static const String videos = "resources/videos/";
+  static String videoDetail(int id) => "resources/videos/$id/";
+  static const String cropCalendar = "resources/crop-calendar/";
+  static String cropDetail(int id) => "resources/crop-calendar/$id/";
+  static const String experts = "resources/experts/";
+  static String expertDetail(int id) => "resources/experts/$id/";
+  static const String serviceProviders = "resources/service-providers/";
+  static String serviceProviderDetail(int id) => "resources/service-providers/$id/";
+  static const String contacts = "resources/contacts/";
+  static String contactDetail(int id) => "resources/contacts/$id/";
+  static const String faqs = "resources/faqs/";
+  static String faqDetail(int id) => "resources/faqs/$id/";
 }

@@ -3,53 +3,27 @@
 class AppTranslations {
   static const Map<String, Map<String, String>> _translations = {
     // Common
-    'app_name': {
-      'en': 'Jaljala Connect',
-      'ne': 'जलजला कनेक्ट',
+    'app_name': {'en': 'Jaljala Connect', 'ne': 'जलजला कनेक्ट'},
+    'welcome_back': {'en': 'Welcome back', 'ne': 'फिर्ता स्वागत छ'},
+    'login': {'en': 'Login', 'ne': 'लगइन'},
+    'signup': {'en': 'Sign Up', 'ne': 'साइन अप'},
+    'sign_in': {'en': 'Sign In', 'ne': 'साइन इन'},
+    'logout': {'en': 'Logout', 'ne': 'लगआउट'},
+    'logout_confirmation': {
+      'en': 'Are you sure you want to logout?',
+      'ne': 'के तपाईं निश्चित रूपमा लगआउट गर्न चाहनुहुन्छ?',
     },
-    'welcome_back': {
-      'en': 'Welcome back',
-      'ne': 'फिर्ता स्वागत छ',
-    },
-    'login': {
-      'en': 'Login',
-      'ne': 'लगइन',
-    },
-    'signup': {
-      'en': 'Sign Up',
-      'ne': 'साइन अप',
-    },
-    'sign_in': {
-      'en': 'Sign In',
-      'ne': 'साइन इन',
-    },
-    'logout': {
-      'en': 'Logout',
-      'ne': 'लगआउट',
-    },
-    
+
     // Form Fields
-    'phone_number': {
-      'en': 'Phone Number',
-      'ne': 'फोन नम्बर',
-    },
-    'password': {
-      'en': 'Password',
-      'ne': 'पासवर्ड',
-    },
+    'phone_number': {'en': 'Phone Number', 'ne': 'फोन नम्बर'},
+    'password': {'en': 'Password', 'ne': 'पासवर्ड'},
     'confirm_password': {
       'en': 'Confirm Password',
       'ne': 'पासवर्ड पुष्टि गर्नुहोस्',
     },
-    'full_name': {
-      'en': 'Full Name',
-      'ne': 'पूरा नाम',
-    },
-    'email_address': {
-      'en': 'Email Address',
-      'ne': 'इमेल ठेगाना',
-    },
-    
+    'full_name': {'en': 'Full Name', 'ne': 'पूरा नाम'},
+    'email_address': {'en': 'Email Address', 'ne': 'इमेल ठेगाना'},
+
     // Auth Page
     'dont_have_account': {
       'en': "Don't have an account?  ",
@@ -59,232 +33,116 @@ class AppTranslations {
       'en': 'Already have an account?  ',
       'ne': 'पहिले नै खाता छ?  ',
     },
-    'create_account': {
-      'en': 'Create Account',
-      'ne': 'खाता सिर्जना गर्नुहोस्',
-    },
+    'create_account': {'en': 'Create Account', 'ne': 'खाता सिर्जना गर्नुहोस्'},
     'join_community': {
       'en': 'Join our community today',
       'ne': 'आज हाम्रो समुदायमा सामेल हुनुहोस्',
     },
     'auth_info': {
-      'en': 'Your information will be used to auto-fill seller details and connect you with buyers through our admin system.',
-      'ne': 'तपाईंको जानकारी विक्रेता विवरण स्वतः भर्न र हाम्रो प्रशासन प्रणाली मार्फत खरीददारहरूसँग जडान गर्न प्रयोग गरिनेछ।',
+      'en':
+          'Your information will be used to auto-fill seller details and connect you with buyers through our admin system.',
+      'ne':
+          'तपाईंको जानकारी विक्रेता विवरण स्वतः भर्न र हाम्रो प्रशासन प्रणाली मार्फत खरीददारहरूसँग जडान गर्न प्रयोग गरिनेछ।',
     },
     'terms_info': {
-      'en': 'By signing up, you agree to our Terms of Service and Privacy Policy. Your information will be securely stored.',
-      'ne': 'साइन अप गरेर, तपाईं हाम्रो सेवा सर्तहरू र गोपनीयता नीतिमा सहमत हुनुहुन्छ। तपाईंको जानकारी सुरक्षित रूपमा भण्डारण गरिनेछ।',
+      'en':
+          'By signing up, you agree to our Terms of Service and Privacy Policy. Your information will be securely stored.',
+      'ne':
+          'साइन अप गरेर, तपाईं हाम्रो सेवा सर्तहरू र गोपनीयता नीतिमा सहमत हुनुहुन्छ। तपाईंको जानकारी सुरक्षित रूपमा भण्डारण गरिनेछ।',
     },
-    
+
     // Home Page
-    'welcome_to': {
-      'en': 'Welcome to',
-      'ne': 'स्वागत छ',
-    },
+    'welcome_to': {'en': 'Welcome to', 'ne': 'स्वागत छ'},
     'marketplace_tagline': {
       'en': 'Your marketplace for connecting buyers and sellers',
       'ne': 'खरीददार र विक्रेताहरू जडान गर्ने तपाईंको बजार',
     },
-    'quick_overview': {
-      'en': 'Quick Overview',
-      'ne': 'द्रुत अवलोकन',
-    },
-    'products': {
-      'en': 'Products',
-      'ne': 'उत्पादनहरू',
-    },
-    'orders': {
-      'en': 'Orders',
-      'ne': 'आदेशहरू',
-    },
-    'customers': {
-      'en': 'Customers',
-      'ne': 'ग्राहकहरू',
-    },
-    'revenue': {
-      'en': 'Revenue',
-      'ne': 'राजस्व',
-    },
-    'recent_activity': {
-      'en': 'Recent Activity',
-      'ne': 'हालको गतिविधि',
-    },
-    'no_activity_yet': {
-      'en': 'No Activity Yet',
-      'ne': 'अझै कुनै गतिविधि छैन',
-    },
+    'quick_overview': {'en': 'Quick Overview', 'ne': 'द्रुत अवलोकन'},
+    'products': {'en': 'Products', 'ne': 'उत्पादनहरू'},
+    'orders': {'en': 'Orders', 'ne': 'आदेशहरू'},
+    'customers': {'en': 'Customers', 'ne': 'ग्राहकहरू'},
+    'revenue': {'en': 'Revenue', 'ne': 'राजस्व'},
+    'recent_activity': {'en': 'Recent Activity', 'ne': 'हालको गतिविधि'},
+    'no_activity_yet': {'en': 'No Activity Yet', 'ne': 'अझै कुनै गतिविधि छैन'},
     'start_adding_products': {
       'en': 'Start adding products to see your activity here',
       'ne': 'यहाँ तपाईंको गतिविधि हेर्न उत्पादनहरू थप्न सुरु गर्नुहोस्',
     },
-    'welcome_notification': {
-      'en': 'Welcome!',
-      'ne': 'स्वागत छ!',
-    },
+    'welcome_notification': {'en': 'Welcome!', 'ne': 'स्वागत छ!'},
     'logged_in_successfully': {
       'en': 'You have successfully logged into the system',
       'ne': 'तपाईंले प्रणालीमा सफलतापूर्वक लगइन गर्नुभयो',
     },
-    'just_now': {
-      'en': 'Just now',
-      'ne': 'अहिले',
-    },
-    'today': {
-      'en': 'Today',
-      'ne': 'आज',
-    },
-    
+    'just_now': {'en': 'Just now', 'ne': 'अहिले'},
+    'today': {'en': 'Today', 'ne': 'आज'},
+
     // Account Page
-    'account': {
-      'en': 'Account',
-      'ne': 'खाता',
-    },
-    'guest_user': {
-      'en': 'Guest User',
-      'ne': 'अतिथि प्रयोगकर्ता',
-    },
-    'app_settings': {
-      'en': 'App Settings',
-      'ne': 'एप सेटिङहरू',
-    },
-    'theme_mode': {
-      'en': 'Theme Mode',
-      'ne': 'थिम मोड',
-    },
+    'account': {'en': 'Account', 'ne': 'खाता'},
+    'guest_user': {'en': 'Guest User', 'ne': 'अतिथि प्रयोगकर्ता'},
+    'app_settings': {'en': 'App Settings', 'ne': 'एप सेटिङहरू'},
+    'theme_mode': {'en': 'Theme Mode', 'ne': 'थिम मोड'},
     'choose_theme': {
       'en': 'Choose your preferred theme',
       'ne': 'आफ्नो मनपर्ने थिम छान्नुहोस्',
     },
-    'language': {
-      'en': 'Language',
-      'ne': 'भाषा',
-    },
+    'language': {'en': 'Language', 'ne': 'भाषा'},
     'select_language': {
       'en': 'Select your language',
       'ne': 'आफ्नो भाषा छान्नुहोस्',
     },
-    'light': {
-      'en': 'Light',
-      'ne': 'उज्यालो',
-    },
-    'dark': {
-      'en': 'Dark',
-      'ne': 'अँध्यारो',
-    },
-    'system': {
-      'en': 'System',
-      'ne': 'प्रणाली',
-    },
-    'english': {
-      'en': 'English',
-      'ne': 'अंग्रेजी',
-    },
-    'nepali': {
-      'en': 'नेपाली',
-      'ne': 'नेपाली',
-    },
+    'light': {'en': 'Light', 'ne': 'उज्यालो'},
+    'dark': {'en': 'Dark', 'ne': 'अँध्यारो'},
+    'system': {'en': 'System', 'ne': 'प्रणाली'},
+    'english': {'en': 'English', 'ne': 'अंग्रेजी'},
+    'nepali': {'en': 'नेपाली', 'ne': 'नेपाली'},
     'developer_settings': {
       'en': 'Developer Settings',
       'ne': 'विकासकर्ता सेटिङहरू',
     },
-    'platform_dev': {
-      'en': 'Platform (Dev)',
-      'ne': 'प्लेटफर्म (डेभ)',
-    },
+    'platform_dev': {'en': 'Platform (Dev)', 'ne': 'प्लेटफर्म (डेभ)'},
     'test_platform': {
       'en': 'Test Android & iOS UI',
       'ne': 'एन्ड्रोइड र iOS UI परीक्षण गर्नुहोस्',
     },
-    'android': {
-      'en': 'Android',
-      'ne': 'एन्ड्रोइड',
-    },
-    'ios': {
-      'en': 'iOS',
-      'ne': 'आईओएस',
-    },
-    'account_actions': {
-      'en': 'Account Actions',
-      'ne': 'खाता कार्यहरू',
-    },
-    'edit_profile': {
-      'en': 'Edit Profile',
-      'ne': 'प्रोफाइल सम्पादन गर्नुहोस्',
-    },
+    'android': {'en': 'Android', 'ne': 'एन्ड्रोइड'},
+    'ios': {'en': 'iOS', 'ne': 'आईओएस'},
+    'account_actions': {'en': 'Account Actions', 'ne': 'खाता कार्यहरू'},
+    'edit_profile': {'en': 'Edit Profile', 'ne': 'प्रोफाइल सम्पादन गर्नुहोस्'},
     'update_information': {
       'en': 'Update your information',
       'ne': 'तपाईंको जानकारी अपडेट गर्नुहोस्',
     },
-    'notifications': {
-      'en': 'Notifications',
-      'ne': 'सूचनाहरू',
-    },
+    'notifications': {'en': 'Notifications', 'ne': 'सूचनाहरू'},
     'manage_notifications': {
       'en': 'Manage notification settings',
       'ne': 'सूचना सेटिङहरू व्यवस्थापन गर्नुहोस्',
     },
-    'help_support': {
-      'en': 'Help & Support',
-      'ne': 'मद्दत र समर्थन',
-    },
+    'help_support': {'en': 'Help & Support', 'ne': 'मद्दत र समर्थन'},
     'get_help': {
       'en': 'Get help with the app',
       'ne': 'एपसँग मद्दत प्राप्त गर्नुहोस्',
     },
-    'about': {
-      'en': 'About',
-      'ne': 'बारेमा',
-    },
-    'version': {
-      'en': 'Version 1.0.0',
-      'ne': 'संस्करण १.०.०',
-    },
-    'appbar': {
-      'en': 'Appbar',
-      'ne': 'एपबार',
-    },
-    
+    'about': {'en': 'About', 'ne': 'बारेमा'},
+    'version': {'en': 'Version 1.0.0', 'ne': 'संस्करण १.०.०'},
+    'appbar': {'en': 'Appbar', 'ne': 'एपबार'},
+
     // Homepage New
-    'krishi': {
-      'en': 'Krishi',
-      'ne': 'कृषि',
-    },
-    'good_morning': {
-      'en': 'Good Morning',
-      'ne': 'शुभ प्रभात',
-    },
-    'good_afternoon': {
-      'en': 'Good Afternoon',
-      'ne': 'शुभ दिउँसो',
-    },
-    'good_evening': {
-      'en': 'Good Evening',
-      'ne': 'शुभ साँझ',
-    },
-    'welcome_user': {
-      'en': 'Welcome',
-      'ne': 'स्वागत छ',
-    },
-    'kishan_gyaan': {
-      'en': 'Kishan Gyaan',
-      'ne': 'किसान ज्ञान',
-    },
+    'krishi': {'en': 'Krishi', 'ne': 'कृषि'},
+    'good_morning': {'en': 'Good Morning', 'ne': 'शुभ प्रभात'},
+    'good_afternoon': {'en': 'Good Afternoon', 'ne': 'शुभ दिउँसो'},
+    'good_evening': {'en': 'Good Evening', 'ne': 'शुभ साँझ'},
+    'welcome_user': {'en': 'Welcome', 'ne': 'स्वागत छ'},
+    'kishan_gyaan': {'en': 'Kishan Gyaan', 'ne': 'किसान ज्ञान'},
     'farming_knowledge': {
       'en': 'Farming tips & knowledge',
       'ne': 'खेती सुझाव र ज्ञान',
     },
-    'your_activity': {
-      'en': 'Your Activity',
-      'ne': 'तपाईंको गतिविधि',
-    },
+    'your_activity': {'en': 'Your Activity', 'ne': 'तपाईंको गतिविधि'},
     'track_activity': {
       'en': 'Track your activities',
       'ne': 'आफ्नो गतिविधि ट्र्याक गर्नुहोस्',
     },
-    'news_information': {
-      'en': 'News & Information',
-      'ne': 'समाचार र जानकारी',
-    },
+    'news_information': {'en': 'News & Information', 'ne': 'समाचार र जानकारी'},
     'latest_updates': {
       'en': 'Latest agricultural updates',
       'ne': 'ताजा कृषि अपडेटहरू',
@@ -293,40 +151,16 @@ class AppTranslations {
       'en': 'Trending Products',
       'ne': 'ट्रेन्डिङ उत्पादनहरू',
     },
-    'view_all': {
-      'en': 'View All',
-      'ne': 'सबै हेर्नुहोस्',
-    },
-    'per_kg': {
-      'en': '/kg',
-      'ne': '/के.जी.',
-    },
-    'per_unit': {
-      'en': '/unit',
-      'ne': '/इकाई',
-    },
-    'add_to_cart': {
-      'en': 'Add to Cart',
-      'ne': 'कार्टमा थप्नुहोस्',
-    },
-    'view_cart': {
-      'en': 'View Cart',
-      'ne': 'कार्ट हेर्नुहोस्',
-    },
-    'items_in_cart': {
-      'en': 'items in cart',
-      'ne': 'कार्टमा वस्तुहरू',
-    },
-    
+    'view_all': {'en': 'View All', 'ne': 'सबै हेर्नुहोस्'},
+    'per_kg': {'en': '/kg', 'ne': '/के.जी.'},
+    'per_unit': {'en': '/unit', 'ne': '/इकाई'},
+    'add_to_cart': {'en': 'Add to Cart', 'ne': 'कार्टमा थप्नुहोस्'},
+    'view_cart': {'en': 'View Cart', 'ne': 'कार्ट हेर्नुहोस्'},
+    'items_in_cart': {'en': 'items in cart', 'ne': 'कार्टमा वस्तुहरू'},
+
     // Marketplace
-    'buy': {
-      'en': 'Buy',
-      'ne': 'किन्नुहोस्',
-    },
-    'sell': {
-      'en': 'Sell',
-      'ne': 'बेच्नुहोस्',
-    },
+    'buy': {'en': 'Buy', 'ne': 'किन्नुहोस्'},
+    'sell': {'en': 'Sell', 'ne': 'बेच्नुहोस्'},
     'search_products': {
       'en': 'Search for products...',
       'ne': 'उत्पादनहरू खोज्नुहोस्...',
@@ -335,228 +169,120 @@ class AppTranslations {
       'en': 'Add New Product',
       'ne': 'नयाँ उत्पादन थप्नुहोस्',
     },
-    'your_listings': {
-      'en': 'Your Listings',
-      'ne': 'तपाईंको सूची',
-    },
-    'edit': {
-      'en': 'Edit',
-      'ne': 'सम्पादन',
-    },
-    'remove': {
-      'en': 'Remove',
-      'ne': 'हटाउनुहोस्',
-    },
+    'your_listings': {'en': 'Your Listings', 'ne': 'तपाईंको सूची'},
+    'edit': {'en': 'Edit', 'ne': 'सम्पादन'},
+    'remove': {'en': 'Remove', 'ne': 'हटाउनुहोस्'},
     'no_products_found': {
       'en': 'No products found',
       'ne': 'कुनै उत्पादन फेला परेन',
     },
-    'cart': {
-      'en': 'Cart',
-      'ne': 'कार्ट',
-    },
-    'my_cart': {
-      'en': 'My Cart',
-      'ne': 'मेरो कार्ट',
-    },
-    'empty_cart': {
-      'en': 'Your cart is empty',
-      'ne': 'तपाईंको कार्ट खाली छ',
-    },
+    'cart': {'en': 'Cart', 'ne': 'कार्ट'},
+    'my_cart': {'en': 'My Cart', 'ne': 'मेरो कार्ट'},
+    'empty_cart': {'en': 'Your cart is empty', 'ne': 'तपाईंको कार्ट खाली छ'},
     'start_shopping': {
       'en': 'Start shopping to add items',
       'ne': 'वस्तुहरू थप्न किनमेल सुरु गर्नुहोस्',
     },
-    'subtotal': {
-      'en': 'Subtotal',
-      'ne': 'उपयोग',
-    },
-    'total': {
-      'en': 'Total',
-      'ne': 'जम्मा',
-    },
-    'checkout': {
-      'en': 'Checkout',
-      'ne': 'चेकआउट',
-    },
-    'quantity': {
-      'en': 'Quantity',
-      'ne': 'परिमाण',
-    },
-    'remove_from_cart': {
-      'en': 'Remove from cart',
-      'ne': 'कार्टबाट हटाउनुहोस्',
-    },
-    
+    'subtotal': {'en': 'Subtotal', 'ne': 'उपयोग'},
+    'total': {'en': 'Total', 'ne': 'जम्मा'},
+    'checkout': {'en': 'Checkout', 'ne': 'चेकआउट'},
+    'quantity': {'en': 'Quantity', 'ne': 'परिमाण'},
+    'remove_from_cart': {'en': 'Remove from cart', 'ne': 'कार्टबाट हटाउनुहोस्'},
+
     // Add/Edit Product
-    'product_name': {
-      'en': 'Product Name',
-      'ne': 'उत्पादन नाम',
-    },
-    'product_price': {
-      'en': 'Product Price',
-      'ne': 'उत्पादन मूल्य',
-    },
-    'product_description': {
-      'en': 'Product Description',
-      'ne': 'उत्पादन विवरण',
-    },
-    'product_category': {
-      'en': 'Category',
-      'ne': 'श्रेणी',
-    },
-    'save_product': {
-      'en': 'Save Product',
-      'ne': 'उत्पादन बचत गर्नुहोस्',
-    },
-    'update_product': {
-      'en': 'Update Product',
-      'ne': 'उत्पादन अपडेट गर्नुहोस्',
-    },
-    'edit_product': {
-      'en': 'Edit Product',
-      'ne': 'उत्पादन सम्पादन गर्नुहोस्',
-    },
-    'delete_product': {
-      'en': 'Delete Product',
-      'ne': 'उत्पादन मेटाउनुहोस्',
-    },
+    'product_name': {'en': 'Product Name', 'ne': 'उत्पादन नाम'},
+    'product_price': {'en': 'Product Price', 'ne': 'उत्पादन मूल्य'},
+    'product_description': {'en': 'Product Description', 'ne': 'उत्पादन विवरण'},
+    'product_category': {'en': 'Category', 'ne': 'श्रेणी'},
+    'save_product': {'en': 'Save Product', 'ne': 'उत्पादन बचत गर्नुहोस्'},
+    'update_product': {'en': 'Update Product', 'ne': 'उत्पादन अपडेट गर्नुहोस्'},
+    'edit_product': {'en': 'Edit Product', 'ne': 'उत्पादन सम्पादन गर्नुहोस्'},
+    'delete_product': {'en': 'Delete Product', 'ne': 'उत्पादन मेटाउनुहोस्'},
     'delete_confirmation': {
       'en': 'Are you sure you want to delete this product?',
       'ne': 'के तपाईं यो उत्पादन मेटाउन चाहनुहुन्छ?',
     },
-    'cancel': {
-      'en': 'Cancel',
-      'ne': 'रद्द गर्नुहोस्',
-    },
-    'delete': {
-      'en': 'Delete',
-      'ne': 'मेटाउनुहोस्',
-    },
-    'product_image': {
-      'en': 'Product Image',
-      'ne': 'उत्पादन छवि',
-    },
-    'select_emoji': {
-      'en': 'Select Emoji',
-      'ne': 'इमोजी छान्नुहोस्',
-    },
+    'cancel': {'en': 'Cancel', 'ne': 'रद्द गर्नुहोस्'},
+    'delete': {'en': 'Delete', 'ne': 'मेटाउनुहोस्'},
+    'product_image': {'en': 'Product Image', 'ne': 'उत्पादन छवि'},
+    'select_emoji': {'en': 'Select Emoji', 'ne': 'इमोजी छान्नुहोस्'},
     'select_image_source': {
       'en': 'Select Image Source',
       'ne': 'छवि स्रोत छान्नुहोस्',
     },
-    'camera': {
-      'en': 'Camera',
-      'ne': 'क्यामेरा',
-    },
-    'gallery': {
-      'en': 'Gallery',
-      'ne': 'ग्यालरी',
-    },
+    'camera': {'en': 'Camera', 'ne': 'क्यामेरा'},
+    'gallery': {'en': 'Gallery', 'ne': 'ग्यालरी'},
     'tap_to_add_image': {
       'en': 'Tap to add image',
       'ne': 'छवि थप्न ट्याप गर्नुहोस्',
     },
-    'change_image': {
-      'en': 'Change',
-      'ne': 'परिवर्तन',
-    },
-    'remove_image': {
-      'en': 'Remove',
-      'ne': 'हटाउनुहोस्',
-    },
+    'change_image': {'en': 'Change', 'ne': 'परिवर्तन'},
+    'remove_image': {'en': 'Remove', 'ne': 'हटाउनुहोस्'},
     'or_select_emoji': {
       'en': 'Or select an emoji',
       'ne': 'वा इमोजी छान्नुहोस्',
     },
-    
+
     // Bottom Navigation
-    'home': {
-      'en': 'Home',
-      'ne': 'होम',
-    },
-    'marketplace': {
-      'en': 'Marketplace',
-      'ne': 'बजार',
-    },
-    'support': {
-      'en': 'Support',
-      'ne': 'समर्थन',
-    },
-    
+    'home': {'en': 'Home', 'ne': 'होम'},
+    'marketplace': {'en': 'Marketplace', 'ne': 'बजार'},
+    'support': {'en': 'Support', 'ne': 'समर्थन'},
+
     // Support Page
-    'help_center': {
-      'en': 'Help Center',
-      'ne': 'मद्दत केन्द्र',
-    },
+    'help_center': {'en': 'Help Center', 'ne': 'मद्दत केन्द्र'},
     'how_can_we_help': {
       'en': 'How can we help you?',
       'ne': 'हामी तपाईंलाई कसरी मद्दत गर्न सक्छौं?',
     },
-    'faq': {
-      'en': 'FAQ',
-      'ne': 'सामान्य प्रश्नहरू',
-    },
+    'faq': {'en': 'FAQ', 'ne': 'सामान्य प्रश्नहरू'},
     'common_questions': {
       'en': 'Common questions and answers',
       'ne': 'सामान्य प्रश्नहरू र जवाफहरू',
     },
-    'contact_us': {
-      'en': 'Contact Us',
-      'ne': 'सम्पर्क गर्नुहोस्',
-    },
+    'contact_us': {'en': 'Contact Us', 'ne': 'सम्पर्क गर्नुहोस्'},
     'get_in_touch': {
       'en': 'Get in touch with our team',
       'ne': 'हाम्रो टोलीसँग सम्पर्कमा रहनुहोस्',
     },
-    'report_issue': {
-      'en': 'Report an Issue',
-      'ne': 'समस्या रिपोर्ट गर्नुहोस्',
-    },
+    'report_issue': {'en': 'Report an Issue', 'ne': 'समस्या रिपोर्ट गर्नुहोस्'},
     'report_problem': {
       'en': 'Report a problem or bug',
       'ne': 'समस्या वा त्रुटि रिपोर्ट गर्नुहोस्',
     },
-    'user_guide': {
-      'en': 'User Guide',
-      'ne': 'प्रयोगकर्ता गाइड',
-      },
+    'user_guide': {'en': 'User Guide', 'ne': 'प्रयोगकर्ता गाइड'},
     'learn_how_to_use': {
       'en': 'Learn how to use the app',
       'ne': 'एप कसरी प्रयोग गर्ने सिक्नुहोस्',
     },
-    
+
     // Account Page
-    'my_account': {
-      'en': 'My Account',
-      'ne': 'मेरो खाता',
-    },
-    'profile_settings': {
-      'en': 'Profile Settings',
-      'ne': 'प्रोफाइल सेटिङहरू',
-    },
-    
+    'my_account': {'en': 'My Account', 'ne': 'मेरो खाता'},
+    'profile_settings': {'en': 'Profile Settings', 'ne': 'प्रोफाइल सेटिङहरू'},
+
     // New Translation Keys
-    'loading_weather': {
-      'en': 'Loading weather...',
-      'ne': 'मौसम लोड हुँदैछ...',
-    },
-    'weather_error': {
-      'en': 'Weather unavailable',
-      'ne': 'मौसम उपलब्ध छैन',
-    },
+    'loading_weather': {'en': 'Loading weather...', 'ne': 'मौसम लोड हुँदैछ...'},
+    'weather_error': {'en': 'Weather unavailable', 'ne': 'मौसम उपलब्ध छैन'},
     'error_loading_products': {
       'en': 'Error loading products',
       'ne': 'उत्पादनहरू लोड गर्दा त्रुटि',
+    },
+    'error_loading_products_subtitle': {
+      'en':
+          'Unable to load products. Please check your connection and try again.',
+      'ne':
+          'उत्पादनहरू लोड गर्न सकिएन। कृपया आफ्नो जडान जाँच गर्नुहोस् र पुनः प्रयास गर्नुहोस्।',
     },
     'no_products_available': {
       'en': 'No products available',
       'ne': 'कुनै उत्पादन उपलब्ध छैन',
     },
-    'added_to_cart': {
-      'en': 'Added to cart',
-      'ne': 'कार्टमा थपियो',
+    'no_products_subtitle': {
+      'en':
+          'There are no products available at the moment. Pull down to refresh or tap retry.',
+      'ne':
+          'यस समयमा कुनै उत्पादनहरू उपलब्ध छैनन्। ताजा पार्न तल खिच्नुहोस् वा पुनः प्रयास गर्नुहोस्।',
     },
+    'added_to_cart': {'en': 'Added to cart', 'ne': 'कार्टमा थपियो'},
     'error_adding_to_cart': {
       'en': 'Error adding to cart',
       'ne': 'कार्टमा थप्दा त्रुटि',
@@ -565,9 +291,18 @@ class AppTranslations {
       'en': 'Error loading your listings',
       'ne': 'तपाईंको सूची लोड गर्दा त्रुटि',
     },
-    'no_listings_yet': {
-      'en': 'No listings yet',
-      'ne': 'अझै कुनै सूची छैन',
+    'error_loading_listings_subtitle': {
+      'en':
+          'Unable to load your listings. Please check your connection and try again.',
+      'ne':
+          'तपाईंको सूची लोड गर्न सकिएन। कृपया आफ्नो जडान जाँच गर्नुहोस् र पुनः प्रयास गर्नुहोस्।',
+    },
+    'no_listings_yet': {'en': 'No listings yet', 'ne': 'अझै कुनै सूची छैन'},
+    'no_listings_subtitle': {
+      'en':
+          'You haven\'t added any products yet. Start selling by adding your first product!',
+      'ne':
+          'तपाईंले अहिलेसम्म कुनै उत्पादनहरू थप्नुभएको छैन। आफ्नो पहिलो उत्पादन थपेर बिक्री सुरु गर्नुहोस्!',
     },
     'product_deleted': {
       'en': 'Product deleted successfully',
@@ -581,9 +316,10 @@ class AppTranslations {
       'en': 'Error loading profile',
       'ne': 'प्रोफाइल लोड गर्दा त्रुटि',
     },
-    'retry': {
-      'en': 'Retry',
-      'ne': 'पुन: प्रयास गर्नुहोस्',
+    'retry': {'en': 'Retry', 'ne': 'पुन: प्रयास गर्नुहोस्'},
+    'problem_fetching_data': {
+      'en': 'Problem fetching data',
+      'ne': 'डाटा ल्याउँदा समस्या',
     },
     'error_loading_cart': {
       'en': 'Error loading cart',
@@ -613,14 +349,29 @@ class AppTranslations {
       'en': 'Error processing checkout',
       'ne': 'चेकआउट प्रशोधन गर्दा त्रुटि',
     },
-    'confirm': {
-      'en': 'Confirm',
-      'ne': 'पुष्टि गर्नुहोस्',
+    'confirm': {'en': 'Confirm', 'ne': 'पुष्टि गर्नुहोस्'},
+    'ok': {'en': 'OK', 'ne': 'ठीक छ'},
+    'address': {'en': 'Address', 'ne': 'ठेगाना'},
+    'order_summary': {'en': 'Order Summary', 'ne': 'अर्डर सारांश'},
+    'delivery_information': {
+      'en': 'Delivery Information',
+      'ne': 'डेलिभरी जानकारी',
     },
-    'address': {
-      'en': 'Address',
-      'ne': 'ठेगाना',
+    'enter_full_name': {
+      'en': 'Enter full name',
+      'ne': 'पूरा नाम प्रविष्ट गर्नुहोस्',
     },
+    'enter_address': {'en': 'Enter address', 'ne': 'ठेगाना प्रविष्ट गर्नुहोस्'},
+    'contact_information': {
+      'en': 'Contact Information',
+      'ne': 'सम्पर्क जानकारी',
+    },
+    'enter_phone_number': {
+      'en': 'Enter phone number',
+      'ne': 'फोन नम्बर प्रविष्ट गर्नुहोस्',
+    },
+    'total_amount': {'en': 'Total Amount', 'ne': 'कुल रकम'},
+    'confirm_order': {'en': 'Confirm Order', 'ne': 'अर्डर पुष्टि गर्नुहोस्'},
     'error_loading_categories': {
       'en': 'Error loading categories',
       'ne': 'श्रेणीहरू लोड गर्दा त्रुटि',
@@ -657,54 +408,24 @@ class AppTranslations {
       'en': 'This field is required',
       'ne': 'यो फिल्ड आवश्यक छ',
     },
-    'contact_phone': {
-      'en': 'Contact Phone',
-      'ne': 'सम्पर्क फोन',
-    },
+    'contact_phone': {'en': 'Contact Phone', 'ne': 'सम्पर्क फोन'},
     'enter_phone': {
       'en': 'Enter phone number',
       'ne': 'फोन नम्बर प्रविष्ट गर्नुहोस्',
     },
-    'category': {
-      'en': 'Category',
-      'ne': 'श्रेणी',
-    },
-    'price': {
-      'en': 'Price',
-      'ne': 'मूल्य',
-    },
-    'unit': {
-      'en': 'Unit',
-      'ne': 'इकाइ',
-    },
-    'required': {
-      'en': 'Required',
-      'ne': 'आवश्यक',
-    },
-    'units_available': {
-      'en': 'Units Available',
-      'ne': 'उपलब्ध इकाइहरू',
-    },
-    'invalid_number': {
-      'en': 'Invalid number',
-      'ne': 'अमान्य नम्बर',
-    },
-    'description': {
-      'en': 'Description',
-      'ne': 'विवरण',
-    },
+    'category': {'en': 'Category', 'ne': 'श्रेणी'},
+    'price': {'en': 'Price', 'ne': 'मूल्य'},
+    'unit': {'en': 'Unit', 'ne': 'इकाइ'},
+    'required': {'en': 'Required', 'ne': 'आवश्यक'},
+    'units_available': {'en': 'Units Available', 'ne': 'उपलब्ध इकाइहरू'},
+    'invalid_number': {'en': 'Invalid number', 'ne': 'अमान्य नम्बर'},
+    'description': {'en': 'Description', 'ne': 'विवरण'},
     'enter_description': {
       'en': 'Enter product description',
       'ne': 'उत्पादन विवरण प्रविष्ट गर्नुहोस्',
     },
-    'update': {
-      'en': 'Update',
-      'ne': 'अपडेट गर्नुहोस्',
-    },
-    'save': {
-      'en': 'Save',
-      'ne': 'बचत गर्नुहोस्',
-    },
+    'update': {'en': 'Update', 'ne': 'अपडेट गर्नुहोस्'},
+    'save': {'en': 'Save', 'ne': 'बचत गर्नुहोस्'},
     'enter_product_name': {
       'en': 'Enter product name',
       'ne': 'उत्पादन नाम प्रविष्ट गर्नुहोस्',
@@ -713,26 +434,48 @@ class AppTranslations {
       'en': 'No articles available',
       'ne': 'कुनै लेखहरू उपलब्ध छैन',
     },
+    'no_articles_subtitle': {
+      'en':
+          'There are no articles available at the moment. Pull down to refresh or tap retry.',
+      'ne':
+          'यस समयमा कुनै लेखहरू उपलब्ध छैनन्। ताजा पार्न तल खिच्नुहोस् वा पुनः प्रयास गर्नुहोस्।',
+    },
     'no_news_available': {
       'en': 'No news available',
       'ne': 'कुनै समाचार उपलब्ध छैन',
+    },
+    'no_news_subtitle': {
+      'en':
+          'There are no news available at the moment. Pull down to refresh or tap retry.',
+      'ne':
+          'यस समयमा कुनै समाचार उपलब्ध छैनन्। ताजा पार्न तल खिच्नुहोस् वा पुनः प्रयास गर्नुहोस्।',
     },
     'error_loading_articles': {
       'en': 'Error loading articles',
       'ne': 'लेखहरू लोड गर्दा त्रुटि',
     },
+    'error_loading_articles_subtitle': {
+      'en':
+          'Unable to load articles. Please check your connection and try again.',
+      'ne':
+          'लेखहरू लोड गर्न सकिएन। कृपया आफ्नो जडान जाँच गर्नुहोस् र पुनः प्रयास गर्नुहोस्।',
+    },
     'error_loading_news': {
       'en': 'Error loading news',
       'ne': 'समाचार लोड गर्दा त्रुटि',
     },
-    'yesterday': {
-      'en': 'Yesterday',
-      'ne': 'हिजो',
+    'error_loading_news_subtitle': {
+      'en': 'Unable to load news. Please check your connection and try again.',
+      'ne':
+          'समाचार लोड गर्न सकिएन। कृपया आफ्नो जडान जाँच गर्नुहोस् र पुनः प्रयास गर्नुहोस्।',
     },
-    'days_ago': {
-      'en': 'days ago',
-      'ne': 'दिन अघि',
+    'error_loading_cart_subtitle': {
+      'en': 'Unable to load cart. Please check your connection and try again.',
+      'ne':
+          'कार्ट लोड गर्न सकिएन। कृपया आफ्नो जडान जाँच गर्नुहोस् र पुनः प्रयास गर्नुहोस्।',
     },
+    'yesterday': {'en': 'Yesterday', 'ne': 'हिजो'},
+    'days_ago': {'en': 'days ago', 'ne': 'दिन अघि'},
     'no_categories_available': {
       'en': 'No categories available',
       'ne': 'कुनै श्रेणीहरू उपलब्ध छैन',
@@ -749,14 +492,8 @@ class AppTranslations {
       'en': 'Sign up with Google',
       'ne': 'Google सँग साइन अप गर्नुहोस्',
     },
-    'or': {
-      'en': 'OR',
-      'ne': 'वा',
-    },
-    'loading': {
-      'en': 'Loading...',
-      'ne': 'लोड हुँदैछ...',
-    },
+    'or': {'en': 'OR', 'ne': 'वा'},
+    'loading': {'en': 'Loading...', 'ne': 'लोड हुँदैछ...'},
     'google_signin_cancelled': {
       'en': 'Google sign in cancelled',
       'ne': 'Google साइन इन रद्द गरियो',
@@ -775,7 +512,8 @@ class AppTranslations {
     },
     'google_signup_info': {
       'en': 'Create your account using Google to join Krishi community',
-      'ne': 'कृषि समुदायमा सामेल हुन Google प्रयोग गरेर आफ्नो खाता सिर्जना गर्नुहोस्',
+      'ne':
+          'कृषि समुदायमा सामेल हुन Google प्रयोग गरेर आफ्नो खाता सिर्जना गर्नुहोस्',
     },
     'auth_failed_backend': {
       'en': 'Authentication failed. Please try again.',
@@ -789,6 +527,213 @@ class AppTranslations {
       'en': 'Account created successfully! Welcome to Krishi.',
       'ne': 'खाता सफलतापूर्वक सिर्जना गरियो! कृषिमा स्वागत छ।',
     },
+    'profile_updated': {
+      'en': 'Profile updated successfully',
+      'ne': 'प्रोफाइल सफलतापूर्वक अद्यावधिक भयो',
+    },
+    'profile_update_failed': {
+      'en': 'Failed to update profile',
+      'ne': 'प्रोफाइल अद्यावधिक गर्न असफल भयो',
+    },
+    'full_name_min': {
+      'en': 'Full name must be at least 2 characters',
+      'ne': 'पूरा नाम कम्तीमा २ अक्षरको हुनुपर्छ',
+    },
+    'phone_min_length': {
+      'en': 'Phone number must be at least 10 digits',
+      'ne': 'फोन नम्बर कम्तीमा १० अङ्कको हुनुपर्छ',
+    },
+    'address_min_length': {
+      'en': 'Address must be at least 10 characters',
+      'ne': 'ठेगाना कम्तीमा १० अक्षरको हुनुपर्छ',
+    },
+    'saving': {'en': 'Saving...', 'ne': 'बचत हुँदैछ...'},
+
+    // Home Page - Orders
+    'received_orders': {'en': 'Received Orders', 'ne': 'प्राप्त अर्डरहरू'},
+    'orders_as_seller': {'en': 'As seller', 'ne': 'बिक्रेताको रूपमा'},
+    'placed_orders': {'en': 'Placed Orders', 'ne': 'राखिएको अर्डरहरू'},
+    'orders_as_buyer': {'en': 'As buyer', 'ne': 'क्रेताको रूपमा'},
+    'showing_orders_as_seller': {
+      'en': 'Showing orders where you are the seller',
+      'ne': 'तपाईं बिक्रेता हुनुहुन्छ जहाँ अर्डरहरू देखाउँदै',
+    },
+    'showing_orders_as_buyer': {
+      'en': 'Showing orders where you are the buyer',
+      'ne': 'तपाईं क्रेता हुनुहुन्छ जहाँ अर्डरहरू देखाउँदै',
+    },
+    'no_sales': {
+      'en': 'No received orders yet',
+      'ne': 'अहिलेसम्म कुनै प्राप्त अर्डर छैन',
+    },
+    'no_sales_message': {
+      'en':
+          'You have not received any orders. Once buyers purchase your products, they will appear here.',
+      'ne':
+          'तपाईंले कुनै अर्डर प्राप्त गर्नुभएको छैन। खरीददारहरूले तपाईंका उत्पादनहरू खरिद गरेपछि यहाँ देखिनेछन्।',
+    },
+    'no_purchases': {
+      'en': 'No placed orders yet',
+      'ne': 'अहिलेसम्म कुनै राखिएको अर्डर छैन',
+    },
+    'no_purchases_message': {
+      'en':
+          'You have not placed any orders. Start shopping in the marketplace to see them here.',
+      'ne':
+          'तपाईंले कुनै अर्डर राख्नुभएको छैन। बजारमा किनमेल सुरु गर्नुहोस् र यहाँ अर्डरहरू देख्नुहोस्।',
+    },
+    'pending': {'en': 'Pending', 'ne': 'बाँकी'},
+    'completed': {'en': 'Completed', 'ne': 'पूरा भयो'},
+    'add_phone_hint': {'en': 'Add phone number', 'ne': 'फोन नम्बर थप्नुहोस्'},
+    'add_address_hint': {'en': 'Add address', 'ne': 'ठेगाना थप्नुहोस्'},
+    'seller_information': {'en': 'Seller Information', 'ne': 'विक्रेता जानकारी'},
+    'mark_as_complete': {
+      'en': 'Mark as complete',
+      'ne': 'पुरा भएको चिन्ह लगाउनुहोस्',
+    },
+    'order_marked_complete': {
+      'en': 'Order marked as complete',
+      'ne': 'अर्डर पूरा भएको रूपमा चिन्ह लगाइयो',
+    },
+    'order_complete_failed': {
+      'en': 'Failed to mark order as complete',
+      'ne': 'अर्डर पूरा भएको चिन्ह लगाउन असफल',
+    },
+
+    // Order Status and Actions
+    'order_details': {'en': 'Order Details', 'ne': 'अर्डर विवरण'},
+    'order_status': {'en': 'Order Status', 'ne': 'अर्डर स्थिति'},
+    'order_information': {'en': 'Order Information', 'ne': 'अर्डर जानकारी'},
+    'buyer_information': {'en': 'Buyer Information', 'ne': 'क्रेता जानकारी'},
+    'seller_info': {'en': 'Seller Information', 'ne': 'विक्रेता जानकारी'},
+    'order_id': {'en': 'Order ID', 'ne': 'अर्डर ID'},
+    'order_date': {'en': 'Order Date', 'ne': 'अर्डर मिति'},
+    'unit_price': {'en': 'Unit Price', 'ne': 'एकाइ मूल्य'},
+    'view_details': {'en': 'View Details', 'ne': 'विवरण हेर्नुहोस्'},
+    'order_not_found': {'en': 'Order not found', 'ne': 'अर्डर फेला परेन'},
+    'processing': {'en': 'Processing...', 'ne': 'प्रशोधन हुँदैछ...'},
+    
+    // Order Actions
+    'accept_order': {'en': 'Accept Order', 'ne': 'अर्डर स्वीकार गर्नुहोस्'},
+    'cancel_order': {'en': 'Cancel Order', 'ne': 'अर्डर रद्द गर्नुहोस्'},
+    'mark_in_transit': {'en': 'Mark In Transit', 'ne': 'ट्रान्जिटमा चिन्ह लगाउनुहोस्'},
+    'mark_delivered': {'en': 'Mark Delivered', 'ne': 'डेलिभर भएको चिन्ह लगाउनुहोस्'},
+    'cancel_order_confirm': {
+      'en': 'Are you sure you want to cancel this order?',
+      'ne': 'के तपाईं यो अर्डर रद्द गर्न निश्चित हुनुहुन्छ?',
+    },
+    'yes': {'en': 'Yes', 'ne': 'हो'},
+    'no': {'en': 'No', 'ne': 'होइन'},
+    
+    // Order Status Messages
+    'order_accepted': {
+      'en': 'Order accepted successfully',
+      'ne': 'अर्डर सफलतापूर्वक स्वीकार गरियो',
+    },
+    'order_accept_failed': {
+      'en': 'Failed to accept order',
+      'ne': 'अर्डर स्वीकार गर्न असफल',
+    },
+    'order_marked_in_transit': {
+      'en': 'Order marked as in transit',
+      'ne': 'अर्डर ट्रान्जिटमा रहेको चिन्ह लगाइयो',
+    },
+    'order_transit_failed': {
+      'en': 'Failed to mark order as in transit',
+      'ne': 'अर्डर ट्रान्जिटमा चिन्ह लगाउन असफल',
+    },
+    'order_delivered': {
+      'en': 'Order marked as delivered',
+      'ne': 'अर्डर डेलिभर भएको चिन्ह लगाइयो',
+    },
+    'order_deliver_failed': {
+      'en': 'Failed to mark order as delivered',
+      'ne': 'अर्डर डेलिभर भएको चिन्ह लगाउन असफल',
+    },
+    'order_completed': {
+      'en': 'Order completed successfully',
+      'ne': 'अर्डर सफलतापूर्वक पूरा भयो',
+    },
+    'order_cancelled': {
+      'en': 'Order cancelled successfully',
+      'ne': 'अर्डर सफलतापूर्वक रद्द गरियो',
+    },
+    'order_cancel_failed': {
+      'en': 'Failed to cancel order',
+      'ne': 'अर्डर रद्द गर्न असफल',
+    },
+    
+    // Order Statuses
+    'accepted': {'en': 'Accepted', 'ne': 'स्वीकृत'},
+    'in_transit': {'en': 'In Transit', 'ne': 'ट्रान्जिटमा'},
+    'delivered': {'en': 'Delivered', 'ne': 'डेलिभर भयो'},
+    'cancelled': {'en': 'Cancelled', 'ne': 'रद्द गरियो'},
+    
+    // Contact Actions
+    'call_buyer': {'en': 'Call Buyer', 'ne': 'खरीददारलाई कल गर्नुहोस्'},
+    'call_seller': {'en': 'Call Seller', 'ne': 'विक्रेतालाई कल गर्नुहोस्'},
+    'whatsapp': {'en': 'WhatsApp', 'ne': 'व्हाट्सएप'},
+    'call_failed': {'en': 'Unable to make call', 'ne': 'कल गर्न असमर्थ'},
+    'whatsapp_failed': {'en': 'Unable to open WhatsApp', 'ne': 'व्हाट्सएप खोल्न असमर्थ'},
+    
+    // Status Reversal
+    'mark_accepted': {'en': 'Revert to Accepted', 'ne': 'स्वीकृतमा फर्कनुहोस्'},
+    'mark_pending': {'en': 'Revert to Pending', 'ne': 'पेन्डिङमा फर्कनुहोस्'},
+    'cannot_revert_pending': {
+      'en': 'Cannot revert to pending status',
+      'ne': 'पेन्डिङ स्थितिमा फर्कन सकिँदैन',
+    },
+    'no_phone': {'en': 'No phone', 'ne': 'फोन छैन'},
+    'all': {'en': 'All', 'ne': 'सबै'},
+
+    // Soil Testing
+    'soil_testing': {'en': 'Soil Testing', 'ne': 'माटो परीक्षण'},
+    'test_soil_quality': {
+      'en': 'Test your soil quality',
+      'ne': 'आफ्नो माटोको गुणस्तर परीक्षण गर्नुहोस्',
+    },
+    'soil_testing_title': {
+      'en': 'Soil Testing Service',
+      'ne': 'माटो परीक्षण सेवा',
+    },
+    'soil_testing_description': {
+      'en':
+          'Get detailed analysis of your soil to improve crop yields and make informed farming decisions. Our comprehensive soil testing service helps you understand your soil\'s health.',
+      'ne':
+          'बाली उत्पादन सुधार गर्न र सूचित खेती निर्णयहरू गर्न आफ्नो माटोको विस्तृत विश्लेषण प्राप्त गर्नुहोस्। हाम्रो व्यापक माटो परीक्षण सेवाले तपाईंलाई आफ्नो माटोको स्वास्थ्य बुझ्न मद्दत गर्दछ।',
+    },
+    'soil_testing_features': {
+      'en': 'What We Test',
+      'ne': 'हामी के परीक्षण गर्छौं',
+    },
+    'ph_level': {'en': 'pH Level', 'ne': 'पीएच स्तर'},
+    'ph_level_description': {
+      'en': 'Measure soil acidity or alkalinity to determine ideal crops',
+      'ne': 'आदर्श बाली निर्धारण गर्न माटोको अम्लता वा क्षारता मापन गर्नुहोस्',
+    },
+    'nutrients': {'en': 'Nutrients', 'ne': 'पोषक तत्वहरू'},
+    'nutrients_description': {
+      'en': 'Test for NPK and other essential minerals',
+      'ne': 'NPK र अन्य आवश्यक खनिजहरूको लागि परीक्षण',
+    },
+    'moisture': {'en': 'Moisture', 'ne': 'नमी'},
+    'moisture_description': {
+      'en': 'Check soil moisture content and water retention',
+      'ne': 'माटो नमी सामग्री र पानी प्रतिधारण जाँच गर्नुहोस्',
+    },
+    'recommendations': {'en': 'Recommendations', 'ne': 'सिफारिसहरू'},
+    'recommendations_description': {
+      'en': 'Get personalized crop and fertilizer recommendations',
+      'ne': 'व्यक्तिगत बाली र मल सिफारिसहरू प्राप्त गर्नुहोस्',
+    },
+    'start_soil_test': {
+      'en': 'Start Soil Test',
+      'ne': 'माटो परीक्षण सुरु गर्नुहोस्',
+    },
+    'soil_testing_coming_soon': {
+      'en': 'Soil testing feature coming soon!',
+      'ne': 'माटो परीक्षण सुविधा छिट्टै आउँदैछ!',
+    },
   };
 
   static String translate(String key, String languageCode) {
@@ -797,4 +742,3 @@ class AppTranslations {
     return translations[languageCode] ?? translations['en'] ?? key;
   }
 }
-

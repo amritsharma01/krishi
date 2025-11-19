@@ -8,8 +8,12 @@ import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/cart/cart_page.dart';
 import 'package:krishi/features/marketplace/add_edit_product_page.dart';
-import 'package:krishi/features/widgets/app_text.dart';
-import 'package:krishi/features/widgets/form_field.dart';
+import 'package:krishi/features/marketplace/product_detail_page.dart';
+import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/components/dialog_box.dart';
+import 'package:krishi/features/components/empty_state.dart';
+import 'package:krishi/features/components/error_state.dart';
+import 'package:krishi/features/components/form_field.dart';
 import 'package:krishi/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -263,28 +267,15 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                   ),
                 )
               else if (buyProductsError != null)
-                Padding(
-                  padding: const EdgeInsets.all(32).rt,
-                  child: Column(
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red, size: 48.st),
-                      16.verticalGap,
-                      AppText(
-                        'error_loading_products'.tr(context),
-                        style: Get.bodyMedium.px14.copyWith(color: Colors.red),
-                      ),
-                    ],
-                  ),
+                ErrorState(
+                  subtitle: 'error_loading_products_subtitle'.tr(context),
+                  onRetry: _loadBuyProducts,
                 )
               else if (buyProducts.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(32).rt,
-                  child: AppText(
-                    'no_products_available'.tr(context),
-                    style: Get.bodyMedium.px14.copyWith(
-                      color: Get.disabledColor.withValues(alpha: 0.6),
-                    ),
-                  ),
+                EmptyState(
+                  title: 'no_products_available'.tr(context),
+                  subtitle: 'no_products_subtitle'.tr(context),
+                  icon: Icons.shopping_bag_outlined,
                 )
               else
                 GridView.builder(
@@ -294,7 +285,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12.rt,
                     mainAxisSpacing: 12.rt,
-                    childAspectRatio: 0.65,
+                    childAspectRatio: 0.75,
                   ),
                   itemCount: buyProducts.length,
                   itemBuilder: (context, index) {
@@ -383,28 +374,15 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                   ),
                 )
               else if (userListingsError != null)
-                Padding(
-                  padding: const EdgeInsets.all(32).rt,
-                  child: Column(
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red, size: 48.st),
-                      16.verticalGap,
-                      AppText(
-                        'error_loading_listings'.tr(context),
-                        style: Get.bodyMedium.px14.copyWith(color: Colors.red),
-                      ),
-                    ],
-                  ),
+                ErrorState(
+                  subtitle: 'error_loading_listings_subtitle'.tr(context),
+                  onRetry: _loadUserListings,
                 )
               else if (userListings.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(32).rt,
-                  child: AppText(
-                    'no_listings_yet'.tr(context),
-                    style: Get.bodyMedium.px14.copyWith(
-                      color: Get.disabledColor.withValues(alpha: 0.6),
-                    ),
-                  ),
+                EmptyState(
+                  title: 'no_listings_yet'.tr(context),
+                  subtitle: 'no_listings_subtitle'.tr(context),
+                  icon: Icons.inventory_2_outlined,
                 )
               else
                 ...userListings.map((listing) {
@@ -439,139 +417,83 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Product Image
-          Container(
-            width: double.infinity,
-            height: 112.ht,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16.rt),
-                topRight: Radius.circular(16.rt),
+          // Product Image - Tappable for navigation
+          GestureDetector(
+            onTap: () {
+              Get.to(ProductDetailPage(product: product));
+            },
+            child: Container(
+              width: double.infinity,
+              height: 112.ht,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16.rt),
+                  topRight: Radius.circular(16.rt),
+                ),
               ),
+              child: product.image != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16.rt),
+                        topRight: Radius.circular(16.rt),
+                      ),
+                      child: Image.network(
+                        Get.imageUrl(product.image),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              size: 40.st,
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                              strokeWidth: 2,
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Center(
+                      child: Icon(
+                        Icons.image_not_supported,
+                        color: AppColors.primary.withValues(alpha: 0.3),
+                        size: 42.st,
+                      ),
+                    ),
             ),
-            child: product.image != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16.rt),
-                      topRight: Radius.circular(16.rt),
-                    ),
-                    child: Image.network(
-                      Get.baseUrl + product.image!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            size: 40.st,
-                          ),
-                        );
-                      },
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
-                            strokeWidth: 2,
-                          ),
-                        );
-                      },
-                    ),
-                  )
-                : Center(
-                    child: Icon(
-                      Icons.image_not_supported,
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      size: 42.st,
-                    ),
-                  ),
           ),
-          // Product Details
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(10).rt,
+          Padding(
+            padding: const EdgeInsets.all(12).rt,
+            child: GestureDetector(
+              onTap: () => Get.to(ProductDetailPage(product: product)),
+              behavior: HitTestBehavior.opaque,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        product.name,
-                        style: Get.bodyMedium.px13.w700.copyWith(
-                          color: Get.disabledColor,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      2.verticalGap,
-                      AppText(
-                        'Rs. ${product.price}/${product.unitName}',
-                        style: Get.bodyMedium.px16.w800.copyWith(
-                          color: AppColors.primary,
-                        ),
-                        maxLines: 1,
-                      ),
-                    ],
-                  ),
-                  // Add to Cart Button
-                  GestureDetector(
-                    onTap: () async {
-                      try {
-                        final apiService = ref.read(krishiApiServiceProvider);
-                        await apiService.addToCart(
-                          productId: product.id,
-                          quantity: 1,
-                        );
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('added_to_cart'.tr(context)),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('error_adding_to_cart'.tr(context)),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        }
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 7).rt,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary,
-                            AppColors.primary.withValues(alpha: 0.85),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(8).rt,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: AppText(
-                          'add_to_cart'.tr(context),
-                          style: Get.bodySmall.px11.w700.copyWith(
-                            color: AppColors.white,
-                          ),
-                        ),
-                      ),
+                  AppText(
+                    product.name,
+                    style: Get.bodyLarge.px16.w800.copyWith(
+                      color: Get.disabledColor,
+                      height: 1.2,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  4.verticalGap,
+                  AppText(
+                    'Rs. ${product.price}/${product.unitName}',
+                    style: Get.bodyMedium.px12.w700.copyWith(
+                      color: AppColors.primary,
+                    ),
+                    maxLines: 1,
                   ),
                 ],
               ),
@@ -583,71 +505,23 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   }
 
   void _showDeleteConfirmation(Product product) {
-    if (!mounted) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: Get.cardColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            'delete_product'.tr(context),
-            style: Get.bodyLarge.copyWith(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          content: Text(
-            'delete_confirmation'.tr(context),
-            style: Get.bodyMedium.copyWith(
-              fontSize: 14,
-              color: Get.disabledColor.withOpacity(0.7),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(
-                'cancel'.tr(context),
-                style: TextStyle(color: Get.disabledColor),
-              ),
-            ),
-            TextButton(
-              onPressed: () async {
-                try {
-                  final apiService = ref.read(krishiApiServiceProvider);
-                  await apiService.deleteProduct(product.id);
-
-                  if (!mounted) return;
-
-                  Navigator.pop(dialogContext);
-                  _loadUserListings();
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Product deleted"),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                } catch (e) {
-                  if (!mounted) return;
-                  Navigator.pop(dialogContext);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Error deleting product"),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
-              child: const Text("Delete", style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        );
+    AppDialog.showConfirmation(
+      title: 'delete_product'.tr(Get.context),
+      content: 'delete_confirmation'.tr(Get.context),
+      confirmText: 'delete'.tr(Get.context),
+      confirmColor: Colors.red,
+      onConfirm: () async {
+        try {
+          final apiService = ref.read(krishiApiServiceProvider);
+          await apiService.deleteProduct(product.id);
+          _loadUserListings();
+          Get.snackbar('product_deleted'.tr(Get.context), color: Colors.green);
+        } catch (e) {
+          Get.snackbar(
+            'error_deleting_product'.tr(Get.context),
+            color: Colors.red,
+          );
+        }
       },
     );
   }
@@ -685,7 +559,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(12).rt,
                     child: Image.network(
-                      Get.baseUrl + listing.image!,
+                      Get.imageUrl(listing.image),
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Center(
@@ -742,12 +616,8 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             children: [
               GestureDetector(
                 onTap: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          AddEditProductPage(product: listing),
-                    ),
+                  final result = await Get.to(
+                    AddEditProductPage(product: listing),
                   );
                   if (result == true) {
                     _loadUserListings();

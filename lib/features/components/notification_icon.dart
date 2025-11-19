@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/services/get.dart';
+import '../../../core/services/get.dart';
 import 'appicon.dart';
 
 class NotificationIcon extends ConsumerWidget {

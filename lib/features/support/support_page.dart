@@ -5,7 +5,8 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
-import 'package:krishi/features/widgets/app_text.dart';
+import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/resources/faqs_page.dart';
 import 'package:flutter/material.dart';
 
 class SupportPage extends StatelessWidget {
@@ -89,8 +90,12 @@ class SupportPage extends StatelessWidget {
                     colors: [Color(0xFF1E88E5), Color(0xFF42A5F5)],
                   ),
                   onTap: () {
-                    // TODO: Navigate to FAQ page
-                    Get.snackbar('FAQ page coming soon!');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const FAQsPage(),
+                      ),
+                    );
                   },
                 ),
 
@@ -264,8 +269,11 @@ class SupportPage extends StatelessWidget {
     );
   }
 
-  Widget _buildContactRow(BuildContext context,
-      {required IconData icon, required String text}) {
+  Widget _buildContactRow(
+    BuildContext context, {
+    required IconData icon,
+    required String text,
+  }) {
     return Row(
       children: [
         Icon(icon, color: AppColors.primary, size: 20.st),
@@ -282,4 +290,3 @@ class SupportPage extends StatelessWidget {
     );
   }
 }
-
