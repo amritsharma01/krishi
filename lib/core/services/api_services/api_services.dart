@@ -8,9 +8,9 @@ import '../get.dart';
 typedef QueryType = Map<String, dynamic>?;
 
 class ApiManager {
-  final _connectTimeout = const Duration(seconds: 20);
-  final _receiveTimeout = const Duration(seconds: 20);
-  final _sendTimeout = const Duration(seconds: 20);
+  final _connectTimeout = const Duration(seconds: 30);
+  final _receiveTimeout = const Duration(seconds: 30);
+  final _sendTimeout = const Duration(seconds: 30);
 
   /// Dio instance used for API requests.
   late Dio dio;

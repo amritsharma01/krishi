@@ -9,6 +9,7 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/cart/checkout_page.dart';
 import 'package:krishi/features/seller/seller_profile_page.dart';
 import 'package:krishi/models/comment.dart';
 import 'package:krishi/models/product.dart';
@@ -135,6 +136,33 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     }
   }
 
+  Future<void> _checkoutDirectly() async {
+    setState(() => isAddingToCart = true);
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      // Clear cart to ensure only this product is checked out
+      await apiService.clearCart();
+      // Add product to cart
+      await apiService.addToCart(productId: widget.product.id, quantity: 1);
+      // Get the updated cart (will contain only this product)
+      final cart = await apiService.getCart();
+      if (mounted) {
+        setState(() {
+          isInCart = true;
+          isAddingToCart = false;
+        });
+        // Navigate directly to checkout page (user won't see cart page)
+        Get.to(CheckoutPage(cart: cart));
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => isAddingToCart = false);
+      }
+      Get.snackbar('error_adding_to_cart'.tr(context), color: Colors.red);
+    }
+  }
+
   Future<void> _submitComment() async {
     if (_commentController.text.trim().isEmpty) return;
 
@@ -219,66 +247,112 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   Widget _buildAddToCartButton() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.rt),
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: isAddingToCart ? null : _addToCart,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isInCart
-                ? Colors.green.shade500
-                : AppColors.primary,
-            foregroundColor: Colors.white,
-            padding: EdgeInsets.symmetric(vertical: 16.rt),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12).rt,
+      child: Row(
+        children: [
+          // Add to Cart Button
+          Expanded(
+            child: ElevatedButton(
+              onPressed: isAddingToCart ? null : _addToCart,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isInCart
+                    ? Colors.green.shade500
+                    : AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 16.rt),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+                elevation: isInCart ? 2 : 3,
+                shadowColor: (isInCart ? Colors.green : AppColors.primary)
+                    .withValues(alpha: 0.3),
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: isAddingToCart
+                    ? SizedBox(
+                        key: const ValueKey('loading'),
+                        height: 20.st,
+                        width: 20.st,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : isInCart
+                    ? Row(
+                        key: const ValueKey('added'),
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle, size: 20.st),
+                          8.horizontalGap,
+                          AppText(
+                            'added_to_cart'.tr(context),
+                            style: Get.bodyMedium.px15.w600.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      )
+                    : Row(
+                        key: const ValueKey('add'),
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.shopping_cart, size: 20.st),
+                          8.horizontalGap,
+                          AppText(
+                            'add_to_cart'.tr(context),
+                            style: Get.bodyMedium.px15.w600.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+              ),
             ),
-            elevation: isInCart ? 2 : 3,
-            shadowColor: (isInCart ? Colors.green : AppColors.primary)
-                .withValues(alpha: 0.3),
           ),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: isAddingToCart
-                ? SizedBox(
-                    key: const ValueKey('loading'),
-                    height: 20.st,
-                    width: 20.st,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2.5,
+          12.horizontalGap,
+          // Checkout Button
+          Expanded(
+            child: ElevatedButton(
+              onPressed: isAddingToCart ? null : _checkoutDirectly,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary.withValues(alpha: 0.9),
+                foregroundColor: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: 16.rt),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+                elevation: 3,
+                shadowColor: AppColors.primary.withValues(alpha: 0.3),
+              ),
+              child: isAddingToCart
+                  ? SizedBox(
+                      height: 20.st,
+                      width: 20.st,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.payment, size: 20.st),
+                        8.horizontalGap,
+                        AppText(
+                          'checkout'.tr(context),
+                          style: Get.bodyMedium.px15.w600.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
-                  )
-                : isInCart
-                ? Row(
-                    key: const ValueKey('added'),
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_circle, size: 20.st),
-                      8.horizontalGap,
-                      AppText(
-                        'added_to_cart'.tr(context),
-                        style: Get.bodyMedium.px15.w600.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  )
-                : Row(
-                    key: const ValueKey('add'),
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.shopping_cart, size: 20.st),
-                      8.horizontalGap,
-                      AppText(
-                        'add_to_cart'.tr(context),
-                        style: Get.bodyMedium.px15.w600.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -433,7 +507,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         _metaChip(Icons.category_outlined, widget.product.categoryName),
       if (widget.product.unitName.trim().isNotEmpty)
         _metaChip(Icons.monitor_weight_outlined, widget.product.unitName),
-      _metaChip(Icons.inventory_2_outlined, widget.product.sellerEmail),
+      _metaChip(Icons.inventory_2_outlined,
+          widget.product.sellerName ?? widget.product.sellerEmail),
     ];
 
     return _sectionCard(
@@ -529,12 +604,12 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                       ),
                     ),
                     4.verticalGap,
-                    AppText(
-                      widget.product.sellerEmail,
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
+                   AppText(
+                     widget.product.sellerName ?? widget.product.sellerEmail,
+                     style: Get.bodyMedium.px15.w700.copyWith(
+                       color: Get.disabledColor,
+                     ),
+                   ),
                     if (phone != null && phone.isNotEmpty) ...[
                       4.verticalGap,
                       Row(
@@ -677,7 +752,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                      review.userEmail,
+                      review.userName?.trim().isNotEmpty == true
+                          ? review.userName!
+                          : review.userEmail,
                       style: Get.bodyMedium.px14.w600.copyWith(
                         color: Get.disabledColor,
                       ),
@@ -810,12 +887,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  comment.userEmail,
-                  style: Get.bodyMedium.px13.w600.copyWith(
-                    color: Get.disabledColor,
-                  ),
-                ),
+                    AppText(
+                      comment.userName?.trim().isNotEmpty == true
+                          ? comment.userName!
+                          : comment.userEmail,
+                      style: Get.bodyMedium.px13.w600.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
                 4.verticalGap,
                 AppText(
                   comment.text,

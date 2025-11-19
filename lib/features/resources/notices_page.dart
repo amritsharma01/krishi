@@ -32,6 +32,22 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
     'training': 'Training',
   };
 
+  final Map<String, IconData> _filterIcons = {
+    'general': Icons.article_rounded,
+    'important': Icons.info_rounded,
+    'urgent': Icons.warning_amber_rounded,
+    'event': Icons.event_rounded,
+    'training': Icons.school_rounded,
+  };
+
+  final Map<String, Color> _filterColors = {
+    'general': Colors.grey,
+    'important': Colors.orange,
+    'urgent': Colors.red,
+    'event': Colors.blue,
+    'training': Colors.green,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -123,60 +139,125 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
 
   Widget _buildFilterChips() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 20.h,
+        bottom: 14.h,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Get.cardColor,
+        borderRadius: BorderRadius.vertical(
+          bottom: const Radius.circular(28),
+        ).rt,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: _filterOptions.entries.map((entry) {
-            final isSelected = _selectedFilter == entry.key;
-            return Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedFilter = entry.key;
-                  });
-                  _loadNotices(noticeType: entry.key);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Get.primaryColor : Colors.white,
-                    borderRadius: BorderRadius.circular(20).rt,
-                    border: Border.all(
-                      color: isSelected ? Get.primaryColor : Colors.grey.shade300,
-                    ),
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: Get.primaryColor.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                    ],
-                  ),
-                  child: AppText(
-                    entry.value,
-                    style: Get.bodySmall.copyWith(
-                      color: isSelected ? Colors.white : Get.primaryColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.filter_alt_rounded,
+                color: Get.primaryColor,
+                size: 20.st,
+              ),
+              8.horizontalGap,
+              AppText(
+                'Filter notices',
+                style: Get.bodyMedium.w600.copyWith(
+                  color: Get.primaryColor,
                 ),
               ),
-            );
-          }).toList(),
+            ],
+          ),
+          12.verticalGap,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _filterOptions.entries.map((entry) {
+                final isSelected = _selectedFilter == entry.key;
+                final color = _filterColors[entry.key] ?? Get.primaryColor;
+                final icon = entry.key == 'all'
+                    ? Icons.all_inclusive
+                    : _filterIcons[entry.key] ?? Icons.article_rounded;
+                return Padding(
+                  padding: EdgeInsets.only(right: 10.w),
+                  child: _buildFilterPill(
+                    label: entry.value,
+                    icon: icon,
+                    color: color,
+                    isSelected: isSelected,
+                    onTap: () {
+                      setState(() {
+                        _selectedFilter = entry.key;
+                      });
+                      _loadNotices(noticeType: entry.key);
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterPill({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [color, color.withValues(alpha: 0.8)],
+                )
+              : null,
+          color: isSelected ? null : Get.scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(24).rt,
+          border: Border.all(
+            color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: color.withValues(alpha: 0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16.st,
+              color: isSelected ? Colors.white : color,
+            ),
+            8.horizontalGap,
+            AppText(
+              label,
+              style: Get.bodySmall.w600.copyWith(
+                color: isSelected ? Colors.white : color,
+              ),
+            ),
+          ],
         ),
       ),
     );

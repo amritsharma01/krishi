@@ -130,61 +130,70 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
 
   Widget _buildTypeFilter() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 20.h,
+        bottom: 14.h,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Get.cardColor,
+        borderRadius: BorderRadius.vertical(
+          bottom: const Radius.circular(28),
+        ).rt,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: _contactTypes.entries.map((entry) {
-            final isSelected = _selectedType == entry.key;
-            return Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedType = entry.key;
-                  });
-                  _loadContacts(contactType: entry.key);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.red.shade700 : Colors.white,
-                    borderRadius: BorderRadius.circular(20).rt,
-                    border: Border.all(
-                      color: isSelected ? Colors.red.shade700 : Colors.grey.shade300,
-                    ),
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: Colors.red.shade700.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                    ],
-                  ),
-                  child: AppText(
-                    entry.value,
-                    style: Get.bodySmall.copyWith(
-                      color: isSelected ? Colors.white : Colors.red.shade700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.settings_input_component_rounded,
+                  color: Colors.red.shade600, size: 20.st),
+              8.horizontalGap,
+              AppText(
+                'Quick filters',
+                style: Get.bodyMedium.w600.copyWith(
+                  color: Colors.red.shade700,
                 ),
               ),
-            );
-          }).toList(),
-        ),
+            ],
+          ),
+          12.verticalGap,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _contactTypes.entries.map((entry) {
+                final isSelected = _selectedType == entry.key;
+                final color = _contactColors[entry.key] ?? Colors.red;
+                final icon = entry.key == 'all'
+                    ? Icons.all_inclusive
+                    : _contactIcons[entry.key] ?? Icons.phone_rounded;
+                return Padding(
+                  padding: EdgeInsets.only(right: 10.w),
+                  child: _buildFilterPill(
+                    label: entry.value,
+                    icon: icon,
+                    color: color,
+                    isSelected: isSelected,
+                    onTap: () {
+                      setState(() {
+                        _selectedType = entry.key;
+                      });
+                      _loadContacts(contactType: entry.key);
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -228,85 +237,238 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
     );
   }
 
+  Widget _buildFilterPill({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [color, color.withValues(alpha: 0.85)],
+                )
+              : null,
+          color: isSelected ? null : Get.scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(24).rt,
+          border: Border.all(
+            color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: color.withValues(alpha: 0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16.st,
+              color: isSelected ? Colors.white : color,
+            ),
+            8.horizontalGap,
+            AppText(
+              label,
+              style: Get.bodySmall.w600.copyWith(
+                color: isSelected ? Colors.white : color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge({required String label, required IconData icon}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(30).rt,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.st, color: Colors.white),
+          6.horizontalGap,
+          AppText(
+            label.toUpperCase(),
+            style: Get.bodySmall.w700.copyWith(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoTile({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String value,
+    Widget? trailing,
+    VoidCallback? onTap,
+  }) {
+    final content = Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.all(10.rt),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12).rt,
+          ),
+          child: Icon(icon, size: 18.st, color: color),
+        ),
+        12.horizontalGap,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                label,
+                style: Get.bodySmall.copyWith(
+                  color: Colors.grey.shade600,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              4.verticalGap,
+              AppText(
+                value,
+                style: Get.bodyMedium.w600.copyWith(
+                  color: Get.disabledColor,
+                ),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        if (trailing != null) trailing,
+      ],
+    );
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(14.rt),
+        decoration: BoxDecoration(
+          color: Get.scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(18).rt,
+          border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
+        ),
+        child: content,
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 120.w,
+        padding: EdgeInsets.symmetric(vertical: 14.h),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(16).rt,
+          border: Border.all(color: color.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 18.st, color: color),
+            8.horizontalGap,
+            AppText(
+              label,
+              style: Get.bodyMedium.w600.copyWith(color: color),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildContactCard(Contact contact) {
     final color = _contactColors[contact.contactType] ?? Colors.grey;
     final icon = _contactIcons[contact.contactType] ?? Icons.phone_rounded;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
+      margin: EdgeInsets.only(bottom: 18.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16).rt,
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(22).rt,
+        border: Border.all(color: color.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: color.withValues(alpha: 0.2),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Container(
-            padding: EdgeInsets.all(16.rt),
+            padding: EdgeInsets.all(18.rt),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [color, color.withValues(alpha: 0.8)],
+                colors: [color, color.withValues(alpha: 0.75)],
               ),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16.rt),
-                topRight: Radius.circular(16.rt),
-              ),
+              borderRadius: BorderRadius.vertical(
+                top: const Radius.circular(22),
+              ).rt,
             ),
             child: Row(
               children: [
                 Container(
-                  padding: EdgeInsets.all(12.rt),
+                  padding: EdgeInsets.all(14.rt),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
+                    color: Colors.white.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    border: Border.all(color: Colors.white24),
                   ),
                   child: Icon(icon, color: Colors.white, size: 28.st),
                 ),
-                16.horizontalGap,
+                18.horizontalGap,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
                         contact.title,
-                        style: Get.bodyLarge.w700.copyWith(
+                        style: Get.bodyLarge.px20.w700.copyWith(
                           color: Colors.white,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      6.verticalGap,
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.w,
-                          vertical: 5.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(6).rt,
-                        ),
-                        child: AppText(
-                          contact.contactTypeDisplay.toUpperCase(),
-                          style: Get.bodySmall.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.5,
+                      10.verticalGap,
+                      Wrap(
+                        spacing: 8.w,
+                        runSpacing: 6.h,
+                        children: [
+                          _buildBadge(
+                            label: contact.contactTypeDisplay,
+                            icon: icon,
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -314,208 +476,72 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
               ],
             ),
           ),
-
-          // Content
           Padding(
-            padding: EdgeInsets.all(16.rt),
+            padding: EdgeInsets.all(20.rt),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Description
                 AppText(
                   contact.description,
                   style: Get.bodyMedium.copyWith(
-                    color: Colors.grey.shade700,
+                    color: Get.disabledColor,
                     height: 1.5,
                   ),
                 ),
                 16.verticalGap,
-
-                // Phone Number
-                Container(
-                  padding: EdgeInsets.all(12.rt),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10).rt,
-                    border: Border.all(color: color.withValues(alpha: 0.3)),
+                _buildInfoTile(
+                  icon: Icons.phone_in_talk_rounded,
+                  color: color,
+                  label: 'Helpline',
+                  value: contact.phoneNumber,
+                  trailing: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20).rt,
+                    ),
+                    child: AppText(
+                      'Tap to call',
+                      style: Get.bodySmall.w600.copyWith(color: color),
+                    ),
                   ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.phone_rounded,
-                        color: color,
-                        size: 20.st,
-                      ),
-                      12.horizontalGap,
-                      Expanded(
-                        child: AppText(
-                          contact.phoneNumber,
-                          style: Get.bodyLarge.w700.copyWith(color: color),
-                        ),
-                      ),
-                    ],
-                  ),
+                  onTap: () => _makePhoneCall(contact.phoneNumber),
                 ),
                 12.verticalGap,
-
-                // Address
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(6.rt),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(6).rt,
-                      ),
-                      child: Icon(
-                        Icons.location_on_rounded,
-                        size: 16.st,
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                    10.horizontalGap,
-                    Expanded(
-                      child: AppText(
-                        contact.address,
-                        style: Get.bodyMedium.copyWith(
-                          color: Colors.grey.shade700,
-                        ),
-                        maxLines: 3,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
+                _buildInfoTile(
+                  icon: Icons.location_on_rounded,
+                  color: Colors.red.shade400,
+                  label: 'Address',
+                  value: contact.address,
                 ),
-
                 if (contact.email.isNotEmpty) ...[
                   12.verticalGap,
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(6.rt),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(6).rt,
-                        ),
-                        child: Icon(
-                          Icons.email_rounded,
-                          size: 16.st,
-                          color: Colors.grey.shade700,
-                        ),
-                      ),
-                      10.horizontalGap,
-                      Expanded(
-                        child: AppText(
-                          contact.email,
-                          style: Get.bodyMedium.copyWith(
-                            color: Colors.grey.shade700,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                  _buildInfoTile(
+                    icon: Icons.email_rounded,
+                    color: Colors.orange.shade400,
+                    label: 'Email',
+                    value: contact.email,
+                    onTap: () => _sendEmail(contact.email),
                   ),
                 ],
-
-                20.verticalGap,
-
-                // Action Buttons
-                Row(
+                18.verticalGap,
+                Wrap(
+                  spacing: 12.w,
+                  runSpacing: 12.h,
                   children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Colors.green.shade600, Colors.green.shade700],
-                          ),
-                          borderRadius: BorderRadius.circular(10).rt,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.green.withValues(alpha: 0.3),
-                              blurRadius: 6,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () => _makePhoneCall(contact.phoneNumber),
-                            borderRadius: BorderRadius.circular(10).rt,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(vertical: 14.h),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.phone_rounded,
-                                    color: Colors.white,
-                                    size: 22.st,
-                                  ),
-                                  10.horizontalGap,
-                                  AppText(
-                                    'Call Now',
-                                    style: Get.bodyLarge.w600.copyWith(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                    _buildActionButton(
+                      label: 'Call',
+                      icon: Icons.phone_rounded,
+                      color: color,
+                      onTap: () => _makePhoneCall(contact.phoneNumber),
                     ),
-                    if (contact.email.isNotEmpty) ...[
-                      16.horizontalGap,
-                      Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Colors.blue.shade600, Colors.blue.shade700],
-                            ),
-                            borderRadius: BorderRadius.circular(10).rt,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.blue.withValues(alpha: 0.3),
-                                blurRadius: 6,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => _sendEmail(contact.email),
-                              borderRadius: BorderRadius.circular(10).rt,
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 14.h),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.email_rounded,
-                                      color: Colors.white,
-                                      size: 22.st,
-                                    ),
-                                    10.horizontalGap,
-                                    AppText(
-                                      'Email',
-                                      style: Get.bodyLarge.w600.copyWith(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                    if (contact.email.isNotEmpty)
+                      _buildActionButton(
+                        label: 'Email',
+                        icon: Icons.email_rounded,
+                        color: Colors.orange,
+                        onTap: () => _sendEmail(contact.email),
                       ),
-                    ],
                   ],
                 ),
               ],

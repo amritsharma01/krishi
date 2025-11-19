@@ -285,7 +285,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                     crossAxisCount: 2,
                     crossAxisSpacing: 12.rt,
                     mainAxisSpacing: 12.rt,
-                    childAspectRatio: 0.65,
+                    childAspectRatio: 0.75,
                   ),
                   itemCount: buyProducts.length,
                   itemBuilder: (context, index) {
@@ -470,44 +470,31 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                     ),
             ),
           ),
-          // Product Details
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(10).rt,
+          Padding(
+            padding: const EdgeInsets.all(12).rt,
+            child: GestureDetector(
+              onTap: () => Get.to(ProductDetailPage(product: product)),
+              behavior: HitTestBehavior.opaque,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Product Info - Tappable for navigation
-                  GestureDetector(
-                    onTap: () {
-                      Get.to(ProductDetailPage(product: product));
-                    },
-                    behavior: HitTestBehavior.opaque,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppText(
-                          product.name,
-                          style: Get.bodyMedium.px13.w700.copyWith(
-                            color: Get.disabledColor,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        2.verticalGap,
-                        AppText(
-                          'Rs. ${product.price}/${product.unitName}',
-                          style: Get.bodyMedium.px16.w800.copyWith(
-                            color: AppColors.primary,
-                          ),
-                          maxLines: 1,
-                        ),
-                      ],
+                  AppText(
+                    product.name,
+                    style: Get.bodyLarge.px16.w800.copyWith(
+                      color: Get.disabledColor,
+                      height: 1.2,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  // Add to Cart Button - Separate action
-                  _MarketplaceCartButton(product: product),
+                  4.verticalGap,
+                  AppText(
+                    'Rs. ${product.price}/${product.unitName}',
+                    style: Get.bodyMedium.px12.w700.copyWith(
+                      color: AppColors.primary,
+                    ),
+                    maxLines: 1,
+                  ),
                 ],
               ),
             ),
@@ -670,116 +657,6 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _MarketplaceCartButton extends ConsumerStatefulWidget {
-  final Product product;
-
-  const _MarketplaceCartButton({required this.product});
-
-  @override
-  ConsumerState<_MarketplaceCartButton> createState() =>
-      _MarketplaceCartButtonState();
-}
-
-class _MarketplaceCartButtonState extends ConsumerState<_MarketplaceCartButton> {
-  bool isLoading = false;
-  bool isAdded = false;
-
-  Future<void> _addToCart() async {
-    if (isLoading || isAdded) return;
-
-    setState(() => isLoading = true);
-
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      await apiService.addToCart(productId: widget.product.id, quantity: 1);
-
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-          isAdded = true;
-        });
-        Get.snackbar(
-          'added_to_cart'.tr(Get.context),
-          color: Colors.green,
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => isLoading = false);
-        Get.snackbar(
-          'error_adding_to_cart'.tr(Get.context),
-          color: Colors.red,
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: _addToCart,
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 8).rt,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isAdded
-                ? [Colors.green.shade500, Colors.green.shade600]
-                : [
-                    AppColors.primary,
-                    AppColors.primary.withValues(alpha: 0.85),
-                  ],
-          ),
-          borderRadius: BorderRadius.circular(8).rt,
-          boxShadow: [
-            BoxShadow(
-              color:
-                  (isAdded ? Colors.green : AppColors.primary).withValues(alpha: 0.3),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Center(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: isLoading
-                ? SizedBox(
-                    key: const ValueKey('loading'),
-                    width: 16.st,
-                    height: 16.st,
-                    child: CircularProgressIndicator(
-                      color: AppColors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                : Row(
-                    key: ValueKey(isAdded ? 'added' : 'add'),
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        isAdded ? Icons.check_circle : Icons.shopping_cart,
-                        color: AppColors.white,
-                        size: 14.st,
-                      ),
-                      4.horizontalGap,
-                      AppText(
-                        isAdded
-                            ? 'added_to_cart'.tr(context)
-                            : 'add_to_cart'.tr(context),
-                        style: Get.bodySmall.px11.w700.copyWith(
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-          ),
-        ),
       ),
     );
   }

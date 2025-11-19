@@ -136,61 +136,69 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
 
   Widget _buildTypeFilter() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 20.h,
+        bottom: 14.h,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Get.cardColor,
+        borderRadius: BorderRadius.vertical(
+          bottom: const Radius.circular(28),
+        ).rt,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: _serviceTypes.entries.map((entry) {
-            final isSelected = _selectedType == entry.key;
-            return Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedType = entry.key;
-                  });
-                  _loadProviders(serviceType: entry.key);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.teal.shade700 : Colors.white,
-                    borderRadius: BorderRadius.circular(20).rt,
-                    border: Border.all(
-                      color: isSelected ? Colors.teal.shade700 : Colors.grey.shade300,
-                    ),
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: Colors.teal.shade700.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                    ],
-                  ),
-                  child: AppText(
-                    entry.value,
-                    style: Get.bodySmall.copyWith(
-                      color: isSelected ? Colors.white : Colors.teal.shade700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.tune_rounded, color: Colors.teal.shade600, size: 20.st),
+              8.horizontalGap,
+              AppText(
+                'Filter services',
+                style: Get.bodyMedium.w600.copyWith(
+                  color: Colors.teal.shade700,
                 ),
               ),
-            );
-          }).toList(),
-        ),
+            ],
+          ),
+          12.verticalGap,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _serviceTypes.entries.map((entry) {
+                final isSelected = _selectedType == entry.key;
+                final color = _serviceColors[entry.key] ?? Colors.teal;
+                final icon = entry.key == 'all'
+                    ? Icons.all_inclusive
+                    : _serviceIcons[entry.key] ?? Icons.business_rounded;
+                return Padding(
+                  padding: EdgeInsets.only(right: 10.w),
+                  child: _buildFilterPill(
+                    label: entry.value,
+                    icon: icon,
+                    color: color,
+                    isSelected: isSelected,
+                    onTap: () {
+                      setState(() {
+                        _selectedType = entry.key;
+                      });
+                      _loadProviders(serviceType: entry.key);
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -234,45 +242,99 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
     );
   }
 
+  Widget _buildFilterPill({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [color, color.withValues(alpha: 0.8)],
+                )
+              : null,
+          color: isSelected ? null : Get.scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(24).rt,
+          border: Border.all(
+            color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: color.withValues(alpha: 0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16.st,
+              color: isSelected ? Colors.white : color,
+            ),
+            8.horizontalGap,
+            AppText(
+              label,
+              style: Get.bodySmall.w600.copyWith(
+                color: isSelected ? Colors.white : color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildProviderCard(ServiceProvider provider) {
     final color = _serviceColors[provider.serviceType] ?? Colors.teal;
     final icon = _serviceIcons[provider.serviceType] ?? Icons.business_rounded;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
+      margin: EdgeInsets.only(bottom: 18.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16).rt,
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(22).rt,
+        border: Border.all(color: color.withValues(alpha: 0.08)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: color.withValues(alpha: 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Container(
-            padding: EdgeInsets.all(16.rt),
+            padding: EdgeInsets.all(18.rt),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [color, color.withValues(alpha: 0.8)],
+                colors: [color, color.withValues(alpha: 0.75)],
               ),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16.rt),
-                topRight: Radius.circular(16.rt),
-              ),
+              borderRadius: BorderRadius.vertical(
+                top: const Radius.circular(22),
+              ).rt,
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: EdgeInsets.all(12.rt),
+                  padding: EdgeInsets.all(14.rt),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(12).rt,
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(18).rt,
+                    border: Border.all(color: Colors.white24),
                   ),
                   child: Icon(icon, color: Colors.white, size: 28.st),
                 ),
@@ -283,57 +345,39 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
                     children: [
                       AppText(
                         provider.businessName,
-                        style: Get.bodyLarge.w700.copyWith(
+                        style: Get.bodyLarge.px20.w700.copyWith(
                           color: Colors.white,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      6.verticalGap,
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 10.w,
-                          vertical: 5.h,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(6).rt,
-                        ),
-                        child: AppText(
-                          provider.serviceTypeDisplay,
-                          style: Get.bodySmall.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
+                      8.verticalGap,
+                      Wrap(
+                        spacing: 8.w,
+                        runSpacing: 6.h,
+                        children: [
+                          _buildBadge(
+                            text: provider.serviceTypeDisplay,
+                            icon: icon,
                           ),
-                        ),
+                          if (provider.deliveryAvailable)
+                            _buildBadge(
+                              text: 'Delivery Available',
+                              icon: Icons.local_shipping_rounded,
+                            ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                if (provider.deliveryAvailable)
-                  Container(
-                    padding: EdgeInsets.all(8.rt),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(8).rt,
-                    ),
-                    child: Icon(
-                      Icons.local_shipping_rounded,
-                      color: Colors.white,
-                      size: 20.st,
-                    ),
-                  ),
               ],
             ),
           ),
-
-          // Content
           Padding(
-            padding: EdgeInsets.all(16.rt),
+            padding: EdgeInsets.all(20.rt),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Contact Person
                 _buildInfoRow(
                   icon: Icons.person_rounded,
                   label: 'Contact Person',
@@ -341,8 +385,6 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
                   color: Colors.blue,
                 ),
                 12.verticalGap,
-
-                // Address
                 _buildInfoRow(
                   icon: Icons.location_on_rounded,
                   label: 'Address',
@@ -350,26 +392,30 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
                   color: Colors.red,
                 ),
                 12.verticalGap,
-
-                // Description
-                AppText(
-                  provider.description,
-                  style: Get.bodyMedium.copyWith(
-                    color: Colors.grey.shade700,
-                    height: 1.5,
+                Container(
+                  padding: EdgeInsets.all(14.rt),
+                  decoration: BoxDecoration(
+                    color: Get.scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.circular(16).rt,
+                    border: Border.all(
+                      color: Get.disabledColor.withValues(alpha: 0.1),
+                    ),
                   ),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
+                  child: AppText(
+                    provider.description,
+                    style: Get.bodyMedium.copyWith(
+                      color: Get.disabledColor,
+                      height: 1.5,
+                    ),
+                  ),
                 ),
-                12.verticalGap,
-
-                // Price Range
+                16.verticalGap,
                 Container(
                   padding: EdgeInsets.all(12.rt),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8).rt,
-                    border: Border.all(color: color.withValues(alpha: 0.3)),
+                    color: color.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(14).rt,
+                    border: Border.all(color: color.withValues(alpha: 0.2)),
                   ),
                   child: Row(
                     children: [
@@ -378,81 +424,41 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
                         size: 18.st,
                         color: color,
                       ),
-                      8.horizontalGap,
+                      10.horizontalGap,
                       Expanded(
                         child: AppText(
                           provider.priceRange,
-                          style: Get.bodyMedium.w600.copyWith(color: color),
+                          style: Get.bodyMedium.w700.copyWith(color: color),
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                if (provider.deliveryAvailable) ...[
-                  12.verticalGap,
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade50,
-                      borderRadius: BorderRadius.circular(8).rt,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.check_circle_rounded,
-                          size: 16.st,
-                          color: Colors.green.shade700,
-                        ),
-                        8.horizontalGap,
-                        AppText(
-                          'Delivery Available',
-                          style: Get.bodySmall.copyWith(
-                            color: Colors.green.shade700,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-
-                20.verticalGap,
-
-                // Action Buttons
-                Row(
+                18.verticalGap,
+                Wrap(
+                  spacing: 12.w,
+                  runSpacing: 12.h,
                   children: [
-                    Expanded(
-                      child: _buildActionButton(
-                        icon: Icons.phone_rounded,
-                        label: 'Call',
-                        color: Colors.green,
-                        onTap: () => _makePhoneCall(provider.phoneNumber),
-                      ),
+                    _buildActionButton(
+                      icon: Icons.phone_in_talk_rounded,
+                      label: 'Call',
+                      color: Colors.green,
+                      onTap: () => _makePhoneCall(provider.phoneNumber),
                     ),
-                    if (provider.alternatePhone.isNotEmpty) ...[
-                      12.horizontalGap,
-                      Expanded(
-                        child: _buildActionButton(
-                          icon: Icons.phone_forwarded_rounded,
-                          label: 'Alt. Call',
-                          color: Colors.blue,
-                          onTap: () => _makePhoneCall(provider.alternatePhone),
-                        ),
+                    if (provider.alternatePhone.isNotEmpty)
+                      _buildActionButton(
+                        icon: Icons.phone_forwarded_rounded,
+                        label: 'Alt. Call',
+                        color: Colors.blue,
+                        onTap: () => _makePhoneCall(provider.alternatePhone),
                       ),
-                    ],
-                    if (provider.email.isNotEmpty) ...[
-                      12.horizontalGap,
-                      Expanded(
-                        child: _buildActionButton(
-                          icon: Icons.email_rounded,
-                          label: 'Email',
-                          color: Colors.orange,
-                          onTap: () => _sendEmail(provider.email),
-                        ),
+                    if (provider.email.isNotEmpty)
+                      _buildActionButton(
+                        icon: Icons.email_rounded,
+                        label: 'Email',
+                        color: Colors.orange,
+                        onTap: () => _sendEmail(provider.email),
                       ),
-                    ],
                   ],
                 ),
               ],
@@ -469,40 +475,57 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
     required String value,
     required Color color,
   }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: EdgeInsets.all(6.rt),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(6).rt,
-          ),
-          child: Icon(icon, size: 16.st, color: color),
-        ),
-        10.horizontalGap,
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppText(
-                label,
-                style: Get.bodySmall.copyWith(
-                  color: Colors.grey.shade600,
-                  fontSize: 11.sp,
+    return Container(
+      padding: EdgeInsets.all(12.rt),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16).rt,
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(6.rt),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-              ),
-              2.verticalGap,
-              AppText(
-                value,
-                style: Get.bodyMedium.w500,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+              ],
+            ),
+            child: Icon(icon, size: 16.st, color: color),
           ),
-        ),
-      ],
+          12.horizontalGap,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  label,
+                  style: Get.bodySmall.copyWith(
+                    color: Colors.grey.shade600,
+                    fontSize: 11.sp,
+                  ),
+                ),
+                4.verticalGap,
+                AppText(
+                  value,
+                  style: Get.bodyMedium.w600.copyWith(
+                    color: Get.disabledColor,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -512,40 +535,51 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color, color.withValues(alpha: 0.8)],
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 110.w,
+        padding: EdgeInsets.symmetric(vertical: 12.h),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(14).rt,
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
-        borderRadius: BorderRadius.circular(10).rt,
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.3),
-            blurRadius: 6,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 18.st),
+            6.horizontalGap,
+            AppText(
+              label,
+              style: Get.bodySmall.w600.copyWith(color: color),
+            ),
+          ],
+        ),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(10).rt,
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 12.h),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: Colors.white, size: 18.st),
-                6.horizontalGap,
-                AppText(
-                  label,
-                  style: Get.bodySmall.w600.copyWith(color: Colors.white),
-                ),
-              ],
+    );
+  }
+
+  Widget _buildBadge({required String text, required IconData icon}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(30).rt,
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.st, color: Colors.white),
+          6.horizontalGap,
+          AppText(
+            text,
+            style: Get.bodySmall.w600.copyWith(
+              color: Colors.white,
             ),
           ),
-        ),
+        ],
       ),
     );
   }

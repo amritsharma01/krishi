@@ -115,23 +115,23 @@ class _NewsPageState extends ConsumerState<NewsPage> {
         Get.to(NewsDetailPage(news: article));
       },
       child: Container(
-        margin: EdgeInsets.only(bottom: 16.rt),
-        decoration: BoxDecoration(
-          color: Get.cardColor,
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(
-            color: Get.disabledColor.withValues(alpha: 0.08),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+      margin: EdgeInsets.only(bottom: 16.rt),
+      decoration: BoxDecoration(
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(16).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.08),
+          width: 1,
         ),
-        child: Column(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (article.image != null)
@@ -231,7 +231,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
           ),
         ],
       ),
-    ),
+      ),
     );
   }
 

@@ -4,6 +4,7 @@ class Review {
   final String productName;
   final int user;
   final String userEmail;
+  final String? userName;
   final int rating;
   final String comment;
   final DateTime createdAt;
@@ -15,6 +16,7 @@ class Review {
     required this.productName,
     required this.user,
     required this.userEmail,
+    this.userName,
     required this.rating,
     required this.comment,
     required this.createdAt,
@@ -28,6 +30,7 @@ class Review {
       productName: json['product_name'] as String,
       user: json['user'] as int,
       userEmail: json['user_email'] as String,
+      userName: json['user_name'] as String?,
       rating: json['rating'] as int,
       comment: json['comment'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
@@ -42,6 +45,7 @@ class Review {
       'product_name': productName,
       'user': user,
       'user_email': userEmail,
+      'user_name': userName,
       'rating': rating,
       'comment': comment,
       'created_at': createdAt.toIso8601String(),

@@ -34,6 +34,26 @@ class _VideosPageState extends ConsumerState<VideosPage> {
     'other': 'Other',
   };
 
+  final Map<String, IconData> _categoryIcons = {
+    'farming': Icons.agriculture_rounded,
+    'pest_control': Icons.pest_control_rounded,
+    'irrigation': Icons.water_drop_rounded,
+    'harvesting': Icons.grass_rounded,
+    'storage': Icons.warehouse_rounded,
+    'marketing': Icons.shopping_cart_rounded,
+    'other': Icons.video_library_rounded,
+  };
+
+  final Map<String, Color> _categoryColors = {
+    'farming': Colors.green,
+    'pest_control': Colors.orange,
+    'irrigation': Colors.blue,
+    'harvesting': Colors.amber,
+    'storage': Colors.brown,
+    'marketing': Colors.purple,
+    'other': Colors.teal,
+  };
+
   @override
   void initState() {
     super.initState();
@@ -65,11 +85,22 @@ class _VideosPageState extends ConsumerState<VideosPage> {
   }
 
   Future<void> _openVideo(String url) async {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      Get.snackbar('Could not open video');
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        if (mounted) {
+          Get.snackbar('Could not open video. Please check your internet connection');
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar('Error opening video: $e');
+      }
     }
   }
 
@@ -118,60 +149,125 @@ class _VideosPageState extends ConsumerState<VideosPage> {
 
   Widget _buildCategoryFilter() {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
+      padding: EdgeInsets.only(
+        left: 16.w,
+        right: 16.w,
+        top: 20.h,
+        bottom: 14.h,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Get.cardColor,
+        borderRadius: BorderRadius.vertical(
+          bottom: const Radius.circular(28),
+        ).rt,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: _categories.entries.map((entry) {
-            final isSelected = _selectedCategory == entry.key;
-            return Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedCategory = entry.key;
-                  });
-                  _loadVideos(category: entry.key);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.red.shade700 : Colors.white,
-                    borderRadius: BorderRadius.circular(20).rt,
-                    border: Border.all(
-                      color: isSelected ? Colors.red.shade700 : Colors.grey.shade300,
-                    ),
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: Colors.red.shade700.withValues(alpha: 0.2),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                    ],
-                  ),
-                  child: AppText(
-                    entry.value,
-                    style: Get.bodySmall.copyWith(
-                      color: isSelected ? Colors.white : Colors.red.shade700,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.filter_alt_rounded,
+                color: Colors.red.shade600,
+                size: 20.st,
+              ),
+              8.horizontalGap,
+              AppText(
+                'Filter videos',
+                style: Get.bodyMedium.w600.copyWith(
+                  color: Colors.red.shade700,
                 ),
               ),
-            );
-          }).toList(),
+            ],
+          ),
+          12.verticalGap,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _categories.entries.map((entry) {
+                final isSelected = _selectedCategory == entry.key;
+                final color = _categoryColors[entry.key] ?? Colors.red;
+                final icon = entry.key == 'all'
+                    ? Icons.all_inclusive
+                    : _categoryIcons[entry.key] ?? Icons.video_library_rounded;
+                return Padding(
+                  padding: EdgeInsets.only(right: 10.w),
+                  child: _buildFilterPill(
+                    label: entry.value,
+                    icon: icon,
+                    color: color,
+                    isSelected: isSelected,
+                    onTap: () {
+                      setState(() {
+                        _selectedCategory = entry.key;
+                      });
+                      _loadVideos(category: entry.key);
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterPill({
+    required String label,
+    required IconData icon,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [color, color.withValues(alpha: 0.8)],
+                )
+              : null,
+          color: isSelected ? null : Get.scaffoldBackgroundColor,
+          borderRadius: BorderRadius.circular(24).rt,
+          border: Border.all(
+            color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: color.withValues(alpha: 0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16.st,
+              color: isSelected ? Colors.white : color,
+            ),
+            8.horizontalGap,
+            AppText(
+              label,
+              style: Get.bodySmall.w600.copyWith(
+                color: isSelected ? Colors.white : color,
+              ),
+            ),
+          ],
         ),
       ),
     );

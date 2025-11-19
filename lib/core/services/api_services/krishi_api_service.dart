@@ -469,6 +469,19 @@ class KrishiApiService {
     }
   }
 
+  /// Clear all items from cart
+  Future<void> clearCart() async {
+    try {
+      final cart = await getCart();
+      // Remove all items
+      for (final item in cart.items) {
+        await removeCartItem(item.id);
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Checkout
   Future<Map<String, dynamic>> checkout({
     required String buyerName,
@@ -622,9 +635,7 @@ class KrishiApiService {
         ApiEndpoints.notices,
         queryParameters: queryParams,
       );
-      return (response.data as List)
-          .map((json) => Notice.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return _parseListResponse(response.data, Notice.fromJson);
     } catch (e) {
       rethrow;
     }
@@ -760,9 +771,7 @@ class KrishiApiService {
   Future<List<FAQ>> getFAQs() async {
     try {
       final response = await apiManager.get(ApiEndpoints.faqs);
-      return (response.data as List)
-          .map((json) => FAQ.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return _parseListResponse(response.data, FAQ.fromJson);
     } catch (e) {
       rethrow;
     }

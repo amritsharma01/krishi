@@ -3,6 +3,7 @@ class Product {
   final String name;
   final int seller;
   final String sellerEmail;
+  final String? sellerName;
   final String? sellerPhoneNumber;
   final int category;
   final String categoryName;
@@ -20,6 +21,7 @@ class Product {
     required this.name,
     required this.seller,
     required this.sellerEmail,
+    this.sellerName,
     this.sellerPhoneNumber,
     required this.category,
     required this.categoryName,
@@ -39,6 +41,7 @@ class Product {
         name: (json['name'] as String?) ?? '',
         seller: (json['seller'] as int?) ?? 0,
         sellerEmail: (json['seller_email'] as String?) ?? '',
+        sellerName: json['seller_name'] as String?,
         sellerPhoneNumber: json['seller_phone_number'] as String?,
         category: (json['category'] as int?) ?? 0,
         categoryName: (json['category_name'] as String?) ?? '',
@@ -67,6 +70,7 @@ class Product {
       'name': name,
       'seller': seller,
       'seller_email': sellerEmail,
+      'seller_name': sellerName,
       'seller_phone_number': sellerPhoneNumber,
       'category': category,
       'category_name': categoryName,
