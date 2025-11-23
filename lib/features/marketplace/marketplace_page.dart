@@ -6,6 +6,7 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
+import 'package:krishi/core/services/cache_service.dart';
 import 'package:krishi/features/cart/cart_page.dart';
 import 'package:krishi/features/marketplace/add_edit_product_page.dart';
 import 'package:krishi/features/marketplace/product_detail_page.dart';
@@ -35,10 +36,21 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   bool isLoadingUserListings = true;
   String? buyProductsError;
   String? userListingsError;
+  final ScrollController _buyScrollController = ScrollController();
+  final ScrollController _sellScrollController = ScrollController();
+  int _buyCurrentPage = 1;
+  bool _buyHasMore = true;
+  bool _isLoadingMoreBuyProducts = false;
+  int _sellCurrentPage = 1;
+  bool _sellHasMore = true;
+  bool _isLoadingMoreUserListings = false;
+  int? _currentUserId;
 
   @override
   void initState() {
     super.initState();
+    _buyScrollController.addListener(_onBuyScroll);
+    _sellScrollController.addListener(_onSellScroll);
     _loadBuyProducts();
     _loadUserListings();
   }
@@ -47,18 +59,48 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     setState(() {
       isLoadingBuyProducts = true;
       buyProductsError = null;
+      _buyCurrentPage = 1;
+      _buyHasMore = true;
+      buyProducts = [];
     });
 
     try {
+      final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
+      
+      // Only use cache if there's no search query
+      if (_searchController.text.isEmpty) {
+        final cachedProducts = await cacheService.getBuyProductsCache();
+        if (cachedProducts != null) {
+          final products = cachedProducts.map((json) => Product.fromJson(json)).toList();
+          if (mounted) {
+            setState(() {
+              buyProducts = products;
+              isLoadingBuyProducts = false;
+            });
+          }
+        }
+      }
+      
+      // Fetch fresh data from API
       final response = await apiService.getProducts(
-        page: 1,
+        page: _buyCurrentPage,
         search: _searchController.text.isEmpty ? null : _searchController.text,
       );
+      
+      // Save to cache only if no search query
+      if (_searchController.text.isEmpty) {
+        await cacheService.saveBuyProductsCache(
+          response.results.map((p) => p.toJson()).toList(),
+        );
+      }
+      
       if (mounted) {
         setState(() {
           buyProducts = response.results;
           isLoadingBuyProducts = false;
+          _buyHasMore = response.next != null;
+          _buyCurrentPage = _buyCurrentPage + 1;
         });
       }
     } catch (e) {
@@ -71,24 +113,79 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     }
   }
 
-  Future<void> _loadUserListings() async {
+  Future<void> _loadMoreBuyProducts() async {
+    if (_isLoadingMoreBuyProducts || !_buyHasMore) return;
     setState(() {
-      isLoadingUserListings = true;
-      userListingsError = null;
+      _isLoadingMoreBuyProducts = true;
     });
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      // Get current user first to filter their products
-      final user = await apiService.getCurrentUser();
-      final response = await apiService.getProducts(page: 1);
+      final response = await apiService.getProducts(
+        page: _buyCurrentPage,
+        search: _searchController.text.isEmpty ? null : _searchController.text,
+      );
       if (mounted) {
         setState(() {
-          // Filter products by current user
-          userListings = response.results
-              .where((product) => product.seller == user.id)
-              .toList();
+          buyProducts = [...buyProducts, ...response.results];
+          _buyHasMore = response.next != null;
+          _buyCurrentPage = _buyCurrentPage + 1;
+          _isLoadingMoreBuyProducts = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingMoreBuyProducts = false;
+        });
+        Get.snackbar('problem_fetching_data'.tr(context), color: Colors.red);
+      }
+    }
+  }
+
+  Future<void> _loadUserListings() async {
+    setState(() {
+      isLoadingUserListings = true;
+      userListingsError = null;
+      _sellCurrentPage = 1;
+      _sellHasMore = true;
+      userListings = [];
+    });
+
+    try {
+      final cacheService = ref.read(cacheServiceProvider);
+      final apiService = ref.read(krishiApiServiceProvider);
+      _currentUserId ??= (await apiService.getCurrentUser()).id;
+      
+      // Try to load from cache first
+      final cachedProducts = await cacheService.getSellProductsCache();
+      if (cachedProducts != null) {
+        final products = cachedProducts.map((json) => Product.fromJson(json)).toList();
+        if (mounted) {
+          setState(() {
+            userListings = products;
+            isLoadingUserListings = false;
+          });
+        }
+      }
+      
+      // Fetch fresh data from API
+      final response = await apiService.getProducts(
+        page: _sellCurrentPage,
+        sellerId: _currentUserId,
+      );
+      
+      // Save to cache
+      await cacheService.saveSellProductsCache(
+        response.results.map((p) => p.toJson()).toList(),
+      );
+      
+      if (mounted) {
+        setState(() {
+          userListings = response.results;
           isLoadingUserListings = false;
+          _sellHasMore = response.next != null;
+          _sellCurrentPage = _sellCurrentPage + 1;
         });
       }
     } catch (e) {
@@ -101,8 +198,71 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     }
   }
 
+  Future<void> _loadMoreUserListings() async {
+    if (_isLoadingMoreUserListings || !_sellHasMore) return;
+    if (_currentUserId == null) {
+      await _loadUserListings();
+      return;
+    }
+
+    setState(() {
+      _isLoadingMoreUserListings = true;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final response = await apiService.getProducts(
+        page: _sellCurrentPage,
+        sellerId: _currentUserId,
+      );
+      if (mounted) {
+        setState(() {
+          userListings = [...userListings, ...response.results];
+          _sellHasMore = response.next != null;
+          _sellCurrentPage = _sellCurrentPage + 1;
+          _isLoadingMoreUserListings = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingMoreUserListings = false;
+        });
+        Get.snackbar('problem_fetching_data'.tr(context), color: Colors.red);
+      }
+    }
+  }
+
+  void _onBuyScroll() {
+    if (!_buyScrollController.hasClients ||
+        _isLoadingMoreBuyProducts ||
+        !_buyHasMore) {
+      return;
+    }
+    final threshold = _buyScrollController.position.maxScrollExtent - 200;
+    if (_buyScrollController.position.pixels >= threshold) {
+      _loadMoreBuyProducts();
+    }
+  }
+
+  void _onSellScroll() {
+    if (!_sellScrollController.hasClients ||
+        _isLoadingMoreUserListings ||
+        !_sellHasMore) {
+      return;
+    }
+    final threshold = _sellScrollController.position.maxScrollExtent - 200;
+    if (_sellScrollController.position.pixels >= threshold) {
+      _loadMoreUserListings();
+    }
+  }
+
   @override
   void dispose() {
+    _buyScrollController.removeListener(_onBuyScroll);
+    _sellScrollController.removeListener(_onSellScroll);
+    _buyScrollController.dispose();
+    _sellScrollController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -235,6 +395,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     return RefreshIndicator(
       onRefresh: _loadBuyProducts,
       child: SingleChildScrollView(
+        controller: _buyScrollController,
         physics: Get.scrollPhysics,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16).rt,
@@ -292,6 +453,13 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                     return _buildProductCard(buyProducts[index]);
                   },
                 ),
+              if (_isLoadingMoreBuyProducts)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16).rt,
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+                ),
               20.verticalGap,
             ],
           ),
@@ -304,6 +472,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     return RefreshIndicator(
       onRefresh: _loadUserListings,
       child: SingleChildScrollView(
+        controller: _sellScrollController,
         physics: Get.scrollPhysics,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16).rt,
@@ -388,6 +557,13 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 ...userListings.map((listing) {
                   return _buildListingCard(listing);
                 }),
+              if (_isLoadingMoreUserListings)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16).rt,
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+                ),
               20.verticalGap,
             ],
           ),

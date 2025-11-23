@@ -6,6 +6,8 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
+import 'package:krishi/core/services/cache_service.dart';
+import 'package:krishi/models/order.dart';
 import 'package:krishi/features/knowledge/articles_page.dart';
 import 'package:krishi/features/knowledge/news_page.dart';
 import 'package:krishi/features/marketplace/product_detail_page.dart';
@@ -67,9 +69,35 @@ class _HomePageState extends ConsumerState<HomePage> {
     });
 
     try {
+      final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
+      
+      // Try to load from cache first
+      final cachedSales = await cacheService.getMySalesCache();
+      final cachedPurchases = await cacheService.getMyPurchasesCache();
+      
+      if (cachedSales != null && cachedPurchases != null) {
+        final receivedOrders = cachedSales.map((json) => Order.fromJson(json)).toList();
+        final placedOrders = cachedPurchases.map((json) => Order.fromJson(json)).toList();
+        
+        if (mounted) {
+          setState(() {
+            receivedOrdersCount = receivedOrders.length;
+            placedOrdersCount = placedOrders.length;
+            isLoadingOrders = false;
+          });
+        }
+      }
+      
+      // Fetch fresh data from API
       final receivedOrders = await apiService.getMySales();
       final placedOrders = await apiService.getMyPurchases();
+      
+      // Save to cache
+      await Future.wait([
+        cacheService.saveMySalesCache(receivedOrders.map((o) => o.toJson()).toList()),
+        cacheService.saveMyPurchasesCache(placedOrders.map((o) => o.toJson()).toList()),
+      ]);
 
       if (mounted) {
         setState(() {
@@ -192,11 +220,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                   // Knowledge Base: Krishi Gyan, News, Videos, Crop Calendars (2-column grid)
                   _buildKnowledgeBaseGrid(),
-
-                  24.verticalGap,
-
-                  // Government Schemes Section
-                  _buildGovernmentSchemesSection(),
 
                   20.verticalGap,
 
@@ -517,10 +540,10 @@ class _HomePageState extends ConsumerState<HomePage> {
               children: [
                 isLoading
                     ? SizedBox(
-                        width: 40.st,
-                        height: 28.st,
+                        width: 24.st,
+                        height: 24.st,
                         child: CircularProgressIndicator(
-                          strokeWidth: 2,
+                          strokeWidth: 2.5,
                           color: AppColors.primary,
                         ),
                       )
@@ -701,6 +724,20 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           onTap: () {
             Get.to(const NoticesPage());
+          },
+        ),
+        12.verticalGap,
+        _buildMainServiceCard(
+          title: 'Programs',
+          description: 'Agricultural development programs',
+          icon: Icons.agriculture_rounded,
+          gradient: const LinearGradient(
+            colors: [Color(0xFF388E3C), Color(0xFF66BB6A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          onTap: () {
+            Get.snackbar('Coming soon!');
           },
         ),
       ],
@@ -1045,73 +1082,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  // Government Schemes Section
-  Widget _buildGovernmentSchemesSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            AppText(
-              'Government Schemes',
-              style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
-            ),
-            GestureDetector(
-              onTap: () {
-                // TODO: Navigate to all schemes
-                Get.snackbar('Coming soon!');
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6).rt,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20).rt,
-                ),
-                child: Row(
-                  children: [
-                    AppText(
-                      'View All',
-                      style: Get.bodyMedium.px12.w600.copyWith(
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    4.horizontalGap,
-                    Icon(
-                      Icons.arrow_forward_rounded,
-                      color: AppColors.primary,
-                      size: 14.st,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-        12.verticalGap,
-        _buildSchemeCard(
-          title: 'Subsidies',
-          description: 'Government subsidies for farmers',
-          icon: Icons.account_balance_wallet_rounded,
-          color: const Color(0xFF1976D2),
-          onTap: () {
-            Get.snackbar('Coming soon!');
-          },
-        ),
-        12.verticalGap,
-        _buildSchemeCard(
-          title: 'Programs',
-          description: 'Agricultural development programs',
-          icon: Icons.agriculture_rounded,
-          color: const Color(0xFF388E3C),
-          onTap: () {
-            Get.snackbar('Coming soon!');
-          },
-        ),
-      ],
-    );
-  }
-
   // Market Prices Section
   Widget _buildMarketPricesSection() {
     return Column(
@@ -1185,81 +1155,6 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ),
       ],
-    );
-  }
-
-  // Scheme Card Widget
-  Widget _buildSchemeCard({
-    required String title,
-    required String description,
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16).rt,
-        decoration: BoxDecoration(
-          color: Get.cardColor,
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(
-            color: color.withValues(alpha: 0.2),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12).rt,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12).rt,
-              ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28.st,
-              ),
-            ),
-            16.horizontalGap,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    title,
-                    style: Get.bodyMedium.px15.w700.copyWith(
-                      color: Get.disabledColor,
-                    ),
-                  ),
-                  4.verticalGap,
-                  AppText(
-                    description,
-                    style: Get.bodySmall.px12.w500.copyWith(
-                      color: Get.disabledColor.withValues(alpha: 0.7),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Get.disabledColor.withValues(alpha: 0.4),
-              size: 18.st,
-            ),
-          ],
-        ),
-      ),
     );
   }
 

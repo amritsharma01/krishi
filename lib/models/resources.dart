@@ -31,8 +31,15 @@ class Notice {
   });
 
   factory Notice.fromJson(Map<String, dynamic> json) {
+    int _parseInt(dynamic value) {
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is num) return value.toInt();
+      return 0;
+    }
+
     return Notice(
-      id: json['id'] as int,
+      id: _parseInt(json['id']),
       title: json['title'] as String,
       description: json['description'] as String,
       noticeType: json['notice_type'] as String,
@@ -40,7 +47,7 @@ class Notice {
       pdfFile: json['pdf_file'] as String?,
       image: json['image'] as String?,
       publishedDate: DateTime.parse(json['published_date'] as String),
-      createdBy: json['created_by'] as int,
+      createdBy: _parseInt(json['created_by']),
       createdByEmail: json['created_by_email'] as String,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),

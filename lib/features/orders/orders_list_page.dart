@@ -9,6 +9,7 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
+import 'package:krishi/core/services/cache_service.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
@@ -34,48 +35,160 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
   String? error;
   final Set<int> _completingOrders = {};
   String selectedFilter = 'all';
+  final ScrollController _scrollController = ScrollController();
+  int _currentPage = 1;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _loadOrders();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _filterOrders() {
     if (selectedFilter == 'all') {
       filteredOrders = orders;
     } else {
-      filteredOrders = orders.where((order) => 
-        order.status.toLowerCase() == selectedFilter
-      ).toList();
+      filteredOrders = orders
+          .where((order) => order.status.toLowerCase() == selectedFilter)
+          .toList();
     }
   }
 
-  Future<void> _loadOrders() async {
+  void _onScroll() {
+    if (!_scrollController.hasClients || _isLoadingMore || !_hasMore) return;
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreOrders();
+    }
+  }
+
+  Future<void> _loadOrders({bool refresh = false}) async {
+    _currentPage = 1;
+    _hasMore = true;
+    
+    final cacheService = ref.read(cacheServiceProvider);
+    final apiService = ref.read(krishiApiServiceProvider);
+    
+    // Try to load from cache first (only for initial load, not refresh)
+    if (!refresh) {
+      final cachedOrders = widget.showSales
+          ? await cacheService.getMySalesCache()
+          : await cacheService.getMyPurchasesCache();
+      
+      if (cachedOrders != null && cachedOrders.isNotEmpty) {
+        final ordersList = cachedOrders.map((json) => Order.fromJson(json)).toList();
+        if (mounted) {
+          setState(() {
+            orders = ordersList;
+            _filterOrders();
+            isLoading = false; // Show cached data immediately, no loading spinner
+            error = null;
+          });
+        }
+      } else {
+        // No cache available, show loading state
+        if (mounted) {
+          setState(() {
+            isLoading = true;
+            error = null;
+            orders = [];
+            filteredOrders = [];
+          });
+        }
+      }
+    } else {
+      // Refresh - clear error but keep showing current data
+      if (mounted) {
+        setState(() {
+          error = null;
+        });
+      }
+    }
+
+    try {
+      // Fetch fresh data from API (always fetch, but don't block UI if cache exists)
+      final result = widget.showSales
+          ? await apiService.getMySalesPaginated(page: _currentPage)
+          : await apiService.getMyPurchasesPaginated(page: _currentPage);
+      
+      // Save to cache (only first page)
+      if (_currentPage == 1) {
+        final ordersJson = result.results.map((o) => o.toJson()).toList();
+        if (widget.showSales) {
+          await cacheService.saveMySalesCache(ordersJson);
+        } else {
+          await cacheService.saveMyPurchasesCache(ordersJson);
+        }
+      }
+      
+      // Update UI with fresh data
+      if (mounted) {
+        setState(() {
+          orders = result.results;
+          _filterOrders();
+          isLoading = false;
+          _hasMore = result.next != null;
+          _currentPage = _hasMore ? _currentPage + 1 : _currentPage;
+        });
+      }
+    } catch (e) {
+      // If we have cached data and API fails, keep showing cached data
+      if (!refresh && orders.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+            // Don't set error if we have cached data to show
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            error = e.toString();
+            isLoading = false;
+          });
+        }
+      }
+    }
+  }
+
+  Future<void> _loadMoreOrders() async {
+    if (_isLoadingMore || !_hasMore || isLoading) return;
     setState(() {
-      isLoading = true;
-      error = null;
+      _isLoadingMore = true;
     });
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final result = widget.showSales
-          ? await apiService.getMySales()
-          : await apiService.getMyPurchases();
-      if (mounted) {
-        setState(() {
-          orders = result;
-          _filterOrders();
-          isLoading = false;
-        });
-      }
+          ? await apiService.getMySalesPaginated(page: _currentPage)
+          : await apiService.getMyPurchasesPaginated(page: _currentPage);
+
+      if (!mounted) return;
+      setState(() {
+        orders = [...orders, ...result.results];
+        _filterOrders();
+        _hasMore = result.next != null;
+        if (_hasMore) {
+          _currentPage += 1;
+        }
+        _isLoadingMore = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          error = e.toString();
-          isLoading = false;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _isLoadingMore = false;
+      });
+      Get.snackbar('problem_fetching_data'.tr(context), color: Colors.red);
     }
   }
 
@@ -87,12 +200,21 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     });
 
     try {
+      final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.completeOrder(order.id);
+      
+      // Clear cache to force refresh
+      if (widget.showSales) {
+        await cacheService.clearMySalesCache();
+      } else {
+        await cacheService.clearMyPurchasesCache();
+      }
+      
       if (!mounted) return;
       Get.snackbar('order_marked_complete'.tr(context), color: Colors.green);
       _completingOrders.remove(order.id);
-      _loadOrders();
+      _loadOrders(refresh: true);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -146,9 +268,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8).rt,
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary
-              : Get.cardColor,
+          color: isSelected ? AppColors.primary : Get.cardColor,
           borderRadius: BorderRadius.circular(20).rt,
           border: Border.all(
             color: isSelected
@@ -176,8 +296,9 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final title =
-        widget.showSales ? 'received_orders'.tr(context) : 'placed_orders'.tr(context);
+    final title = widget.showSales
+        ? 'received_orders'.tr(context)
+        : 'placed_orders'.tr(context);
 
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
@@ -198,45 +319,63 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
           _buildFilterChips(),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: _loadOrders,
+              onRefresh: () => _loadOrders(refresh: true),
               child: isLoading
-            ? ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  80.verticalGap,
-                  Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  ),
-                ],
-              )
-            : error != null
-                ? Padding(
-                    padding: const EdgeInsets.all(16).rt,
-                    child: ErrorState(
-                      title: 'problem_fetching_data'.tr(context),
-                      subtitle: error,
-                      onRetry: _loadOrders,
-                    ),
-                  )
-                : filteredOrders.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.all(16).rt,
-                        child: EmptyState(
-                          title: widget.showSales
-                              ? 'no_sales'.tr(context)
-                              : 'no_purchases'.tr(context),
-                          subtitle: widget.showSales
-                              ? 'no_sales_message'.tr(context)
-                              : 'no_purchases_message'.tr(context),
+                  ? ListView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      children: [
+                        80.verticalGap,
+                        Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
                         ),
-                      )
-                    : ListView.separated(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.all(16).rt,
-                        itemBuilder: (_, index) => _buildOrderCard(filteredOrders[index]),
-                        separatorBuilder: (_, __) => 12.verticalGap,
-                        itemCount: filteredOrders.length,
+                      ],
+                    )
+                  : error != null
+                  ? Padding(
+                      padding: const EdgeInsets.all(16).rt,
+                      child: ErrorState(
+                        title: 'problem_fetching_data'.tr(context),
+                        subtitle: error,
+                        onRetry: () => _loadOrders(),
                       ),
+                    )
+                  : filteredOrders.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(16).rt,
+                      child: EmptyState(
+                        title: widget.showSales
+                            ? 'no_sales'.tr(context)
+                            : 'no_purchases'.tr(context),
+                        subtitle: widget.showSales
+                            ? 'no_sales_message'.tr(context)
+                            : 'no_purchases_message'.tr(context),
+                      ),
+                    )
+                  : ListView.separated(
+                      controller: _scrollController,
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(16).rt,
+                      itemBuilder: (_, index) {
+                        if (index >= filteredOrders.length) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 12,
+                            ).rt,
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          );
+                        }
+                        return _buildOrderCard(filteredOrders[index]);
+                      },
+                      separatorBuilder: (_, __) => 12.verticalGap,
+                      itemCount:
+                          filteredOrders.length + (_isLoadingMore ? 1 : 0),
+                    ),
             ),
           ),
         ],
@@ -248,20 +387,20 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     final status = order.status.toLowerCase();
     final isCompleted = status == 'completed';
     final isCompleting = _completingOrders.contains(order.id);
-    final displayStatus = (order.statusDisplay != null &&
-            order.statusDisplay!.trim().isNotEmpty)
+    final displayStatus =
+        (order.statusDisplay != null && order.statusDisplay!.trim().isNotEmpty)
         ? order.statusDisplay!
         : _capitalize(order.status);
-    final (Color bgColor, Color textColor, Color borderColor) = _statusColors(status);
+    final (Color bgColor, Color textColor, Color borderColor) = _statusColors(
+      status,
+    );
     return InkWell(
       onTap: () async {
         final result = await Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OrderDetailPage(
-              orderId: order.id,
-              isSeller: widget.showSales,
-            ),
+            builder: (context) =>
+                OrderDetailPage(orderId: order.id, isSeller: widget.showSales),
           ),
         );
         if (result == true && mounted) {
@@ -275,7 +414,9 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(16).rt,
           border: Border.all(
-            color: isCompleted ? bgColor : Get.disabledColor.withValues(alpha: 0.08),
+            color: isCompleted
+                ? bgColor
+                : Get.disabledColor.withValues(alpha: 0.08),
             width: 1,
           ),
           boxShadow: [
@@ -289,184 +430,194 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          Row(
-            children: [
-              Expanded(
-                child: AppText(
-                  order.productName,
-                  style: Get.bodyMedium.px16.w700.copyWith(
-                    color: Get.disabledColor,
-                  ),
-                  maxLines: 1,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4).rt,
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  borderRadius: BorderRadius.circular(12).rt,
-                  border: Border.all(color: borderColor, width: 1),
-                ),
-                child: AppText(
-                  displayStatus,
-                  style: Get.bodySmall.px12.w700.copyWith(
-                    color: textColor,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          8.verticalGap,
-          AppText(
-            _dateFormat.format(order.createdAt.toLocal()),
-            style: Get.bodySmall.px12.w500.copyWith(
-              color: Get.disabledColor.withValues(alpha: 0.6),
-            ),
-          ),
-          12.verticalGap,
-          Row(
-            children: [
-              _buildInfoChip(
-                icon: Icons.paid_rounded,
-                label: '${order.totalAmountAsDouble.toStringAsFixed(2)} NPR',
-              ),
-              8.horizontalGap,
-              _buildInfoChip(
-                icon: Icons.shopping_cart_rounded,
-                label: '${order.quantity} pcs',
-              ),
-            ],
-          ),
-          12.verticalGap,
-          Divider(color: Get.disabledColor.withValues(alpha: 0.12)),
-          12.verticalGap,
-          InkWell(
-            onTap: widget.showSales
-                ? null // Don't navigate for buyers
-                : () {
-                    // Navigate to seller profile
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SellerProfilePage(
-                          sellerId: order.seller,
-                        ),
-                      ),
-                    );
-                  },
-            borderRadius: BorderRadius.circular(8).rt,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8).rt,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    widget.showSales ? Icons.person_outline : Icons.store,
-                    color: Get.disabledColor.withValues(alpha: 0.6),
-                    size: 18.st,
-                  ),
-                  8.horizontalGap,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppText(
-                          widget.showSales ? order.buyerName : order.sellerEmail,
-                          style: Get.bodyMedium.px14.w600.copyWith(
-                            color: Get.disabledColor,
-                          ),
-                        ),
-                        2.verticalGap,
-                        AppText(
-                          widget.showSales 
-                            ? order.buyerPhoneNumber 
-                            : (order.sellerPhoneNumber ?? 'no_phone'.tr(context)),
-                          style: Get.bodySmall.px12.w500.copyWith(
-                            color: Get.disabledColor.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (!widget.showSales)
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 14.st,
-                      color: Get.disabledColor.withValues(alpha: 0.3),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          if (_showQuickAction(order)) ...[
-            16.verticalGap,
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
+                  child: AppText(
+                    order.productName,
+                    style: Get.bodyMedium.px16.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
+                    maxLines: 1,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ).rt,
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(12).rt,
+                    border: Border.all(color: borderColor, width: 1),
+                  ),
+                  child: AppText(
+                    displayStatus,
+                    style: Get.bodySmall.px12.w700.copyWith(color: textColor),
+                  ),
+                ),
+              ],
+            ),
+            8.verticalGap,
+            AppText(
+              _dateFormat.format(order.createdAt.toLocal()),
+              style: Get.bodySmall.px12.w500.copyWith(
+                color: Get.disabledColor.withValues(alpha: 0.6),
+              ),
+            ),
+            12.verticalGap,
+            Row(
+              children: [
+                _buildInfoChip(
+                  icon: Icons.paid_rounded,
+                  label: '${order.totalAmountAsDouble.toStringAsFixed(2)} NPR',
+                ),
+                8.horizontalGap,
+                _buildInfoChip(
+                  icon: Icons.shopping_cart_rounded,
+                  label: '${order.quantity} pcs',
+                ),
+              ],
+            ),
+            12.verticalGap,
+            Divider(color: Get.disabledColor.withValues(alpha: 0.12)),
+            12.verticalGap,
+            InkWell(
+              onTap: widget.showSales
+                  ? null // Don't navigate for buyers
+                  : () {
+                      // Navigate to seller profile
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => OrderDetailPage(
-                            orderId: order.id,
-                            isSeller: widget.showSales,
-                          ),
+                          builder: (context) =>
+                              SellerProfilePage(sellerId: order.seller),
                         ),
-                      ).then((result) {
-                        if (result == true && mounted) {
-                          _loadOrders();
-                        }
-                      });
+                      );
                     },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12).rt,
-                      side: BorderSide(color: Get.disabledColor.withValues(alpha: 0.3)),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12).rt,
+              borderRadius: BorderRadius.circular(8).rt,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 4,
+                  horizontal: 8,
+                ).rt,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      widget.showSales ? Icons.person_outline : Icons.store,
+                      color: Get.disabledColor.withValues(alpha: 0.6),
+                      size: 18.st,
+                    ),
+                    8.horizontalGap,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            widget.showSales
+                                ? order.buyerName
+                                : order.sellerEmail,
+                            style: Get.bodyMedium.px14.w600.copyWith(
+                              color: Get.disabledColor,
+                            ),
+                          ),
+                          2.verticalGap,
+                          AppText(
+                            widget.showSales
+                                ? order.buyerPhoneNumber
+                                : (order.sellerPhoneNumber ??
+                                      'no_phone'.tr(context)),
+                            style: Get.bodySmall.px12.w500.copyWith(
+                              color: Get.disabledColor.withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: AppText(
-                      'view_details'.tr(context),
-                      style: Get.bodyMedium.px13.w600.copyWith(
-                        color: Get.disabledColor,
+                    if (!widget.showSales)
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 14.st,
+                        color: Get.disabledColor.withValues(alpha: 0.3),
                       ),
-                    ),
-                  ),
+                  ],
                 ),
-                if (!widget.showSales) ...[
-                  12.horizontalGap,
+              ),
+            ),
+            if (_showQuickAction(order)) ...[
+              16.verticalGap,
+              Row(
+                children: [
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: isCompleting ? null : () => _completeOrder(order),
-                      style: ElevatedButton.styleFrom(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OrderDetailPage(
+                              orderId: order.id,
+                              isSeller: widget.showSales,
+                            ),
+                          ),
+                        ).then((result) {
+                          if (result == true && mounted) {
+                            _loadOrders();
+                          }
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12).rt,
-                        backgroundColor: AppColors.primary,
+                        side: BorderSide(
+                          color: Get.disabledColor.withValues(alpha: 0.3),
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12).rt,
                         ),
                       ),
-                      child: isCompleting
-                          ? SizedBox(
-                              height: 18.st,
-                              width: 18.st,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : AppText(
-                              'mark_as_complete'.tr(context),
-                              style: Get.bodyMedium.px13.w700.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
+                      child: AppText(
+                        'view_details'.tr(context),
+                        style: Get.bodyMedium.px13.w600.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                      ),
                     ),
                   ),
+                  if (!widget.showSales) ...[
+                    12.horizontalGap,
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: isCompleting
+                            ? null
+                            : () => _completeOrder(order),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12).rt,
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12).rt,
+                          ),
+                        ),
+                        child: isCompleting
+                            ? SizedBox(
+                                height: 18.st,
+                                width: 18.st,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : AppText(
+                                'mark_as_complete'.tr(context),
+                                style: Get.bodyMedium.px13.w700.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
-            ),
-          ],
+              ),
+            ],
           ],
         ),
       ),
@@ -479,9 +630,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(12).rt,
-        border: Border.all(
-          color: Get.disabledColor.withValues(alpha: 0.08),
-        ),
+        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.08)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -494,9 +643,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
           6.horizontalGap,
           AppText(
             label,
-            style: Get.bodySmall.px12.w600.copyWith(
-              color: Get.disabledColor,
-            ),
+            style: Get.bodySmall.px12.w600.copyWith(color: Get.disabledColor),
           ),
         ],
       ),
@@ -515,33 +662,33 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
         return (
           Colors.green.withValues(alpha: 0.15),
           Colors.green.shade800,
-          Colors.green.withValues(alpha: 0.3)
+          Colors.green.withValues(alpha: 0.3),
         );
       case 'accepted':
       case 'in_transit':
         return (
           Colors.blue.withValues(alpha: 0.15),
           Colors.blue.shade800,
-          Colors.blue.withValues(alpha: 0.3)
+          Colors.blue.withValues(alpha: 0.3),
         );
       case 'delivered':
         return (
           Colors.purple.withValues(alpha: 0.15),
           Colors.purple.shade800,
-          Colors.purple.withValues(alpha: 0.3)
+          Colors.purple.withValues(alpha: 0.3),
         );
       case 'cancelled':
         return (
           Colors.red.withValues(alpha: 0.15),
           Colors.red.shade800,
-          Colors.red.withValues(alpha: 0.3)
+          Colors.red.withValues(alpha: 0.3),
         );
       case 'pending':
       default:
         return (
           Colors.orange.withValues(alpha: 0.15),
           Colors.orange.shade800,
-          Colors.orange.withValues(alpha: 0.3)
+          Colors.orange.withValues(alpha: 0.3),
         );
     }
   }
@@ -549,5 +696,3 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
   String _capitalize(String value) =>
       value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
 }
-
-

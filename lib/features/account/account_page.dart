@@ -7,6 +7,7 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
+import 'package:krishi/core/services/cache_service.dart';
 import 'package:krishi/features/auth/login_page.dart';
 import 'package:krishi/features/account/edit_profile_page.dart';
 import 'package:krishi/features/components/app_text.dart';
@@ -45,8 +46,27 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     });
 
     try {
+      final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
+      
+      // Try to load from cache first
+      final cachedProfile = await cacheService.getUserProfileCache();
+      if (cachedProfile != null) {
+        final user = User.fromJson(cachedProfile);
+        if (mounted) {
+          setState(() {
+            currentUser = user;
+            isLoading = false;
+          });
+        }
+      }
+      
+      // Fetch fresh data from API
       final user = await apiService.getCurrentUser();
+      
+      // Save to cache
+      await cacheService.saveUserProfileCache(user.toJson());
+      
       if (mounted) {
         setState(() {
           currentUser = user;
@@ -379,27 +399,24 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            AppColors.primary.withValues(alpha: 0.95),
-            AppColors.primary.withValues(alpha: 0.8),
-            AppColors.primary.withValues(alpha: 0.7),
+            AppColors.primary,
+            AppColors.primary.withValues(alpha: 0.85),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(24).rt,
+        borderRadius: BorderRadius.circular(20).rt,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.28),
-            blurRadius: 25,
-            offset: const Offset(0, 12),
+            color: AppColors.primary.withValues(alpha: 0.25),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildProfileAvatar(profileImage),
               16.horizontalGap,
@@ -412,18 +429,19 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                         Expanded(
                           child: AppText(
                             fullName,
-                            style: Get.bodyLarge.px20.w700.copyWith(
+                            style: Get.bodyLarge.px18.w700.copyWith(
                               color: AppColors.white,
                             ),
                             maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (currentUser != null)
                           Material(
-                            color: Colors.white.withValues(alpha: 0.15),
+                            color: Colors.white.withValues(alpha: 0.2),
                             shape: const CircleBorder(),
-                            child: IconButton(
-                              onPressed: () async {
+                            child: InkWell(
+                              onTap: () async {
                                 final updated = await Get.to(
                                   EditProfilePage(user: currentUser!),
                                 );
@@ -431,10 +449,14 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                                   _loadUserProfile();
                                 }
                               },
-                              icon: Icon(
-                                Icons.edit_outlined,
-                                color: AppColors.white,
-                                size: 18.st,
+                              borderRadius: BorderRadius.circular(20).rt,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8).rt,
+                                child: Icon(
+                                  Icons.edit_outlined,
+                                  color: AppColors.white,
+                                  size: 18.st,
+                                ),
                               ),
                             ),
                           ),
@@ -447,29 +469,38 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                         color: AppColors.white.withValues(alpha: 0.9),
                       ),
                       maxLines: 1,
-                    ),
-                    12.verticalGap,
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        _buildInfoPill(
-                          icon: Icons.phone_outlined,
-                          label: phone ?? 'add_phone_hint'.tr(context),
-                          muted: phone == null,
-                        ),
-                        _buildInfoPill(
-                          icon: Icons.location_on_outlined,
-                          label: address ?? 'add_address_hint'.tr(context),
-                          muted: address == null,
-                        ),
-                      ],
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
             ],
           ),
+          if (phone != null || address != null) ...[
+            16.verticalGap,
+            Row(
+              children: [
+                if (phone != null) ...[
+                  Expanded(
+                    child: _buildInfoPill(
+                      icon: Icons.phone_outlined,
+                      label: phone,
+                      muted: false,
+                    ),
+                  ),
+                  if (address != null) 8.horizontalGap,
+                ],
+                if (address != null)
+                  Expanded(
+                    child: _buildInfoPill(
+                      icon: Icons.location_on_outlined,
+                      label: address,
+                      muted: false,
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -524,13 +555,10 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     bool muted = false,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8).rt,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8).rt,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: muted ? 0.08 : 0.18),
-        borderRadius: BorderRadius.circular(14).rt,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: muted ? 0.12 : 0.25),
-        ),
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(12).rt,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -538,17 +566,17 @@ class _AccountPageState extends ConsumerState<AccountPage> {
           Icon(
             icon,
             color: AppColors.white,
-            size: 16.st,
+            size: 14.st,
           ),
-          8.horizontalGap,
-          ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: Get.width * 0.45),
+          6.horizontalGap,
+          Flexible(
             child: AppText(
               label,
-              style: Get.bodySmall.px12.w600.copyWith(
-                color: AppColors.white.withValues(alpha: muted ? 0.7 : 1),
+              style: Get.bodySmall.px11.w600.copyWith(
+                color: AppColors.white,
               ),
-              maxLines: 2,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

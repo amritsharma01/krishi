@@ -38,6 +38,27 @@ class KrishiApiService {
     throw const FormatException('Unexpected list response format');
   }
 
+  PaginatedResponse<T> _parsePaginatedResponse<T>(
+    dynamic data,
+    T Function(Map<String, dynamic>) mapper,
+  ) {
+    if (data is Map<String, dynamic> && data.containsKey('results')) {
+      return PaginatedResponse.fromJson(data, mapper);
+    }
+    if (data is List) {
+      final results = data
+          .map((json) => mapper(json as Map<String, dynamic>))
+          .toList();
+      return PaginatedResponse(
+        count: results.length,
+        next: null,
+        previous: null,
+        results: results,
+      );
+    }
+    throw const FormatException('Unexpected paginated response format');
+  }
+
   // ==================== Authentication ====================
 
   /// Authenticate with Google (Mobile)
@@ -237,11 +258,15 @@ class KrishiApiService {
     int page = 1,
     int? category,
     String? search,
+    int? sellerId,
+    String? sellerEmail,
   }) async {
     try {
       final queryParams = <String, dynamic>{'page': page};
       if (category != null) queryParams['category'] = category;
       if (search != null) queryParams['search'] = search;
+      if (sellerId != null) queryParams['seller_id'] = sellerId;
+      if (sellerEmail != null) queryParams['seller_email'] = sellerEmail;
 
       final response = await apiManager.get(
         ApiEndpoints.products,
@@ -542,12 +567,40 @@ class KrishiApiService {
   }
 
   /// Get my purchases (orders where user is the buyer)
-  Future<List<Order>> getMyPurchases() async {
+  Future<PaginatedResponse<Order>> getMyPurchasesPaginated({
+    int page = 1,
+  }) async {
     try {
-      final response = await apiManager.get(ApiEndpoints.myPurchases);
-      return (response.data as List<dynamic>)
-          .map((json) => Order.fromJson(json as Map<String, dynamic>))
-          .toList();
+      final response = await apiManager.get(
+        ApiEndpoints.myPurchases,
+        queryParameters: {'page': page},
+      );
+      return _parsePaginatedResponse(
+        response.data,
+        (json) => Order.fromJson(json),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get my purchases (orders where user is the buyer)
+  Future<List<Order>> getMyPurchases() async {
+    final response = await getMyPurchasesPaginated(page: 1);
+    return response.results;
+  }
+
+  /// Get my sales (orders where user is the seller) with pagination support
+  Future<PaginatedResponse<Order>> getMySalesPaginated({int page = 1}) async {
+    try {
+      final response = await apiManager.get(
+        ApiEndpoints.mySales,
+        queryParameters: {'page': page},
+      );
+      return _parsePaginatedResponse(
+        response.data,
+        (json) => Order.fromJson(json),
+      );
     } catch (e) {
       rethrow;
     }
@@ -555,14 +608,8 @@ class KrishiApiService {
 
   /// Get my sales (orders where user is the seller)
   Future<List<Order>> getMySales() async {
-    try {
-      final response = await apiManager.get(ApiEndpoints.mySales);
-      return (response.data as List<dynamic>)
-          .map((json) => Order.fromJson(json as Map<String, dynamic>))
-          .toList();
-    } catch (e) {
-      rethrow;
-    }
+    final response = await getMySalesPaginated(page: 1);
+    return response.results;
   }
 
   /// Accept an order (seller only)
@@ -598,7 +645,9 @@ class KrishiApiService {
   /// Mark order as in transit (seller only)
   Future<Order> markOrderInTransit(int id) async {
     try {
-      final response = await apiManager.post(ApiEndpoints.markOrderInTransit(id));
+      final response = await apiManager.post(
+        ApiEndpoints.markOrderInTransit(id),
+      );
       return Order.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -630,7 +679,9 @@ class KrishiApiService {
   /// Get all notices
   Future<List<Notice>> getNotices({String? noticeType}) async {
     try {
-      final queryParams = noticeType != null ? {'notice_type': noticeType} : null;
+      final queryParams = noticeType != null
+          ? {'notice_type': noticeType}
+          : null;
       final response = await apiManager.get(
         ApiEndpoints.notices,
         queryParameters: queryParams,
@@ -720,9 +771,13 @@ class KrishiApiService {
   }
 
   /// Get all service providers
-  Future<List<ServiceProvider>> getServiceProviders({String? serviceType}) async {
+  Future<List<ServiceProvider>> getServiceProviders({
+    String? serviceType,
+  }) async {
     try {
-      final queryParams = serviceType != null ? {'service_type': serviceType} : null;
+      final queryParams = serviceType != null
+          ? {'service_type': serviceType}
+          : null;
       final response = await apiManager.get(
         ApiEndpoints.serviceProviders,
         queryParameters: queryParams,
@@ -736,7 +791,9 @@ class KrishiApiService {
   /// Get single service provider
   Future<ServiceProvider> getServiceProviderDetail(int id) async {
     try {
-      final response = await apiManager.get(ApiEndpoints.serviceProviderDetail(id));
+      final response = await apiManager.get(
+        ApiEndpoints.serviceProviderDetail(id),
+      );
       return ServiceProvider.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -746,7 +803,9 @@ class KrishiApiService {
   /// Get all contacts
   Future<List<Contact>> getContacts({String? contactType}) async {
     try {
-      final queryParams = contactType != null ? {'contact_type': contactType} : null;
+      final queryParams = contactType != null
+          ? {'contact_type': contactType}
+          : null;
       final response = await apiManager.get(
         ApiEndpoints.contacts,
         queryParameters: queryParams,
