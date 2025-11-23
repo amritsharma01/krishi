@@ -91,7 +91,7 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
               _buildNavItem(
                 index: 1,
                 icon: Icons.store_rounded,
-                label: 'Market',
+                label: 'market',
               ),
               _buildNavItem(
                 index: 2,

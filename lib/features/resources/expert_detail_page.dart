@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/models/resources.dart';
@@ -50,9 +51,9 @@ class ExpertDetailPage extends StatelessWidget {
           children: [
             _buildHeaderCard(color),
             20.verticalGap,
-            _buildInfoSection(),
+            _buildInfoSection(context),
             20.verticalGap,
-            _buildActionButtons(),
+            _buildActionButtons(context),
           ],
         ),
       ),
@@ -119,7 +120,7 @@ class ExpertDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoSection() {
+  Widget _buildInfoSection(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16.rt),
       decoration: BoxDecoration(
@@ -130,32 +131,37 @@ class ExpertDetailPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildInfoRow(
+            context,
             Icons.school_rounded,
-            'Qualifications',
+            'qualifications'.tr(context),
             expert.qualifications,
           ),
           12.verticalGap,
           _buildInfoRow(
+            context,
             Icons.location_on_rounded,
-            'Office',
+            'office'.tr(context),
             expert.officeAddress,
           ),
           12.verticalGap,
           _buildInfoRow(
+            context,
             Icons.calendar_month_rounded,
-            'Available Days',
+            'available_days'.tr(context),
             expert.availableDays,
           ),
           12.verticalGap,
           _buildInfoRow(
+            context,
             Icons.access_time_filled_rounded,
-            'Available Hours',
+            'available_hours'.tr(context),
             expert.availableHours,
           ),
           12.verticalGap,
           _buildInfoRow(
+            context,
             Icons.payments_rounded,
-            'Consultation Fee',
+            'consultation_fee'.tr(context),
             expert.consultationFee,
           ),
         ],
@@ -163,7 +169,12 @@ class ExpertDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -200,7 +211,7 @@ class ExpertDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(BuildContext context) {
     return Row(
       children: [
         Expanded(
@@ -215,7 +226,7 @@ class ExpertDetailPage extends StatelessWidget {
             ),
             icon: const Icon(Icons.phone_rounded),
             label: AppText(
-              'Call',
+              'call'.tr(context),
               style: Get.bodyMedium.w600.copyWith(color: Colors.white),
             ),
           ),
@@ -234,7 +245,7 @@ class ExpertDetailPage extends StatelessWidget {
               ),
               icon: const Icon(Icons.email_rounded),
               label: AppText(
-                'Email',
+                'email'.tr(context),
                 style: Get.bodyMedium.w600.copyWith(color: Colors.white),
               ),
             ),

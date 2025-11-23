@@ -388,7 +388,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     }
 
     final profileImage = currentUser?.profile?.profileImage;
-    final fullName = currentUser?.profile?.fullName ?? currentUser?.email ?? 'User';
+    final fullName = currentUser?.profile?.fullName ?? currentUser?.email ?? 'user'.tr(context);
     final email = currentUser?.email ?? '';
     final phone = currentUser?.profile?.phoneNumber;
     final address = currentUser?.profile?.address;

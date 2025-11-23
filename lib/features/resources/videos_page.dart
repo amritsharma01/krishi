@@ -6,6 +6,7 @@ import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/models/resources.dart';
@@ -23,16 +24,18 @@ class _VideosPageState extends ConsumerState<VideosPage> {
   bool _isLoading = true;
   String _selectedCategory = 'all';
 
-  final Map<String, String> _categories = {
-    'all': 'All Videos',
-    'farming': 'Farming',
-    'pest_control': 'Pest Control',
-    'irrigation': 'Irrigation',
-    'harvesting': 'Harvesting',
-    'storage': 'Storage',
-    'marketing': 'Marketing',
-    'other': 'Other',
-  };
+  Map<String, String> _getCategories(BuildContext context) {
+    return {
+      'all': 'all_videos'.tr(context),
+      'farming': 'farming'.tr(context),
+      'pest_control': 'pest_control'.tr(context),
+      'irrigation': 'irrigation'.tr(context),
+      'harvesting': 'harvesting'.tr(context),
+      'storage': 'storage'.tr(context),
+      'marketing': 'marketing'.tr(context),
+      'other': 'other'.tr(context),
+    };
+  }
 
   final Map<String, IconData> _categoryIcons = {
     'farming': Icons.agriculture_rounded,
@@ -79,27 +82,102 @@ class _VideosPageState extends ConsumerState<VideosPage> {
         _isLoading = false;
       });
       if (mounted) {
-        Get.snackbar('Failed to load videos: $e');
+        Get.snackbar('error_loading_products'.tr(context));
       }
     }
   }
 
-  Future<void> _openVideo(String url) async {
+  Future<void> _openVideo(BuildContext context, String url) async {
     try {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
+      // Normalize YouTube URL
+      String videoUrl = url.trim();
+      
+      // If URL is empty, return early
+      if (videoUrl.isEmpty) {
+        if (mounted) {
+          Get.snackbar('video_url_empty'.tr(context));
+        }
+        return;
+      }
+      
+      // If URL is relative or doesn't start with http, prepend https://
+      if (!videoUrl.startsWith('http://') && !videoUrl.startsWith('https://')) {
+        // Check if it's just a video ID (11 characters)
+        if (videoUrl.length == 11 && RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(videoUrl)) {
+          videoUrl = 'https://www.youtube.com/watch?v=$videoUrl';
+        } else if (videoUrl.startsWith('www.') || videoUrl.startsWith('youtube.com') || videoUrl.startsWith('youtu.be')) {
+          videoUrl = 'https://$videoUrl';
+        } else {
+          // Assume it's a video ID
+          videoUrl = 'https://www.youtube.com/watch?v=$videoUrl';
+        }
+      }
+      
+      // Convert youtu.be to youtube.com format
+      if (videoUrl.contains('youtu.be/')) {
+        final parts = videoUrl.split('youtu.be/');
+        if (parts.length > 1) {
+          final videoId = parts[1].split('?').first.split('&').first;
+          videoUrl = 'https://www.youtube.com/watch?v=$videoId';
+        }
+      }
+      
+      // Extract video ID if it's a full YouTube URL
+      String? videoId;
+      if (videoUrl.contains('youtube.com/watch?v=')) {
+        final match = RegExp(r'[?&]v=([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
+        videoId = match?.group(1);
+      } else if (videoUrl.contains('youtube.com/embed/')) {
+        final match = RegExp(r'/embed/([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
+        videoId = match?.group(1);
+      }
+      
+      // If we have a video ID, construct proper URL
+      if (videoId != null && videoId.isNotEmpty) {
+        videoUrl = 'https://www.youtube.com/watch?v=$videoId';
+      }
+      
+      // Ensure it's a valid YouTube URL
+      if (!videoUrl.contains('youtube.com') && !videoUrl.contains('youtu.be')) {
+        if (mounted) {
+          Get.snackbar('invalid_video_url'.tr(context));
+        }
+        return;
+      }
+      
+      final uri = Uri.parse(videoUrl);
+      
+      // Try to launch the URL - don't check canLaunchUrl first, just try
+      try {
+        // Try external application first (YouTube app or browser)
         await launchUrl(
           uri,
           mode: LaunchMode.externalApplication,
         );
-      } else {
-        if (mounted) {
-          Get.snackbar('Could not open video. Please check your internet connection');
+      } catch (e) {
+        // If external fails, try platform default
+        try {
+          await launchUrl(
+            uri,
+            mode: LaunchMode.platformDefault,
+          );
+        } catch (e2) {
+          // Last resort: in-app web view
+          try {
+            await launchUrl(
+              uri,
+              mode: LaunchMode.inAppWebView,
+            );
+          } catch (e3) {
+            if (mounted) {
+              Get.snackbar('could_not_open_video'.tr(context));
+            }
+          }
         }
       }
     } catch (e) {
       if (mounted) {
-        Get.snackbar('Error opening video: $e');
+        Get.snackbar('error_opening_video'.tr(context));
       }
     }
   }
@@ -124,7 +202,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
-          'Educational Videos',
+          'educational_videos'.tr(context),
           style: Get.bodyLarge.px24.w600.copyWith(color: Colors.white),
         ),
         centerTitle: true,
@@ -134,20 +212,21 @@ class _VideosPageState extends ConsumerState<VideosPage> {
       ),
       body: Column(
         children: [
-          _buildCategoryFilter(),
+          _buildCategoryFilter(context),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _videos.isEmpty
-                    ? _buildEmptyState()
-                    : _buildVideosList(),
+                    ? _buildEmptyState(context)
+                    : _buildVideosList(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCategoryFilter() {
+  Widget _buildCategoryFilter(BuildContext context) {
+    final categories = _getCategories(context);
     return Container(
       padding: EdgeInsets.only(
         left: 16.w,
@@ -180,7 +259,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
               ),
               8.horizontalGap,
               AppText(
-                'Filter videos',
+                'filter_videos'.tr(context),
                 style: Get.bodyMedium.w600.copyWith(
                   color: Colors.red.shade700,
                 ),
@@ -191,7 +270,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _categories.entries.map((entry) {
+              children: categories.entries.map((entry) {
                 final isSelected = _selectedCategory == entry.key;
                 final color = _categoryColors[entry.key] ?? Colors.red;
                 final icon = entry.key == 'all'
@@ -273,7 +352,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -285,12 +364,12 @@ class _VideosPageState extends ConsumerState<VideosPage> {
           ),
           16.verticalGap,
           AppText(
-            'No videos available',
+            'no_videos_available'.tr(context),
             style: Get.bodyLarge.px18.w600.copyWith(color: Colors.grey.shade600),
           ),
           8.verticalGap,
           AppText(
-            'Check back later for new content',
+            'check_back_later_videos'.tr(context),
             style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
           ),
         ],
@@ -298,7 +377,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
     );
   }
 
-  Widget _buildVideosList() {
+  Widget _buildVideosList(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () => _loadVideos(category: _selectedCategory),
       child: ListView.builder(
@@ -306,13 +385,13 @@ class _VideosPageState extends ConsumerState<VideosPage> {
         itemCount: _videos.length,
         itemBuilder: (context, index) {
           final video = _videos[index];
-          return _buildVideoCard(video);
+          return _buildVideoCard(context, video);
         },
       ),
     );
   }
 
-  Widget _buildVideoCard(Video video) {
+  Widget _buildVideoCard(BuildContext context, Video video) {
     final thumbnailUrl = _getThumbnailUrl(video);
 
     return Container(
@@ -331,7 +410,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _openVideo(video.youtubeUrl),
+          onTap: () => _openVideo(context, video.youtubeUrl),
           borderRadius: BorderRadius.circular(16).rt,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,7 +548,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
                         ),
                         4.horizontalGap,
                         AppText(
-                          '${video.viewsCount} views',
+                          '${video.viewsCount} ${'views'.tr(context)}',
                           style: Get.bodySmall.copyWith(
                             color: Colors.grey.shade600,
                             fontSize: 11.sp,

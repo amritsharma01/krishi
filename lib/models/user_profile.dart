@@ -19,13 +19,17 @@ class UserProfile {
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      id: json['id'] as int,
-      fullName: json['full_name'] as String,
+      id: json['id'] as int? ?? 0,
+      fullName: (json['full_name'] as String?) ?? '',
       phoneNumber: json['phone_number'] as String?,
       address: json['address'] as String?,
       profileImage: json['profile_image'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
   }
 
@@ -76,8 +80,8 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as int,
-      email: json['email'] as String,
+      id: json['id'] as int? ?? 0,
+      email: (json['email'] as String?) ?? '',
       firstName: json['first_name'] as String?,
       lastName: json['last_name'] as String?,
       isStaff: json['is_staff'] as bool? ?? false,

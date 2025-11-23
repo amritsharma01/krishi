@@ -71,15 +71,19 @@ class _HomePageState extends ConsumerState<HomePage> {
     try {
       final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
-      
+
       // Try to load from cache first
       final cachedSales = await cacheService.getMySalesCache();
       final cachedPurchases = await cacheService.getMyPurchasesCache();
-      
+
       if (cachedSales != null && cachedPurchases != null) {
-        final receivedOrders = cachedSales.map((json) => Order.fromJson(json)).toList();
-        final placedOrders = cachedPurchases.map((json) => Order.fromJson(json)).toList();
-        
+        final receivedOrders = cachedSales
+            .map((json) => Order.fromJson(json))
+            .toList();
+        final placedOrders = cachedPurchases
+            .map((json) => Order.fromJson(json))
+            .toList();
+
         if (mounted) {
           setState(() {
             receivedOrdersCount = receivedOrders.length;
@@ -88,15 +92,19 @@ class _HomePageState extends ConsumerState<HomePage> {
           });
         }
       }
-      
+
       // Fetch fresh data from API
       final receivedOrders = await apiService.getMySales();
       final placedOrders = await apiService.getMyPurchases();
-      
+
       // Save to cache
       await Future.wait([
-        cacheService.saveMySalesCache(receivedOrders.map((o) => o.toJson()).toList()),
-        cacheService.saveMyPurchasesCache(placedOrders.map((o) => o.toJson()).toList()),
+        cacheService.saveMySalesCache(
+          receivedOrders.map((o) => o.toJson()).toList(),
+        ),
+        cacheService.saveMyPurchasesCache(
+          placedOrders.map((o) => o.toJson()).toList(),
+        ),
       ]);
 
       if (mounted) {
@@ -414,7 +422,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             8.horizontalGap,
                             Expanded(
                               child: AppText(
-                                weather?.location ?? 'Unknown',
+                                weather?.location ?? 'unknown'.tr(context),
                                 style: Get.bodyMedium.px14.w600.copyWith(
                                   color: AppColors.white,
                                   letterSpacing: 0.3,
@@ -510,68 +518,68 @@ class _HomePageState extends ConsumerState<HomePage> {
         splashColor: AppColors.primary.withValues(alpha: 0.12),
         highlightColor: AppColors.primary.withValues(alpha: 0.08),
         child: Container(
-        height: 130.ht,
-        padding: const EdgeInsets.all(16).rt,
-        decoration: BoxDecoration(
-          color: Get.cardColor,
-          borderRadius: BorderRadius.circular(20).rt,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12).rt,
-              decoration: BoxDecoration(
-                gradient: gradient,
-                borderRadius: BorderRadius.circular(14).rt,
+          height: 130.ht,
+          padding: const EdgeInsets.all(16).rt,
+          decoration: BoxDecoration(
+            color: Get.cardColor,
+            borderRadius: BorderRadius.circular(20).rt,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
-              child: Icon(icon, color: AppColors.white, size: 24.st),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                isLoading
-                    ? SizedBox(
-                        width: 24.st,
-                        height: 24.st,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: AppColors.primary,
-                        ),
-                      )
-                    : AppText(
-                        '$count',
-                        style: Get.bodyLarge.px28.w800.copyWith(
-                          color: Get.disabledColor,
-                        ),
-                      ),
-                4.verticalGap,
-                AppText(
-                  title.tr(context),
-                  style: Get.bodyMedium.px13.w700.copyWith(
-                    color: Get.disabledColor,
-                  ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12).rt,
+                decoration: BoxDecoration(
+                  gradient: gradient,
+                  borderRadius: BorderRadius.circular(14).rt,
                 ),
-                2.verticalGap,
-                AppText(
-                  subtitle.tr(context),
-                  style: Get.bodySmall.px10.w500.copyWith(
-                    color: Get.disabledColor.withValues(alpha: 0.6),
+                child: Icon(icon, color: AppColors.white, size: 24.st),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  isLoading
+                      ? SizedBox(
+                          width: 24.st,
+                          height: 24.st,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: AppColors.primary,
+                          ),
+                        )
+                      : AppText(
+                          '$count',
+                          style: Get.bodyLarge.px28.w800.copyWith(
+                            color: Get.disabledColor,
+                          ),
+                        ),
+                  4.verticalGap,
+                  AppText(
+                    title.tr(context),
+                    style: Get.bodyMedium.px13.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
                   ),
-                  maxLines: 1,
-                ),
-              ],
-            ),
-          ],
-        ),
+                  2.verticalGap,
+                  AppText(
+                    subtitle.tr(context),
+                    style: Get.bodySmall.px10.w500.copyWith(
+                      color: Get.disabledColor.withValues(alpha: 0.6),
+                    ),
+                    maxLines: 1,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -714,8 +722,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         12.verticalGap,
         _buildMainServiceCard(
-          title: 'notices',
-          description: 'important_announcements',
+          title: 'notices'.tr(context),
+          description: 'important_announcements'.tr(context),
           icon: Icons.notifications_active_rounded,
           gradient: const LinearGradient(
             colors: [Color(0xFFFF6F00), Color(0xFFFF8F00)],
@@ -728,8 +736,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         12.verticalGap,
         _buildMainServiceCard(
-          title: 'Programs',
-          description: 'Agricultural development programs',
+          title: 'programs'.tr(context),
+          description: 'agricultural_development_programs'.tr(context),
           icon: Icons.agriculture_rounded,
           gradient: const LinearGradient(
             colors: [Color(0xFF388E3C), Color(0xFF66BB6A)],
@@ -737,7 +745,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             end: Alignment.bottomRight,
           ),
           onTap: () {
-            Get.snackbar('Coming soon!');
+            Get.snackbar('coming_soon'.tr(context));
           },
         ),
       ],
@@ -813,8 +821,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           childAspectRatio: 1.0,
           children: [
             _buildKnowledgeCard(
-              title: 'Krishi Gyan',
-              subtitle: 'Farming Knowledge',
+              title: 'krishi_gyaan'.tr(context),
+              subtitle: 'farming_knowledge_home'.tr(context),
               icon: Icons.local_library_rounded,
               gradient: const LinearGradient(
                 colors: [Color(0xFF6A1B9A), Color(0xFF9C27B0)],
@@ -826,8 +834,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               },
             ),
             _buildKnowledgeCard(
-              title: 'News & Info',
-              subtitle: 'Latest Updates',
+              title: 'news_information'.tr(context),
+              subtitle: 'latest_updates'.tr(context),
               icon: Icons.article_rounded,
               gradient: const LinearGradient(
                 colors: [Color(0xFFD32F2F), Color(0xFFE57373)],
@@ -839,8 +847,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               },
             ),
             _buildKnowledgeCard(
-              title: 'Videos',
-              subtitle: 'Watch & Learn',
+              title: 'videos'.tr(context),
+              subtitle: 'watch_learn'.tr(context),
               icon: Icons.video_library_rounded,
               gradient: const LinearGradient(
                 colors: [Color(0xFFE65100), Color(0xFFFF6F00)],
@@ -852,8 +860,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               },
             ),
             _buildKnowledgeCard(
-              title: 'Crop Calendar',
-              subtitle: 'Planting Guide',
+              title: 'crop_calendar'.tr(context),
+              subtitle: 'planting_guide'.tr(context),
               icon: Icons.calendar_month_rounded,
               gradient: const LinearGradient(
                 colors: [Color(0xFF558B2F), Color(0xFF8BC34A)],
@@ -901,11 +909,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 color: Colors.white.withValues(alpha: 0.25),
                 borderRadius: BorderRadius.circular(14).rt,
               ),
-              child: Icon(
-                icon,
-                color: Colors.white,
-                size: 32.st,
-              ),
+              child: Icon(icon, color: Colors.white, size: 32.st),
             ),
             16.horizontalGap,
             Expanded(
@@ -955,10 +959,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(14).rt,
-          border: Border.all(
-            color: color.withValues(alpha: 0.3),
-            width: 1.5,
-          ),
+          border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
           boxShadow: [
             BoxShadow(
               color: color.withValues(alpha: 0.15),
@@ -976,18 +977,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                 color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12).rt,
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 28.st,
-              ),
+              child: Icon(icon, color: color, size: 28.st),
             ),
             10.verticalGap,
             AppText(
               title.tr(context),
-              style: Get.bodySmall.px11.w600.copyWith(
-                color: Get.disabledColor,
-              ),
+              style: Get.bodySmall.px11.w600.copyWith(color: Get.disabledColor),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -1045,11 +1040,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                       color: Colors.white.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(12).rt,
                     ),
-                    child: Icon(
-                      icon,
-                      color: Colors.white,
-                      size: 32.st,
-                    ),
+                    child: Icon(icon, color: Colors.white, size: 32.st),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1091,7 +1082,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             AppText(
-              'Market Prices',
+              'market_prices'.tr(context),
               style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
             ),
             GestureDetector(
@@ -1100,7 +1091,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                 Get.snackbar('Coming soon!');
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6).rt,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ).rt,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20).rt,
@@ -1108,7 +1102,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: Row(
                   children: [
                     AppText(
-                      'View All',
+                      'view_all'.tr(context),
                       style: Get.bodyMedium.px12.w600.copyWith(
                         color: AppColors.primary,
                       ),
@@ -1131,9 +1125,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           decoration: BoxDecoration(
             color: Get.cardColor,
             borderRadius: BorderRadius.circular(16).rt,
-            border: Border.all(
-              color: Get.disabledColor.withValues(alpha: 0.1),
-            ),
+            border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.04),
@@ -1144,13 +1136,37 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           child: Column(
             children: [
-              _buildPriceItem('Rice', 'NPR 45/kg', Icons.rice_bowl_rounded, Colors.orange),
+              _buildPriceItem(
+                context,
+                'rice'.tr(context),
+                'NPR 45/kg',
+                Icons.rice_bowl_rounded,
+                Colors.orange,
+              ),
               Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
-              _buildPriceItem('Wheat', 'NPR 38/kg', Icons.grain_rounded, Colors.amber),
+              _buildPriceItem(
+                context,
+                'wheat'.tr(context),
+                'NPR 38/kg',
+                Icons.grain_rounded,
+                Colors.amber,
+              ),
               Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
-              _buildPriceItem('Tomato', 'NPR 60/kg', Icons.local_pizza_rounded, Colors.red),
+              _buildPriceItem(
+                context,
+                'tomato'.tr(context),
+                'NPR 60/kg',
+                Icons.local_pizza_rounded,
+                Colors.red,
+              ),
               Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
-              _buildPriceItem('Potato', 'NPR 35/kg', Icons.emoji_food_beverage_rounded, Colors.brown),
+              _buildPriceItem(
+                context,
+                'potato'.tr(context),
+                'NPR 35/kg',
+                Icons.emoji_food_beverage_rounded,
+                Colors.brown,
+              ),
             ],
           ),
         ),
@@ -1159,7 +1175,13 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   // Price Item Widget
-  Widget _buildPriceItem(String item, String price, IconData icon, Color color) {
+  Widget _buildPriceItem(
+    BuildContext context,
+    String item,
+    String price,
+    IconData icon,
+    Color color,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8).rt,
       child: Row(
@@ -1170,11 +1192,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               color: color.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(10).rt,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24.st,
-            ),
+            child: Icon(icon, color: color, size: 24.st),
           ),
           12.horizontalGap,
           Expanded(
@@ -1187,9 +1205,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           AppText(
             price,
-            style: Get.bodyMedium.px14.w700.copyWith(
-              color: AppColors.primary,
-            ),
+            style: Get.bodyMedium.px14.w700.copyWith(color: AppColors.primary),
           ),
         ],
       ),
@@ -1373,9 +1389,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SellerProfilePage(
-                            sellerId: product.seller,
-                          ),
+                          builder: (context) =>
+                              SellerProfilePage(sellerId: product.seller),
                         ),
                       );
                     },

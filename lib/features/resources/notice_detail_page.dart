@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/models/resources.dart';
@@ -45,12 +46,12 @@ class NoticeDetailPage extends StatelessWidget {
     }
   }
 
-  Future<void> _openPdf(String url) async {
+  Future<void> _openPdf(BuildContext context, String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      Get.snackbar('Could not open PDF');
+      Get.snackbar('could_not_open_pdf'.tr(context));
     }
   }
 
@@ -63,7 +64,7 @@ class NoticeDetailPage extends StatelessWidget {
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
-          'Notice Details',
+          'notice_details'.tr(context),
           style: Get.bodyLarge.px24.w600.copyWith(color: Colors.white),
         ),
         centerTitle: true,
@@ -223,7 +224,7 @@ class NoticeDetailPage extends StatelessWidget {
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          onTap: () => _openPdf(notice.pdfFile!),
+                          onTap: () => _openPdf(context, notice.pdfFile!),
                           borderRadius: BorderRadius.circular(12).rt,
                           child: Padding(
                             padding: EdgeInsets.symmetric(vertical: 16.h),
@@ -237,7 +238,7 @@ class NoticeDetailPage extends StatelessWidget {
                                 ),
                                 12.horizontalGap,
                                 AppText(
-                                  'Open PDF Document',
+                                  'open_pdf_document'.tr(context),
                                   style: Get.bodyLarge.w600.copyWith(
                                     color: Colors.white,
                                   ),
@@ -271,7 +272,7 @@ class NoticeDetailPage extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               AppText(
-                                'Posted By',
+                                'posted_by'.tr(context),
                                 style: Get.bodySmall.copyWith(
                                   color: Colors.grey.shade600,
                                 ),

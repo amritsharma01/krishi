@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/models/resources.dart';
@@ -46,30 +48,30 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
         _isLoading = false;
       });
       if (mounted) {
-        Get.snackbar('Failed to load experts: $e');
+        Get.snackbar('error_loading_products'.tr(context));
       }
     }
   }
 
-  Future<void> _makePhoneCall(String phoneNumber) async {
+  Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
     final uri = Uri.parse('tel:$phoneNumber');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      Get.snackbar('Could not make phone call');
+      Get.snackbar('could_not_make_call'.tr(context));
     }
   }
 
-  Future<void> _sendEmail(String email) async {
+  Future<void> _sendEmail(BuildContext context, String email) async {
     if (email.isEmpty) {
-      Get.snackbar('No email available');
+      Get.snackbar('no_email_available'.tr(context));
       return;
     }
     final uri = Uri.parse('mailto:$email');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      Get.snackbar('Could not send email');
+      Get.snackbar('could_not_send_email'.tr(context));
     }
   }
 
@@ -79,23 +81,24 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
-          'Talk to Experts',
-          style: Get.bodyLarge.px24.w600.copyWith(color: Colors.white),
+          'agri_experts'.tr(context),
+          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.indigo.shade700,
+        backgroundColor: Get.scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Get.disabledColor),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : _experts.isEmpty
-          ? _buildEmptyState()
-          : _buildExpertsList(),
+          ? _buildEmptyState(context)
+          : _buildExpertsList(context),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -107,14 +110,14 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
           ),
           16.verticalGap,
           AppText(
-            'No experts available',
+            'no_experts_available'.tr(context),
             style: Get.bodyLarge.px18.w600.copyWith(
               color: Colors.grey.shade600,
             ),
           ),
           8.verticalGap,
           AppText(
-            'Check back later',
+            'check_back_later'.tr(context),
             style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
           ),
         ],
@@ -122,11 +125,11 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
     );
   }
 
-  Widget _buildExpertsList() {
+  Widget _buildExpertsList(BuildContext context) {
     return RefreshIndicator(
       onRefresh: _loadExperts,
       child: ListView.builder(
-        padding: EdgeInsets.all(16.rt),
+        padding: const EdgeInsets.all(16).rt,
         itemCount: _experts.length,
         itemBuilder: (context, index) {
           final expert = _experts[index];
@@ -138,270 +141,198 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
 
   Widget _buildExpertCard(BuildContext context, Expert expert) {
     return Container(
-      margin: EdgeInsets.only(bottom: 18.h),
+      margin: EdgeInsets.only(bottom: 16.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(22).rt,
-        border: Border.all(color: Colors.indigo.shade50),
+        borderRadius: BorderRadius.circular(20).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.indigo.shade100.withValues(alpha: 0.35),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(22).rt,
+        borderRadius: BorderRadius.circular(20).rt,
         child: InkWell(
-          borderRadius: BorderRadius.circular(22).rt,
+          borderRadius: BorderRadius.circular(20).rt,
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => ExpertDetailPage(expert: expert)),
+              MaterialPageRoute(
+                builder: (_) => ExpertDetailPage(expert: expert),
+              ),
             );
           },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.all(20.rt),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.indigo.shade700, Colors.indigo.shade400],
-                  ),
-                  borderRadius: BorderRadius.vertical(
-                    top: const Radius.circular(22),
-                  ).rt,
-                ),
-                child: Row(
+          child: Padding(
+            padding: const EdgeInsets.all(20).rt,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with photo and basic info
+                Row(
                   children: [
+                    // Profile Photo
                     Container(
-                      width: 82.w,
-                      height: 82.h,
+                      width: 70.rt,
+                      height: 70.rt,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                          width: 2,
+                        ),
                       ),
                       child: ClipOval(
                         child: expert.photo != null && expert.photo!.isNotEmpty
                             ? CachedNetworkImage(
-                                imageUrl: expert.photo!,
+                                imageUrl: Get.imageUrl(expert.photo!),
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => Container(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  child: const Center(
+                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  child: Center(
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
+                                      color: AppColors.primary,
                                     ),
                                   ),
                                 ),
-                                errorWidget: (context, url, error) => Icon(
-                                  Icons.person_rounded,
-                                  size: 40.st,
-                                  color: Colors.indigo.shade50,
+                                errorWidget: (context, url, error) => Container(
+                                  color: AppColors.primary.withValues(alpha: 0.1),
+                                  child: Icon(
+                                    Icons.person_rounded,
+                                    size: 35.st,
+                                    color: AppColors.primary,
+                                  ),
                                 ),
                               )
-                            : Icon(
-                                Icons.person_rounded,
-                                size: 40.st,
-                                color: Colors.indigo.shade50,
+                            : Container(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  size: 35.st,
+                                  color: AppColors.primary,
+                                ),
                               ),
                       ),
                     ),
-                    18.horizontalGap,
+                    16.horizontalGap,
+                    // Name and Specialization
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppText(
                             expert.name,
-                            style: Get.bodyLarge.px20.w700.copyWith(
-                              color: Colors.white,
+                            style: Get.bodyLarge.px18.w700.copyWith(
+                              color: Get.disabledColor,
                             ),
-                            maxLines: 2,
+                            maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           6.verticalGap,
                           AppText(
                             expert.specialization,
-                            style: Get.bodyMedium.w500.copyWith(
-                              color: Colors.white.withValues(alpha: 0.9),
+                            style: Get.bodyMedium.px14.w500.copyWith(
+                              color: Get.disabledColor.withValues(alpha: 0.7),
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                          ),
-                          12.verticalGap,
-                          Wrap(
-                            spacing: 8.w,
-                            runSpacing: 6.h,
-                            children: [
-                              _buildMetaBadge(
-                                icon: Icons.calendar_today_rounded,
-                                text: expert.availableDays,
-                              ),
-                              _buildMetaBadge(
-                                icon: Icons.access_time_rounded,
-                                text: expert.availableHours,
-                              ),
-                              _buildMetaBadge(
-                                icon: Icons.payments_rounded,
-                                text: expert.consultationFee,
-                              ),
-                            ],
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              Padding(
-                padding: EdgeInsets.all(20.rt),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                20.verticalGap,
+                // Key Information Pills
+                Wrap(
+                  spacing: 8.rt,
+                  runSpacing: 8.rt,
                   children: [
-                    _buildInfoRow(
-                      icon: Icons.school_rounded,
-                      label: 'Qualifications',
-                      value: expert.qualifications,
-                      color: Colors.blue,
+                    _buildInfoPill(
+                      icon: Icons.access_time_rounded,
+                      text: expert.availableHours,
                     ),
-                    12.verticalGap,
-                    _buildInfoRow(
-                      icon: Icons.location_on_rounded,
-                      label: 'Office',
-                      value: expert.officeAddress,
-                      color: Colors.red,
+                    _buildInfoPill(
+                      icon: Icons.calendar_today_rounded,
+                      text: expert.availableDays,
                     ),
-                    12.verticalGap,
-                    _buildInfoRow(
-                      icon: Icons.support_agent_rounded,
-                      label: 'Contact',
-                      value: expert.phoneNumber,
-                      color: Colors.deepPurple,
-                    ),
-                    20.verticalGap,
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildActionButton(
-                            label: 'Call',
-                            icon: Icons.phone_rounded,
-                            color: Colors.green,
-                            onTap: () => _makePhoneCall(expert.phoneNumber),
-                          ),
-                        ),
-                        if (expert.email.isNotEmpty) ...[
-                          16.horizontalGap,
-                          Expanded(
-                            child: _buildActionButton(
-                              label: 'Email',
-                              icon: Icons.email_rounded,
-                              color: Colors.blue,
-                              onTap: () => _sendEmail(expert.email),
-                            ),
-                          ),
-                        ],
-                      ],
+                    _buildInfoPill(
+                      icon: Icons.payments_rounded,
+                      text: expert.consultationFee,
                     ),
                   ],
                 ),
-              ),
-            ],
+                20.verticalGap,
+                // Contact Actions
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildContactButton(
+                        icon: Icons.phone_rounded,
+                        label: 'call'.tr(context),
+                        color: Colors.green,
+                        onTap: () => _makePhoneCall(context, expert.phoneNumber),
+                      ),
+                    ),
+                    if (expert.email.isNotEmpty) ...[
+                      12.horizontalGap,
+                      Expanded(
+                        child: _buildContactButton(
+                          icon: Icons.email_rounded,
+                          label: 'email'.tr(context),
+                          color: Colors.blue,
+                          onTap: () => _sendEmail(context, expert.email),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow({
+  Widget _buildInfoPill({
     required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
+    required String text,
   }) {
     return Container(
-      padding: EdgeInsets.all(12.rt),
+      padding: EdgeInsets.symmetric(horizontal: 12.rt, vertical: 8.rt),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14).rt,
-        border: Border.all(color: color.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(6.rt),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Icon(icon, size: 16.st, color: color),
-          ),
-          12.horizontalGap,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  label,
-                  style: Get.bodySmall.copyWith(
-                    color: Colors.grey.shade600,
-                    fontSize: 11.sp,
-                  ),
-                ),
-                4.verticalGap,
-                AppText(
-                  value,
-                  style: Get.bodyMedium.w600.copyWith(
-                    color: Get.disabledColor,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMetaBadge({required IconData icon, required String text}) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(30).rt,
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12).rt,
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.35),
+          color: AppColors.primary.withValues(alpha: 0.15),
         ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14.st, color: Colors.white),
+          Icon(
+            icon,
+            size: 16.st,
+            color: AppColors.primary,
+          ),
           6.horizontalGap,
-          AppText(
-            text,
-            style: Get.bodySmall.w600.copyWith(
-              color: Colors.white,
+          Flexible(
+            child: AppText(
+              text,
+              style: Get.bodySmall.px12.w600.copyWith(
+                color: Get.disabledColor,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -409,31 +340,38 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
     );
   }
 
-  Widget _buildActionButton({
-    required String label,
+  Widget _buildContactButton({
     required IconData icon,
+    required String label,
     required Color color,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 14.h),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(14).rt,
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18.st, color: color),
-            8.horizontalGap,
-            AppText(
-              label,
-              style: Get.bodyMedium.w600.copyWith(color: color),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12).rt,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.rt),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12).rt,
+            border: Border.all(
+              color: color.withValues(alpha: 0.3),
+              width: 1.5,
             ),
-          ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18.st, color: color),
+              8.horizontalGap,
+              AppText(
+                label,
+                style: Get.bodyMedium.px14.w600.copyWith(color: color),
+              ),
+            ],
+          ),
         ),
       ),
     );

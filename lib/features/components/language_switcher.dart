@@ -16,66 +16,37 @@ class LanguageSwitcher extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final langProvider = ref.watch(languageProvider);
-    final isLoading = langProvider.isLoading;
+    final currentIndex = langProvider.index;
 
-    return Stack(
-      children: [
-        Opacity(
-          opacity: isLoading ? 0.5 : 1.0,
-          child: Row(
-            children: [
-              _buildLanguageOption(
-                context,
-                ref,
-                'english',
-                '🇬🇧',
-                0,
-                langProvider.index == 0,
-                isLoading,
-              ),
-              12.horizontalGap,
-              _buildLanguageOption(
-                context,
-                ref,
-                'nepali',
-                '🇳🇵',
-                1,
-                langProvider.index == 1,
-                isLoading,
-              ),
-            ],
-          ),
+    return Container(
+      padding: const EdgeInsets.all(4).rt,
+      decoration: BoxDecoration(
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(14).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.1),
         ),
-        if (isLoading)
-          Positioned.fill(
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.all(8).rt,
-                decoration: BoxDecoration(
-                  color: Get.cardColor,
-                  borderRadius: BorderRadius.circular(8).rt,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: SizedBox(
-                  width: 20.st,
-                  height: 20.st,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+      ),
+      child: Row(
+        children: [
+          _buildLanguageOption(
+            context,
+            ref,
+            'english',
+            '🇬🇧',
+            0,
+            currentIndex == 0,
           ),
-      ],
+          _buildLanguageOption(
+            context,
+            ref,
+            'nepali',
+            '🇳🇵',
+            1,
+            currentIndex == 1,
+          ),
+        ],
+      ),
     );
   }
 
@@ -86,62 +57,46 @@ class LanguageSwitcher extends ConsumerWidget {
     String flag,
     int index,
     bool isSelected,
-    bool isDisabled,
   ) {
     return Expanded(
-      child: GestureDetector(
-        onTap: isDisabled
-            ? null
-            : () {
-                ref.read(languageProvider).toggleLanguage(index);
-              },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12).rt,
-          decoration: BoxDecoration(
-            gradient: isSelected
-                ? LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primary.withValues(alpha: 0.85),
-                    ],
-                  )
-                : null,
-            color: isSelected ? null : Get.cardColor,
-            borderRadius: BorderRadius.circular(12).rt,
-            border: Border.all(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            ref.read(languageProvider).toggleLanguage(index);
+          },
+          borderRadius: BorderRadius.circular(12).rt,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8).rt,
+            decoration: BoxDecoration(
               color: isSelected
                   ? AppColors.primary
-                  : Get.disabledColor.withValues(alpha: 0.1),
-              width: isSelected ? 0 : 1,
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12).rt,
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                flag,
-                style: TextStyle(fontSize: 22.st),
-              ),
-              10.horizontalGap,
-              AppText(
-                label.tr(context),
-                style: Get.bodyMedium.px14.w600.copyWith(
-                  color: isSelected
-                      ? AppColors.white
-                      : Get.disabledColor.withValues(alpha: 0.8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  flag,
+                  style: TextStyle(fontSize: 20.st),
                 ),
-              ),
-            ],
+                8.horizontalGap,
+                Flexible(
+                  child: AppText(
+                    label.tr(context),
+                    style: Get.bodySmall.px12.w600.copyWith(
+                      color: isSelected
+                          ? AppColors.white
+                          : Get.disabledColor.withValues(alpha: 0.7),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

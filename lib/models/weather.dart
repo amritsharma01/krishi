@@ -29,17 +29,17 @@ class Weather {
 
   factory Weather.fromJson(Map<String, dynamic> json) {
     return Weather(
-      location: json['location'] as String,
-      temperatureC: (json['temperature_c'] as num).toDouble(),
-      feelsLikeC: (json['feels_like_c'] as num).toDouble(),
-      humidity: json['humidity'] as int,
-      pressure: json['pressure'] as int,
-      condition: json['condition'] as String,
-      description: json['description'] as String,
-      windSpeed: (json['wind_speed'] as num).toDouble(),
-      windDirection: json['wind_direction'] as int,
-      clouds: json['clouds'] as int,
-      timestamp: json['timestamp'] as int,
+      location: (json['location'] as String?) ?? '',
+      temperatureC: (json['temperature_c'] as num?)?.toDouble() ?? 0.0,
+      feelsLikeC: (json['feels_like_c'] as num?)?.toDouble() ?? 0.0,
+      humidity: json['humidity'] as int? ?? 0,
+      pressure: json['pressure'] as int? ?? 0,
+      condition: (json['condition'] as String?) ?? '',
+      description: (json['description'] as String?) ?? '',
+      windSpeed: (json['wind_speed'] as num?)?.toDouble() ?? 0.0,
+      windDirection: json['wind_direction'] as int? ?? 0,
+      clouds: json['clouds'] as int? ?? 0,
+      timestamp: json['timestamp'] as int? ?? 0,
       rawData: json['raw_data'] as Map<String, dynamic>?,
     );
   }

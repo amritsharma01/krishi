@@ -6,6 +6,7 @@ import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/resources/crop_detail_page.dart';
@@ -23,15 +24,17 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
   bool _isLoading = true;
   String _selectedType = 'all';
 
-  final Map<String, String> _cropTypes = {
-    'all': 'All Crops',
-    'cereal': 'Cereals',
-    'vegetable': 'Vegetables',
-    'fruit': 'Fruits',
-    'pulses': 'Pulses',
-    'cash_crop': 'Cash Crops',
-    'other': 'Other',
-  };
+  Map<String, String> _getCropTypes(BuildContext context) {
+    return {
+      'all': 'all_crops'.tr(context),
+      'cereal': 'cereals'.tr(context),
+      'vegetable': 'vegetables'.tr(context),
+      'fruit': 'fruits'.tr(context),
+      'pulses': 'pulses'.tr(context),
+      'cash_crop': 'cash_crops'.tr(context),
+      'other': 'other'.tr(context),
+    };
+  }
 
   final Map<String, IconData> _cropIcons = {
     'cereal': Icons.grain_rounded,
@@ -87,7 +90,7 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
-          'Crop Calendar',
+          'crop_calendar'.tr(context),
           style: Get.bodyLarge.px24.w600.copyWith(color: Colors.white),
         ),
         centerTitle: true,
@@ -97,20 +100,21 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
       ),
       body: Column(
         children: [
-          _buildTypeFilter(),
+          _buildTypeFilter(context),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _crops.isEmpty
-                ? _buildEmptyState()
-                : _buildCropsList(),
+                ? _buildEmptyState(context)
+                : _buildCropsList(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTypeFilter() {
+  Widget _buildTypeFilter(BuildContext context) {
+    final cropTypes = _getCropTypes(context);
     return Container(
       padding: EdgeInsets.only(
         left: 16.w,
@@ -143,7 +147,7 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
               ),
               8.horizontalGap,
               AppText(
-                'Filter crops',
+                'filter_crops'.tr(context),
                 style: Get.bodyMedium.w600.copyWith(
                   color: Colors.green.shade800,
                 ),
@@ -154,7 +158,7 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _cropTypes.entries.map((entry) {
+              children: cropTypes.entries.map((entry) {
                 final isSelected = _selectedType == entry.key;
                 final color = _cropColors[entry.key] ?? Colors.green;
                 final icon = entry.key == 'all'
@@ -183,7 +187,7 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -195,14 +199,14 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
           ),
           16.verticalGap,
           AppText(
-            'No crops available',
+            'no_crops_available'.tr(context),
             style: Get.bodyLarge.px18.w600.copyWith(
               color: Colors.grey.shade600,
             ),
           ),
           8.verticalGap,
           AppText(
-            'Check back later for information',
+            'check_back_later_info'.tr(context),
             style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
           ),
         ],
@@ -210,7 +214,7 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
     );
   }
 
-  Widget _buildCropsList() {
+  Widget _buildCropsList(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () => _loadCrops(cropType: _selectedType),
       child: GridView.builder(
@@ -224,13 +228,13 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
         itemCount: _crops.length,
         itemBuilder: (context, index) {
           final crop = _crops[index];
-          return _buildCropCard(crop);
+          return _buildCropCard(context, crop);
         },
       ),
     );
   }
 
-  Widget _buildCropCard(CropCalendar crop) {
+  Widget _buildCropCard(BuildContext context, CropCalendar crop) {
     final color = _cropColors[crop.cropType] ?? Colors.teal;
     final icon = _cropIcons[crop.cropType] ?? Icons.agriculture_rounded;
 

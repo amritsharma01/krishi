@@ -20,24 +20,33 @@ class PlatformSwitcher extends StatelessWidget {
       builder: (context, platform, child) {
         final isAndroid = platform == PlatformStyle.Material;
 
-        return Row(
-          children: [
-            _buildPlatformOption(
-              context,
-              'android',
-              Icons.android,
-              true,
-              isAndroid,
+        return Container(
+          padding: const EdgeInsets.all(4).rt,
+          decoration: BoxDecoration(
+            color: Get.cardColor,
+            borderRadius: BorderRadius.circular(14).rt,
+            border: Border.all(
+              color: Get.disabledColor.withValues(alpha: 0.1),
             ),
-            12.horizontalGap,
-            _buildPlatformOption(
-              context,
-              'ios',
-              Icons.apple,
-              false,
-              !isAndroid,
-            ),
-          ],
+          ),
+          child: Row(
+            children: [
+              _buildPlatformOption(
+                context,
+                'android',
+                Icons.android_rounded,
+                true,
+                isAndroid,
+              ),
+              _buildPlatformOption(
+                context,
+                'ios',
+                Icons.phone_iphone_rounded,
+                false,
+                !isAndroid,
+              ),
+            ],
+          ),
         );
       },
     );
@@ -51,62 +60,49 @@ class PlatformSwitcher extends StatelessWidget {
     bool isSelected,
   ) {
     return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          platformProvider.value = isAndroid
-              ? PlatformStyle.Material
-              : PlatformStyle.Cupertino;
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12).rt,
-          decoration: BoxDecoration(
-            gradient: isSelected
-                ? LinearGradient(
-                    colors: [
-                      Colors.orange,
-                      Colors.orange.withValues(alpha: 0.85),
-                    ],
-                  )
-                : null,
-            color: isSelected ? null : Get.cardColor,
-            borderRadius: BorderRadius.circular(12).rt,
-            border: Border.all(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            platformProvider.value = isAndroid
+                ? PlatformStyle.Material
+                : PlatformStyle.Cupertino;
+          },
+          borderRadius: BorderRadius.circular(12).rt,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8).rt,
+            decoration: BoxDecoration(
               color: isSelected
                   ? Colors.orange
-                  : Get.disabledColor.withValues(alpha: 0.1),
-              width: isSelected ? 0 : 1,
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12).rt,
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: Colors.orange.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isSelected
-                    ? AppColors.white
-                    : Get.disabledColor.withValues(alpha: 0.8),
-                size: 22.st,
-              ),
-              10.horizontalGap,
-              AppText(
-                label.tr(context),
-                style: Get.bodyMedium.px14.w600.copyWith(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
                   color: isSelected
                       ? AppColors.white
-                      : Get.disabledColor.withValues(alpha: 0.8),
+                      : Get.disabledColor.withValues(alpha: 0.6),
+                  size: 22.st,
                 ),
-              ),
-            ],
+                8.horizontalGap,
+                Flexible(
+                  child: AppText(
+                    label.tr(context),
+                    style: Get.bodySmall.px12.w600.copyWith(
+                      color: isSelected
+                          ? AppColors.white
+                          : Get.disabledColor.withValues(alpha: 0.7),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

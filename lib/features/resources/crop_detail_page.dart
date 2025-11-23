@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/models/resources.dart';
@@ -157,8 +158,9 @@ class CropDetailPage extends StatelessWidget {
 
                   // Duration Card
                   _buildInfoCard(
+                    context,
                     icon: Icons.schedule_rounded,
-                    title: 'Growing Duration',
+                    title: 'growing_duration'.tr(context),
                     content: '${crop.durationDays} days',
                     color: Colors.blue,
                   ),
@@ -167,8 +169,9 @@ class CropDetailPage extends StatelessWidget {
 
                   // Planting Season
                   _buildInfoCard(
+                    context,
                     icon: Icons.wb_sunny_rounded,
-                    title: 'Planting Season',
+                    title: 'planting_season'.tr(context),
                     content: crop.plantingSeason,
                     color: Colors.orange,
                   ),
@@ -177,8 +180,9 @@ class CropDetailPage extends StatelessWidget {
 
                   // Harvesting Season
                   _buildInfoCard(
+                    context,
                     icon: Icons.agriculture_rounded,
-                    title: 'Harvesting Season',
+                    title: 'harvesting_season'.tr(context),
                     content: crop.harvestingSeason,
                     color: Colors.green,
                   ),
@@ -187,8 +191,9 @@ class CropDetailPage extends StatelessWidget {
 
                   // Detailed Information
                   _buildDetailSection(
+                    context,
                     icon: Icons.thermostat_rounded,
-                    title: 'Climate Requirement',
+                    title: 'climate_requirement'.tr(context),
                     content: crop.climateRequirement,
                     color: Colors.red,
                   ),
@@ -196,8 +201,9 @@ class CropDetailPage extends StatelessWidget {
                   16.verticalGap,
 
                   _buildDetailSection(
+                    context,
                     icon: Icons.landscape_rounded,
-                    title: 'Soil Type',
+                    title: 'soil_type'.tr(context),
                     content: crop.soilType,
                     color: Colors.brown,
                   ),
@@ -205,8 +211,9 @@ class CropDetailPage extends StatelessWidget {
                   16.verticalGap,
 
                   _buildDetailSection(
+                    context,
                     icon: Icons.water_drop_rounded,
-                    title: 'Water Requirement',
+                    title: 'water_requirement'.tr(context),
                     content: crop.waterRequirement,
                     color: Colors.cyan,
                   ),
@@ -214,8 +221,9 @@ class CropDetailPage extends StatelessWidget {
                   16.verticalGap,
 
                   _buildDetailSection(
+                    context,
                     icon: Icons.checklist_rounded,
-                    title: 'Best Practices',
+                    title: 'best_practices'.tr(context),
                     content: crop.bestPractices,
                     color: Colors.green,
                   ),
@@ -223,8 +231,9 @@ class CropDetailPage extends StatelessWidget {
                   16.verticalGap,
 
                   _buildDetailSection(
+                    context,
                     icon: Icons.bug_report_rounded,
-                    title: 'Common Pests & Diseases',
+                    title: 'common_pests_diseases'.tr(context),
                     content: crop.commonPests,
                     color: Colors.deepOrange,
                   ),
@@ -239,7 +248,8 @@ class CropDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard({
+  Widget _buildInfoCard(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String content,
@@ -289,7 +299,8 @@ class CropDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailSection({
+  Widget _buildDetailSection(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required String content,
