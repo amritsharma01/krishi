@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/models/resources.dart';
@@ -111,20 +113,21 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
-          'Service Providers',
-          style: Get.bodyLarge.px24.w600.copyWith(color: Colors.white),
+          'service_providers'.tr(context),
+          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.teal.shade700,
+        backgroundColor: Get.scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Get.disabledColor),
       ),
       body: Column(
         children: [
           _buildTypeFilter(),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  )
                 : _providers.isEmpty
                     ? _buildEmptyState()
                     : _buildProvidersList(),
@@ -137,10 +140,10 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
   Widget _buildTypeFilter() {
     return Container(
       padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 20.h,
-        bottom: 14.h,
+        left: 16.wt,
+        right: 16.wt,
+        top: 20.ht,
+        bottom: 14.ht,
       ),
       decoration: BoxDecoration(
         color: Get.cardColor,
@@ -181,7 +184,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
                     ? Icons.all_inclusive
                     : _serviceIcons[entry.key] ?? Icons.business_rounded;
                 return Padding(
-                  padding: EdgeInsets.only(right: 10.w),
+                  padding: EdgeInsets.only(right: 10.wt),
                   child: _buildFilterPill(
                     label: entry.value,
                     icon: icon,
@@ -232,7 +235,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
     return RefreshIndicator(
       onRefresh: () => _loadProviders(serviceType: _selectedType),
       child: ListView.builder(
-        padding: EdgeInsets.all(16.rt),
+        padding: const EdgeInsets.all(16).rt,
         itemCount: _providers.length,
         itemBuilder: (context, index) {
           final provider = _providers[index];
@@ -253,7 +256,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 9.ht),
         decoration: BoxDecoration(
           gradient: isSelected
               ? LinearGradient(
@@ -296,232 +299,181 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
   }
 
   Widget _buildProviderCard(ServiceProvider provider) {
-    final color = _serviceColors[provider.serviceType] ?? Colors.teal;
+    final color = _serviceColors[provider.serviceType] ?? AppColors.primary;
     final icon = _serviceIcons[provider.serviceType] ?? Icons.business_rounded;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 18.h),
+      margin: EdgeInsets.only(bottom: 16.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(22).rt,
-        border: Border.all(color: color.withValues(alpha: 0.08)),
+        borderRadius: BorderRadius.circular(20).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.15),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(18.rt),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [color, color.withValues(alpha: 0.75)],
-              ),
-              borderRadius: BorderRadius.vertical(
-                top: const Radius.circular(22),
-              ).rt,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(14.rt),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(18).rt,
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 28.st),
-                ),
-                16.horizontalGap,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        provider.businessName,
-                        style: Get.bodyLarge.px20.w700.copyWith(
-                          color: Colors.white,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20).rt,
+        child: Padding(
+          padding: const EdgeInsets.all(20).rt,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with icon and business name
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12).rt,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14).rt,
+                      border: Border.all(
+                        color: color.withValues(alpha: 0.2),
                       ),
-                      8.verticalGap,
-                      Wrap(
-                        spacing: 8.w,
-                        runSpacing: 6.h,
-                        children: [
-                          _buildBadge(
-                            text: provider.serviceTypeDisplay,
-                            icon: icon,
+                    ),
+                    child: Icon(icon, color: color, size: 28.st),
+                  ),
+                  16.horizontalGap,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppText(
+                          provider.businessName,
+                          style: Get.bodyLarge.px18.w700.copyWith(
+                            color: Get.disabledColor,
                           ),
-                          if (provider.deliveryAvailable)
-                            _buildBadge(
-                              text: 'Delivery Available',
-                              icon: Icons.local_shipping_rounded,
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(20.rt),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow(
-                  icon: Icons.person_rounded,
-                  label: 'Contact Person',
-                  value: provider.contactPerson,
-                  color: Colors.blue,
-                ),
-                12.verticalGap,
-                _buildInfoRow(
-                  icon: Icons.location_on_rounded,
-                  label: 'Address',
-                  value: provider.address,
-                  color: Colors.red,
-                ),
-                12.verticalGap,
-                Container(
-                  padding: EdgeInsets.all(14.rt),
-                  decoration: BoxDecoration(
-                    color: Get.scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.circular(16).rt,
-                    border: Border.all(
-                      color: Get.disabledColor.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  child: AppText(
-                    provider.description,
-                    style: Get.bodyMedium.copyWith(
-                      color: Get.disabledColor,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-                16.verticalGap,
-                Container(
-                  padding: EdgeInsets.all(12.rt),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(14).rt,
-                    border: Border.all(color: color.withValues(alpha: 0.2)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.currency_rupee_rounded,
-                        size: 18.st,
-                        color: color,
-                      ),
-                      10.horizontalGap,
-                      Expanded(
-                        child: AppText(
-                          provider.priceRange,
-                          style: Get.bodyMedium.w700.copyWith(color: color),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                18.verticalGap,
-                Wrap(
-                  spacing: 12.w,
-                  runSpacing: 12.h,
-                  children: [
-                    _buildActionButton(
-                      icon: Icons.phone_in_talk_rounded,
-                      label: 'Call',
-                      color: Colors.green,
-                      onTap: () => _makePhoneCall(provider.phoneNumber),
+                        6.verticalGap,
+                        AppText(
+                          provider.serviceTypeDisplay,
+                          style: Get.bodyMedium.px14.w500.copyWith(
+                            color: Get.disabledColor.withValues(alpha: 0.7),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
-                    if (provider.alternatePhone.isNotEmpty)
-                      _buildActionButton(
-                        icon: Icons.phone_forwarded_rounded,
-                        label: 'Alt. Call',
-                        color: Colors.blue,
-                        onTap: () => _makePhoneCall(provider.alternatePhone),
-                      ),
-                    if (provider.email.isNotEmpty)
-                      _buildActionButton(
-                        icon: Icons.email_rounded,
-                        label: 'Email',
-                        color: Colors.orange,
-                        onTap: () => _sendEmail(provider.email),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Container(
-      padding: EdgeInsets.all(12.rt),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16).rt,
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(6.rt),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Icon(icon, size: 16.st, color: color),
-          ),
-          12.horizontalGap,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  label,
-                  style: Get.bodySmall.copyWith(
-                    color: Colors.grey.shade600,
-                    fontSize: 11.sp,
                   ),
-                ),
-                4.verticalGap,
+                ],
+              ),
+              20.verticalGap,
+              // Key Information Pills
+              Wrap(
+                spacing: 8.rt,
+                runSpacing: 8.rt,
+                children: [
+                  _buildInfoPill(
+                    icon: Icons.person_rounded,
+                    text: provider.contactPerson,
+                  ),
+                  if (provider.deliveryAvailable)
+                    _buildInfoPill(
+                      icon: Icons.local_shipping_rounded,
+                      text: 'Delivery Available',
+                    ),
+                  _buildInfoPill(
+                    icon: Icons.currency_rupee_rounded,
+                    text: provider.priceRange,
+                  ),
+                ],
+              ),
+              if (provider.description.isNotEmpty) ...[
+                16.verticalGap,
                 AppText(
-                  value,
-                  style: Get.bodyMedium.w600.copyWith(
-                    color: Get.disabledColor,
+                  provider.description,
+                  style: Get.bodyMedium.px14.copyWith(
+                    color: Get.disabledColor.withValues(alpha: 0.8),
+                    height: 1.5,
                   ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
+              20.verticalGap,
+              // Contact Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildContactButton(
+                      icon: Icons.phone_rounded,
+                      label: 'call'.tr(context),
+                      color: Colors.green,
+                      onTap: () => _makePhoneCall(provider.phoneNumber),
+                    ),
+                  ),
+                  if (provider.alternatePhone.isNotEmpty) ...[
+                    12.horizontalGap,
+                    Expanded(
+                      child: _buildContactButton(
+                        icon: Icons.phone_forwarded_rounded,
+                        label: 'alt_call'.tr(context),
+                        color: Colors.blue,
+                        onTap: () => _makePhoneCall(provider.alternatePhone),
+                      ),
+                    ),
+                  ],
+                  if (provider.email.isNotEmpty) ...[
+                    if (provider.alternatePhone.isEmpty) 12.horizontalGap,
+                    Expanded(
+                      child: _buildContactButton(
+                        icon: Icons.email_rounded,
+                        label: 'email'.tr(context),
+                        color: Colors.orange,
+                        onTap: () => _sendEmail(provider.email),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoPill({
+    required IconData icon,
+    required String text,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.rt, vertical: 8.rt),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12).rt,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.15),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 16.st,
+            color: AppColors.primary,
+          ),
+          6.horizontalGap,
+          Flexible(
+            child: AppText(
+              text,
+              style: Get.bodySmall.px12.w600.copyWith(
+                color: Get.disabledColor,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -529,57 +481,43 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
     );
   }
 
-  Widget _buildActionButton({
+  Widget _buildContactButton({
     required IconData icon,
     required String label,
     required Color color,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 110.w,
-        padding: EdgeInsets.symmetric(vertical: 12.h),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(14).rt,
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: color, size: 18.st),
-            6.horizontalGap,
-            AppText(
-              label,
-              style: Get.bodySmall.w600.copyWith(color: color),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBadge({required String text, required IconData icon}) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
-        borderRadius: BorderRadius.circular(30).rt,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14.st, color: Colors.white),
-          6.horizontalGap,
-          AppText(
-            text,
-            style: Get.bodySmall.w600.copyWith(
-              color: Colors.white,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12).rt,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.rt),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12).rt,
+            border: Border.all(
+              color: color.withValues(alpha: 0.3),
+              width: 1.5,
             ),
           ),
-        ],
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18.st, color: color),
+              8.horizontalGap,
+              Flexible(
+                child: AppText(
+                  label,
+                  style: Get.bodyMedium.px14.w600.copyWith(color: color),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

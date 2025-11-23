@@ -16,76 +16,45 @@ class ThemeSwitcher extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeProvider = ref.watch(themeModeProvider);
-    final isLoading = themeProvider.isLoading;
+    final currentIndex = themeProvider.index;
 
-    return Stack(
-      children: [
-        Opacity(
-          opacity: isLoading ? 0.5 : 1.0,
-          child: Row(
-            children: [
-              _buildThemeOption(
-                context,
-                ref,
-                'light',
-                Icons.light_mode_outlined,
-                0,
-                themeProvider.index == 0,
-                isLoading,
-              ),
-              8.horizontalGap,
-              _buildThemeOption(
-                context,
-                ref,
-                'dark',
-                Icons.dark_mode_outlined,
-                1,
-                themeProvider.index == 1,
-                isLoading,
-              ),
-              8.horizontalGap,
-              _buildThemeOption(
-                context,
-                ref,
-                'system',
-                Icons.brightness_auto_outlined,
-                2,
-                themeProvider.index == 2,
-                isLoading,
-              ),
-            ],
-          ),
+    return Container(
+      padding: const EdgeInsets.all(4).rt,
+      decoration: BoxDecoration(
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(14).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.1),
         ),
-        if (isLoading)
-          Positioned.fill(
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.all(8).rt,
-                decoration: BoxDecoration(
-                  color: Get.cardColor,
-                  borderRadius: BorderRadius.circular(8).rt,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: SizedBox(
-                  width: 20.st,
-                  height: 20.st,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+      ),
+      child: Row(
+        children: [
+          _buildThemeOption(
+            context,
+            ref,
+            'light',
+            Icons.light_mode_rounded,
+            0,
+            currentIndex == 0,
           ),
-      ],
+          _buildThemeOption(
+            context,
+            ref,
+            'dark',
+            Icons.dark_mode_rounded,
+            1,
+            currentIndex == 1,
+          ),
+          _buildThemeOption(
+            context,
+            ref,
+            'system',
+            Icons.brightness_auto_rounded,
+            2,
+            currentIndex == 2,
+          ),
+        ],
+      ),
     );
   }
 
@@ -96,65 +65,45 @@ class ThemeSwitcher extends ConsumerWidget {
     IconData icon,
     int index,
     bool isSelected,
-    bool isDisabled,
   ) {
     return Expanded(
-      child: GestureDetector(
-        onTap: isDisabled
-            ? null
-            : () {
-                ref.read(themeModeProvider).toggleTheme(index);
-              },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8).rt,
-          decoration: BoxDecoration(
-            gradient: isSelected
-                ? LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primary.withValues(alpha: 0.85),
-                    ],
-                  )
-                : null,
-            color: isSelected ? null : Get.cardColor,
-            borderRadius: BorderRadius.circular(12).rt,
-            border: Border.all(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            ref.read(themeModeProvider).toggleTheme(index);
+          },
+          borderRadius: BorderRadius.circular(12).rt,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8).rt,
+            decoration: BoxDecoration(
               color: isSelected
                   ? AppColors.primary
-                  : Get.disabledColor.withValues(alpha: 0.1),
-              width: isSelected ? 0 : 1,
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12).rt,
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: isSelected
-                    ? AppColors.white
-                    : Get.disabledColor.withValues(alpha: 0.7),
-                size: 24.st,
-              ),
-              8.verticalGap,
-              AppText(
-                label.tr(context),
-                style: Get.bodySmall.px12.w600.copyWith(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  icon,
                   color: isSelected
                       ? AppColors.white
-                      : Get.disabledColor.withValues(alpha: 0.8),
+                      : Get.disabledColor.withValues(alpha: 0.6),
+                  size: 22.st,
                 ),
-              ),
-            ],
+                6.verticalGap,
+                AppText(
+                  label.tr(context),
+                  style: Get.bodySmall.px11.w600.copyWith(
+                    color: isSelected
+                        ? AppColors.white
+                        : Get.disabledColor.withValues(alpha: 0.7),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/models/resources.dart';
@@ -105,20 +107,21 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
-          'Emergency Contacts',
-          style: Get.bodyLarge.px24.w600.copyWith(color: Colors.white),
+          'emergency_contacts'.tr(context),
+          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: Get.scaffoldBackgroundColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Get.disabledColor),
       ),
       body: Column(
         children: [
           _buildTypeFilter(),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  )
                 : _contacts.isEmpty
                     ? _buildEmptyState()
                     : _buildContactsList(),
@@ -131,10 +134,10 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
   Widget _buildTypeFilter() {
     return Container(
       padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 20.h,
-        bottom: 14.h,
+        left: 16.wt,
+        right: 16.wt,
+        top: 20.ht,
+        bottom: 14.ht,
       ),
       decoration: BoxDecoration(
         color: Get.cardColor,
@@ -176,7 +179,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
                     ? Icons.all_inclusive
                     : _contactIcons[entry.key] ?? Icons.phone_rounded;
                 return Padding(
-                  padding: EdgeInsets.only(right: 10.w),
+                  padding: EdgeInsets.only(right: 10.wt),
                   child: _buildFilterPill(
                     label: entry.value,
                     icon: icon,
@@ -227,7 +230,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
     return RefreshIndicator(
       onRefresh: () => _loadContacts(contactType: _selectedType),
       child: ListView.builder(
-        padding: EdgeInsets.all(16.rt),
+        padding: const EdgeInsets.all(16).rt,
         itemCount: _contacts.length,
         itemBuilder: (context, index) {
           final contact = _contacts[index];
@@ -248,7 +251,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
+        padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 9.ht),
         decoration: BoxDecoration(
           gradient: isSelected
               ? LinearGradient(
@@ -290,264 +293,226 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
     );
   }
 
-  Widget _buildBadge({required String label, required IconData icon}) {
+  Widget _buildInfoPill({
+    required IconData icon,
+    required String text,
+  }) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.rt, vertical: 8.rt),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(30).rt,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12).rt,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.15),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14.st, color: Colors.white),
+          Icon(
+            icon,
+            size: 16.st,
+            color: AppColors.primary,
+          ),
           6.horizontalGap,
-          AppText(
-            label.toUpperCase(),
-            style: Get.bodySmall.w700.copyWith(color: Colors.white),
+          Flexible(
+            child: AppText(
+              text,
+              style: Get.bodySmall.px12.w600.copyWith(
+                color: Get.disabledColor,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoTile({
+  Widget _buildContactButton({
     required IconData icon,
-    required Color color,
     required String label,
-    required String value,
-    Widget? trailing,
-    VoidCallback? onTap,
-  }) {
-    final content = Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: EdgeInsets.all(10.rt),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(12).rt,
-          ),
-          child: Icon(icon, size: 18.st, color: color),
-        ),
-        12.horizontalGap,
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppText(
-                label,
-                style: Get.bodySmall.copyWith(
-                  color: Colors.grey.shade600,
-                  letterSpacing: 0.2,
-                ),
-              ),
-              4.verticalGap,
-              AppText(
-                value,
-                style: Get.bodyMedium.w600.copyWith(
-                  color: Get.disabledColor,
-                ),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-        if (trailing != null) trailing,
-      ],
-    );
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(14.rt),
-        decoration: BoxDecoration(
-          color: Get.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(18).rt,
-          border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
-        ),
-        child: content,
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required String label,
-    required IconData icon,
     required Color color,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 120.w,
-        padding: EdgeInsets.symmetric(vertical: 14.h),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(color: color.withValues(alpha: 0.2)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18.st, color: color),
-            8.horizontalGap,
-            AppText(
-              label,
-              style: Get.bodyMedium.w600.copyWith(color: color),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12).rt,
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 12.rt),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12).rt,
+            border: Border.all(
+              color: color.withValues(alpha: 0.3),
+              width: 1.5,
             ),
-          ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 18.st, color: color),
+              8.horizontalGap,
+              Flexible(
+                child: AppText(
+                  label,
+                  style: Get.bodyMedium.px14.w600.copyWith(color: color),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildContactCard(Contact contact) {
-    final color = _contactColors[contact.contactType] ?? Colors.grey;
+    final color = _contactColors[contact.contactType] ?? AppColors.primary;
     final icon = _contactIcons[contact.contactType] ?? Icons.phone_rounded;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 18.h),
+      margin: EdgeInsets.only(bottom: 16.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(22).rt,
-        border: Border.all(color: color.withValues(alpha: 0.1)),
+        borderRadius: BorderRadius.circular(20).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.2),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.all(18.rt),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [color, color.withValues(alpha: 0.75)],
-              ),
-              borderRadius: BorderRadius.vertical(
-                top: const Radius.circular(22),
-              ).rt,
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.all(14.rt),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Icon(icon, color: Colors.white, size: 28.st),
-                ),
-                18.horizontalGap,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        contact.title,
-                        style: Get.bodyLarge.px20.w700.copyWith(
-                          color: Colors.white,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      10.verticalGap,
-                      Wrap(
-                        spacing: 8.w,
-                        runSpacing: 6.h,
-                        children: [
-                          _buildBadge(
-                            label: contact.contactTypeDisplay,
-                            icon: icon,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.all(20.rt),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  contact.description,
-                  style: Get.bodyMedium.copyWith(
-                    color: Get.disabledColor,
-                    height: 1.5,
-                  ),
-                ),
-                16.verticalGap,
-                _buildInfoTile(
-                  icon: Icons.phone_in_talk_rounded,
-                  color: color,
-                  label: 'Helpline',
-                  value: contact.phoneNumber,
-                  trailing: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(20).rt,
+        child: Padding(
+          padding: const EdgeInsets.all(20).rt,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with icon and title
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12).rt,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20).rt,
+                      color: color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(14).rt,
+                      border: Border.all(
+                        color: color.withValues(alpha: 0.2),
+                      ),
                     ),
-                    child: AppText(
-                      'Tap to call',
-                      style: Get.bodySmall.w600.copyWith(color: color),
-                    ),
+                    child: Icon(icon, color: color, size: 28.st),
                   ),
-                  onTap: () => _makePhoneCall(contact.phoneNumber),
-                ),
-                12.verticalGap,
-                _buildInfoTile(
-                  icon: Icons.location_on_rounded,
-                  color: Colors.red.shade400,
-                  label: 'Address',
-                  value: contact.address,
-                ),
-                if (contact.email.isNotEmpty) ...[
-                  12.verticalGap,
-                  _buildInfoTile(
-                    icon: Icons.email_rounded,
-                    color: Colors.orange.shade400,
-                    label: 'Email',
-                    value: contact.email,
-                    onTap: () => _sendEmail(contact.email),
+                  16.horizontalGap,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppText(
+                          contact.title,
+                          style: Get.bodyLarge.px18.w700.copyWith(
+                            color: Get.disabledColor,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        6.verticalGap,
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 10.rt,
+                            vertical: 4.rt,
+                          ),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8).rt,
+                          ),
+                          child: AppText(
+                            contact.contactTypeDisplay,
+                            style: Get.bodySmall.px11.w600.copyWith(
+                              color: color,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-                18.verticalGap,
-                Wrap(
-                  spacing: 12.w,
-                  runSpacing: 12.h,
-                  children: [
-                    _buildActionButton(
-                      label: 'Call',
+              ),
+              if (contact.description.isNotEmpty) ...[
+                16.verticalGap,
+                AppText(
+                  contact.description,
+                  style: Get.bodyMedium.px14.copyWith(
+                    color: Get.disabledColor.withValues(alpha: 0.8),
+                    height: 1.5,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              20.verticalGap,
+              // Key Information Pills
+              Wrap(
+                spacing: 8.rt,
+                runSpacing: 8.rt,
+                children: [
+                  _buildInfoPill(
+                    icon: Icons.phone_rounded,
+                    text: contact.phoneNumber,
+                  ),
+                  if (contact.address.isNotEmpty)
+                    _buildInfoPill(
+                      icon: Icons.location_on_rounded,
+                      text: contact.address,
+                    ),
+                ],
+              ),
+              if (contact.email.isNotEmpty) ...[
+                8.verticalGap,
+                _buildInfoPill(
+                  icon: Icons.email_rounded,
+                  text: contact.email,
+                ),
+              ],
+              20.verticalGap,
+              // Contact Actions
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildContactButton(
                       icon: Icons.phone_rounded,
+                      label: 'call'.tr(context),
                       color: color,
                       onTap: () => _makePhoneCall(contact.phoneNumber),
                     ),
-                    if (contact.email.isNotEmpty)
-                      _buildActionButton(
-                        label: 'Email',
+                  ),
+                  if (contact.email.isNotEmpty) ...[
+                    12.horizontalGap,
+                    Expanded(
+                      child: _buildContactButton(
                         icon: Icons.email_rounded,
+                        label: 'email'.tr(context),
                         color: Colors.orange,
                         onTap: () => _sendEmail(contact.email),
                       ),
+                    ),
                   ],
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
