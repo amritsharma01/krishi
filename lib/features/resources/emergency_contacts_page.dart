@@ -16,7 +16,8 @@ class EmergencyContactsPage extends ConsumerStatefulWidget {
   const EmergencyContactsPage({super.key});
 
   @override
-  ConsumerState<EmergencyContactsPage> createState() => _EmergencyContactsPageState();
+  ConsumerState<EmergencyContactsPage> createState() =>
+      _EmergencyContactsPageState();
 }
 
 class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
@@ -24,14 +25,16 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
   bool _isLoading = true;
   String _selectedType = 'all';
 
-  final Map<String, String> _contactTypes = {
-    'all': 'All Contacts',
-    'emergency': 'Emergency',
-    'support': 'Support',
-    'technical': 'Technical',
-    'sales': 'Sales',
-    'general': 'General',
-  };
+  Map<String, String> _getContactTypes(BuildContext context) {
+    return {
+      'all': 'all_contacts'.tr(context),
+      'emergency': 'emergency'.tr(context),
+      'support': 'support'.tr(context),
+      'technical': 'technical'.tr(context),
+      'sales': 'sales'.tr(context),
+      'general': 'general_contact'.tr(context),
+    };
+  }
 
   final Map<String, IconData> _contactIcons = {
     'emergency': Icons.emergency_rounded,
@@ -74,30 +77,30 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
         _isLoading = false;
       });
       if (mounted) {
-        Get.snackbar('Failed to load contacts: $e');
+        Get.snackbar('error_loading_products'.tr(context));
       }
     }
   }
 
-  Future<void> _makePhoneCall(String phoneNumber) async {
+  Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
     final uri = Uri.parse('tel:$phoneNumber');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      Get.snackbar('Could not make phone call');
+      Get.snackbar('could_not_make_call'.tr(context));
     }
   }
 
-  Future<void> _sendEmail(String email) async {
+  Future<void> _sendEmail(BuildContext context, String email) async {
     if (email.isEmpty) {
-      Get.snackbar('No email available');
+      Get.snackbar('no_email_available'.tr(context));
       return;
     }
     final uri = Uri.parse('mailto:$email');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      Get.snackbar('Could not send email');
+      Get.snackbar('could_not_send_email'.tr(context));
     }
   }
 
@@ -116,22 +119,23 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
       ),
       body: Column(
         children: [
-          _buildTypeFilter(),
+          _buildTypeFilter(context),
           Expanded(
             child: _isLoading
                 ? Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
                   )
                 : _contacts.isEmpty
-                    ? _buildEmptyState()
-                    : _buildContactsList(),
+                ? _buildEmptyState(context)
+                : _buildContactsList(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTypeFilter() {
+  Widget _buildTypeFilter(BuildContext context) {
+    final contactTypes = _getContactTypes(context);
     return Container(
       padding: EdgeInsets.only(
         left: 16.wt,
@@ -157,14 +161,15 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.settings_input_component_rounded,
-                  color: Colors.red.shade600, size: 20.st),
+              Icon(
+                Icons.settings_input_component_rounded,
+                color: Colors.red.shade600,
+                size: 20.st,
+              ),
               8.horizontalGap,
               AppText(
-                'Quick filters',
-                style: Get.bodyMedium.w600.copyWith(
-                  color: Colors.red.shade700,
-                ),
+                'quick_filters'.tr(context),
+                style: Get.bodyMedium.w600.copyWith(color: Colors.red.shade700),
               ),
             ],
           ),
@@ -172,7 +177,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _contactTypes.entries.map((entry) {
+              children: contactTypes.entries.map((entry) {
                 final isSelected = _selectedType == entry.key;
                 final color = _contactColors[entry.key] ?? Colors.red;
                 final icon = entry.key == 'all'
@@ -201,7 +206,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -213,12 +218,14 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
           ),
           16.verticalGap,
           AppText(
-            'No contacts available',
-            style: Get.bodyLarge.px18.w600.copyWith(color: Colors.grey.shade600),
+            'no_contacts_available'.tr(context),
+            style: Get.bodyLarge.px18.w600.copyWith(
+              color: Colors.grey.shade600,
+            ),
           ),
           8.verticalGap,
           AppText(
-            'Check back later',
+            'check_back_later'.tr(context),
             style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
           ),
         ],
@@ -226,7 +233,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
     );
   }
 
-  Widget _buildContactsList() {
+  Widget _buildContactsList(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () => _loadContacts(contactType: _selectedType),
       child: ListView.builder(
@@ -234,7 +241,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
         itemCount: _contacts.length,
         itemBuilder: (context, index) {
           final contact = _contacts[index];
-          return _buildContactCard(contact);
+          return _buildContactCard(context, contact);
         },
       ),
     );
@@ -254,14 +261,14 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
         padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 9.ht),
         decoration: BoxDecoration(
           gradient: isSelected
-              ? LinearGradient(
-                  colors: [color, color.withValues(alpha: 0.85)],
-                )
+              ? LinearGradient(colors: [color, color.withValues(alpha: 0.85)])
               : null,
           color: isSelected ? null : Get.scaffoldBackgroundColor,
           borderRadius: BorderRadius.circular(24).rt,
           border: Border.all(
-            color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
+            color: isSelected
+                ? Colors.transparent
+                : color.withValues(alpha: 0.3),
           ),
           boxShadow: [
             if (isSelected)
@@ -275,11 +282,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 16.st,
-              color: isSelected ? Colors.white : color,
-            ),
+            Icon(icon, size: 16.st, color: isSelected ? Colors.white : color),
             8.horizontalGap,
             AppText(
               label,
@@ -293,34 +296,23 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
     );
   }
 
-  Widget _buildInfoPill({
-    required IconData icon,
-    required String text,
-  }) {
+  Widget _buildInfoPill({required IconData icon, required String text}) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.rt, vertical: 8.rt),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12).rt,
-        border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 16.st,
-            color: AppColors.primary,
-          ),
+          Icon(icon, size: 16.st, color: AppColors.primary),
           6.horizontalGap,
           Flexible(
             child: AppText(
               text,
-              style: Get.bodySmall.px12.w600.copyWith(
-                color: Get.disabledColor,
-              ),
+              style: Get.bodySmall.px12.w600.copyWith(color: Get.disabledColor),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -346,10 +338,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12).rt,
-            border: Border.all(
-              color: color.withValues(alpha: 0.3),
-              width: 1.5,
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -371,7 +360,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
     );
   }
 
-  Widget _buildContactCard(Contact contact) {
+  Widget _buildContactCard(BuildContext context, Contact contact) {
     final color = _contactColors[contact.contactType] ?? AppColors.primary;
     final icon = _contactIcons[contact.contactType] ?? Icons.phone_rounded;
 
@@ -408,9 +397,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14).rt,
-                      border: Border.all(
-                        color: color.withValues(alpha: 0.2),
-                      ),
+                      border: Border.all(color: color.withValues(alpha: 0.2)),
                     ),
                     child: Icon(icon, color: color, size: 28.st),
                   ),
@@ -480,10 +467,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
               ),
               if (contact.email.isNotEmpty) ...[
                 8.verticalGap,
-                _buildInfoPill(
-                  icon: Icons.email_rounded,
-                  text: contact.email,
-                ),
+                _buildInfoPill(icon: Icons.email_rounded, text: contact.email),
               ],
               20.verticalGap,
               // Contact Actions
@@ -494,7 +478,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
                       icon: Icons.phone_rounded,
                       label: 'call'.tr(context),
                       color: color,
-                      onTap: () => _makePhoneCall(contact.phoneNumber),
+                      onTap: () => _makePhoneCall(context, contact.phoneNumber),
                     ),
                   ),
                   if (contact.email.isNotEmpty) ...[
@@ -504,7 +488,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
                         icon: Icons.email_rounded,
                         label: 'email'.tr(context),
                         color: Colors.orange,
-                        onTap: () => _sendEmail(contact.email),
+                        onTap: () => _sendEmail(context, contact.email),
                       ),
                     ),
                   ],

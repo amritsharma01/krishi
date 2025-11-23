@@ -40,17 +40,23 @@ class Notice {
 
     return Notice(
       id: _parseInt(json['id']),
-      title: json['title'] as String,
-      description: json['description'] as String,
-      noticeType: json['notice_type'] as String,
-      noticeTypeDisplay: json['notice_type_display'] as String,
+      title: (json['title'] as String?) ?? '',
+      description: (json['description'] as String?) ?? '',
+      noticeType: (json['notice_type'] as String?) ?? '',
+      noticeTypeDisplay: (json['notice_type_display'] as String?) ?? '',
       pdfFile: json['pdf_file'] as String?,
       image: json['image'] as String?,
-      publishedDate: DateTime.parse(json['published_date'] as String),
+      publishedDate: json['published_date'] != null
+          ? DateTime.parse(json['published_date'] as String)
+          : DateTime.now(),
       createdBy: _parseInt(json['created_by']),
-      createdByEmail: json['created_by_email'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdByEmail: (json['created_by_email'] as String?) ?? '',
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
   }
 }
@@ -87,18 +93,22 @@ class Video {
 
   factory Video.fromJson(Map<String, dynamic> json) {
     return Video(
-      id: json['id'] as int,
-      title: json['title'] as String,
-      description: json['description'] as String,
-      youtubeUrl: json['youtube_url'] as String,
+      id: json['id'] as int? ?? 0,
+      title: (json['title'] as String?) ?? '',
+      description: (json['description'] as String?) ?? '',
+      youtubeUrl: (json['youtube_url'] as String?) ?? '',
       thumbnail: json['thumbnail'] as String?,
-      category: json['category'] as String,
-      categoryDisplay: json['category_display'] as String,
-      duration: json['duration'] as String,
-      viewsCount: json['views_count'] as int,
-      order: json['order'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      category: (json['category'] as String?) ?? '',
+      categoryDisplay: (json['category_display'] as String?) ?? '',
+      duration: (json['duration'] as String?) ?? '',
+      viewsCount: json['views_count'] as int? ?? 0,
+      order: json['order'] as int? ?? 0,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
   }
 
@@ -146,21 +156,25 @@ class CropCalendar {
 
   factory CropCalendar.fromJson(Map<String, dynamic> json) {
     return CropCalendar(
-      id: json['id'] as int,
-      cropName: json['crop_name'] as String,
-      cropType: json['crop_type'] as String,
-      cropTypeDisplay: json['crop_type_display'] as String,
-      plantingSeason: json['planting_season'] as String,
-      harvestingSeason: json['harvesting_season'] as String,
-      durationDays: json['duration_days'] as int,
-      climateRequirement: json['climate_requirement'] as String,
-      soilType: json['soil_type'] as String,
-      waterRequirement: json['water_requirement'] as String,
-      bestPractices: json['best_practices'] as String,
-      commonPests: json['common_pests'] as String,
+      id: json['id'] as int? ?? 0,
+      cropName: (json['crop_name'] as String?) ?? '',
+      cropType: (json['crop_type'] as String?) ?? '',
+      cropTypeDisplay: (json['crop_type_display'] as String?) ?? '',
+      plantingSeason: (json['planting_season'] as String?) ?? '',
+      harvestingSeason: (json['harvesting_season'] as String?) ?? '',
+      durationDays: json['duration_days'] as int? ?? 0,
+      climateRequirement: (json['climate_requirement'] as String?) ?? '',
+      soilType: (json['soil_type'] as String?) ?? '',
+      waterRequirement: (json['water_requirement'] as String?) ?? '',
+      bestPractices: (json['best_practices'] as String?) ?? '',
+      commonPests: (json['common_pests'] as String?) ?? '',
       image: json['image'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
   }
 }
@@ -199,19 +213,23 @@ class Expert {
 
   factory Expert.fromJson(Map<String, dynamic> json) {
     return Expert(
-      id: json['id'] as int,
-      name: json['name'] as String,
-      specialization: json['specialization'] as String,
-      qualifications: json['qualifications'] as String,
-      phoneNumber: json['phone_number'] as String,
-      email: json['email'] as String,
-      officeAddress: json['office_address'] as String,
-      availableDays: json['available_days'] as String,
-      availableHours: json['available_hours'] as String,
-      consultationFee: json['consultation_fee'] as String,
+      id: json['id'] as int? ?? 0,
+      name: (json['name'] as String?) ?? '',
+      specialization: (json['specialization'] as String?) ?? '',
+      qualifications: (json['qualifications'] as String?) ?? '',
+      phoneNumber: (json['phone_number'] as String?) ?? '',
+      email: (json['email'] as String?) ?? '',
+      officeAddress: (json['office_address'] as String?) ?? '',
+      availableDays: (json['available_days'] as String?) ?? '',
+      availableHours: (json['available_hours'] as String?) ?? '',
+      consultationFee: (json['consultation_fee'] as String?) ?? '',
       photo: json['photo'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
   }
 }
@@ -252,20 +270,24 @@ class ServiceProvider {
 
   factory ServiceProvider.fromJson(Map<String, dynamic> json) {
     return ServiceProvider(
-      id: json['id'] as int,
-      businessName: json['business_name'] as String,
-      serviceType: json['service_type'] as String,
-      serviceTypeDisplay: json['service_type_display'] as String,
-      contactPerson: json['contact_person'] as String,
-      phoneNumber: json['phone_number'] as String,
-      alternatePhone: json['alternate_phone'] as String? ?? '',
-      email: json['email'] as String? ?? '',
-      address: json['address'] as String,
-      description: json['description'] as String,
-      priceRange: json['price_range'] as String,
-      deliveryAvailable: json['delivery_available'] as bool,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      id: json['id'] as int? ?? 0,
+      businessName: (json['business_name'] as String?) ?? '',
+      serviceType: (json['service_type'] as String?) ?? '',
+      serviceTypeDisplay: (json['service_type_display'] as String?) ?? '',
+      contactPerson: (json['contact_person'] as String?) ?? '',
+      phoneNumber: (json['phone_number'] as String?) ?? '',
+      alternatePhone: (json['alternate_phone'] as String?) ?? '',
+      email: (json['email'] as String?) ?? '',
+      address: (json['address'] as String?) ?? '',
+      description: (json['description'] as String?) ?? '',
+      priceRange: (json['price_range'] as String?) ?? '',
+      deliveryAvailable: json['delivery_available'] as bool? ?? false,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
   }
 }
@@ -300,17 +322,21 @@ class Contact {
 
   factory Contact.fromJson(Map<String, dynamic> json) {
     return Contact(
-      id: json['id'] as int,
-      title: json['title'] as String,
-      contactType: json['contact_type'] as String,
-      contactTypeDisplay: json['contact_type_display'] as String,
-      phoneNumber: json['phone_number'] as String,
-      email: json['email'] as String,
-      address: json['address'] as String,
-      description: json['description'] as String,
-      order: json['order'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      id: json['id'] as int? ?? 0,
+      title: (json['title'] as String?) ?? '',
+      contactType: (json['contact_type'] as String?) ?? '',
+      contactTypeDisplay: (json['contact_type_display'] as String?) ?? '',
+      phoneNumber: (json['phone_number'] as String?) ?? '',
+      email: (json['email'] as String?) ?? '',
+      address: (json['address'] as String?) ?? '',
+      description: (json['description'] as String?) ?? '',
+      order: json['order'] as int? ?? 0,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
   }
 }
@@ -335,12 +361,16 @@ class FAQ {
 
   factory FAQ.fromJson(Map<String, dynamic> json) {
     return FAQ(
-      id: json['id'] as int,
-      question: json['question'] as String,
-      answer: json['answer'] as String,
-      order: json['order'] as int,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      id: json['id'] as int? ?? 0,
+      question: (json['question'] as String?) ?? '',
+      answer: (json['answer'] as String?) ?? '',
+      order: json['order'] as int? ?? 0,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
   }
 }

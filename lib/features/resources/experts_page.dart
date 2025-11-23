@@ -48,30 +48,30 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
         _isLoading = false;
       });
       if (mounted) {
-        Get.snackbar('Failed to load experts: $e');
+        Get.snackbar('error_loading_products'.tr(context));
       }
     }
   }
 
-  Future<void> _makePhoneCall(String phoneNumber) async {
+  Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
     final uri = Uri.parse('tel:$phoneNumber');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      Get.snackbar('Could not make phone call');
+      Get.snackbar('could_not_make_call'.tr(context));
     }
   }
 
-  Future<void> _sendEmail(String email) async {
+  Future<void> _sendEmail(BuildContext context, String email) async {
     if (email.isEmpty) {
-      Get.snackbar('No email available');
+      Get.snackbar('no_email_available'.tr(context));
       return;
     }
     final uri = Uri.parse('mailto:$email');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      Get.snackbar('Could not send email');
+      Get.snackbar('could_not_send_email'.tr(context));
     }
   }
 
@@ -93,12 +93,12 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
               child: CircularProgressIndicator(color: AppColors.primary),
             )
           : _experts.isEmpty
-          ? _buildEmptyState()
-          : _buildExpertsList(),
+          ? _buildEmptyState(context)
+          : _buildExpertsList(context),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -110,14 +110,14 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
           ),
           16.verticalGap,
           AppText(
-            'No experts available',
+            'no_experts_available'.tr(context),
             style: Get.bodyLarge.px18.w600.copyWith(
               color: Colors.grey.shade600,
             ),
           ),
           8.verticalGap,
           AppText(
-            'Check back later',
+            'check_back_later'.tr(context),
             style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
           ),
         ],
@@ -125,7 +125,7 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
     );
   }
 
-  Widget _buildExpertsList() {
+  Widget _buildExpertsList(BuildContext context) {
     return RefreshIndicator(
       onRefresh: _loadExperts,
       child: ListView.builder(
@@ -279,7 +279,7 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
                         icon: Icons.phone_rounded,
                         label: 'call'.tr(context),
                         color: Colors.green,
-                        onTap: () => _makePhoneCall(expert.phoneNumber),
+                        onTap: () => _makePhoneCall(context, expert.phoneNumber),
                       ),
                     ),
                     if (expert.email.isNotEmpty) ...[
@@ -289,7 +289,7 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
                           icon: Icons.email_rounded,
                           label: 'email'.tr(context),
                           color: Colors.blue,
-                          onTap: () => _sendEmail(expert.email),
+                          onTap: () => _sendEmail(context, expert.email),
                         ),
                       ),
                     ],

@@ -24,16 +24,18 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
   bool _isLoading = true;
   String _selectedType = 'all';
 
-  final Map<String, String> _serviceTypes = {
-    'all': 'All Services',
-    'seeds': 'Seeds',
-    'fertilizer': 'Fertilizer',
-    'pesticide': 'Pesticide',
-    'equipment': 'Equipment',
-    'veterinary': 'Veterinary',
-    'transport': 'Transport',
-    'other': 'Other',
-  };
+  Map<String, String> _getServiceTypes(BuildContext context) {
+    return {
+      'all': 'all_services'.tr(context),
+      'seeds': 'seeds'.tr(context),
+      'fertilizer': 'fertilizer'.tr(context),
+      'pesticide': 'pesticide'.tr(context),
+      'equipment': 'equipment'.tr(context),
+      'veterinary': 'veterinary'.tr(context),
+      'transport': 'transport'.tr(context),
+      'other': 'other'.tr(context),
+    };
+  }
 
   final Map<String, IconData> _serviceIcons = {
     'seeds': Icons.spa_rounded,
@@ -80,30 +82,30 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
         _isLoading = false;
       });
       if (mounted) {
-        Get.snackbar('Failed to load service providers: $e');
+        Get.snackbar('error_loading_products'.tr(context));
       }
     }
   }
 
-  Future<void> _makePhoneCall(String phoneNumber) async {
+  Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
     final uri = Uri.parse('tel:$phoneNumber');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      Get.snackbar('Could not make phone call');
+      Get.snackbar('could_not_make_call'.tr(context));
     }
   }
 
-  Future<void> _sendEmail(String email) async {
+  Future<void> _sendEmail(BuildContext context, String email) async {
     if (email.isEmpty) {
-      Get.snackbar('No email available');
+      Get.snackbar('no_email_available'.tr(context));
       return;
     }
     final uri = Uri.parse('mailto:$email');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     } else {
-      Get.snackbar('Could not send email');
+      Get.snackbar('could_not_send_email'.tr(context));
     }
   }
 
@@ -122,22 +124,23 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
       ),
       body: Column(
         children: [
-          _buildTypeFilter(),
+          _buildTypeFilter(context),
           Expanded(
             child: _isLoading
                 ? Center(
                     child: CircularProgressIndicator(color: AppColors.primary),
                   )
                 : _providers.isEmpty
-                    ? _buildEmptyState()
-                    : _buildProvidersList(),
+                    ? _buildEmptyState(context)
+                    : _buildProvidersList(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTypeFilter() {
+  Widget _buildTypeFilter(BuildContext context) {
+    final serviceTypes = _getServiceTypes(context);
     return Container(
       padding: EdgeInsets.only(
         left: 16.wt,
@@ -166,7 +169,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
               Icon(Icons.tune_rounded, color: Colors.teal.shade600, size: 20.st),
               8.horizontalGap,
               AppText(
-                'Filter services',
+                'filter_services'.tr(context),
                 style: Get.bodyMedium.w600.copyWith(
                   color: Colors.teal.shade700,
                 ),
@@ -177,7 +180,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _serviceTypes.entries.map((entry) {
+              children: serviceTypes.entries.map((entry) {
                 final isSelected = _selectedType == entry.key;
                 final color = _serviceColors[entry.key] ?? Colors.teal;
                 final icon = entry.key == 'all'
@@ -206,7 +209,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -218,12 +221,12 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
           ),
           16.verticalGap,
           AppText(
-            'No service providers available',
+            'no_service_providers_available'.tr(context),
             style: Get.bodyLarge.px18.w600.copyWith(color: Colors.grey.shade600),
           ),
           8.verticalGap,
           AppText(
-            'Check back later',
+            'check_back_later'.tr(context),
             style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
           ),
         ],
@@ -231,7 +234,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
     );
   }
 
-  Widget _buildProvidersList() {
+  Widget _buildProvidersList(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () => _loadProviders(serviceType: _selectedType),
       child: ListView.builder(
@@ -239,7 +242,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
         itemCount: _providers.length,
         itemBuilder: (context, index) {
           final provider = _providers[index];
-          return _buildProviderCard(provider);
+          return _buildProviderCard(context, provider);
         },
       ),
     );
@@ -298,7 +301,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
     );
   }
 
-  Widget _buildProviderCard(ServiceProvider provider) {
+  Widget _buildProviderCard(BuildContext context, ServiceProvider provider) {
     final color = _serviceColors[provider.serviceType] ?? AppColors.primary;
     final icon = _serviceIcons[provider.serviceType] ?? Icons.business_rounded;
 
@@ -381,7 +384,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
                   if (provider.deliveryAvailable)
                     _buildInfoPill(
                       icon: Icons.local_shipping_rounded,
-                      text: 'Delivery Available',
+                      text: 'delivery_available'.tr(context),
                     ),
                   _buildInfoPill(
                     icon: Icons.currency_rupee_rounded,
@@ -410,7 +413,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
                       icon: Icons.phone_rounded,
                       label: 'call'.tr(context),
                       color: Colors.green,
-                      onTap: () => _makePhoneCall(provider.phoneNumber),
+                      onTap: () => _makePhoneCall(context, provider.phoneNumber),
                     ),
                   ),
                   if (provider.alternatePhone.isNotEmpty) ...[
@@ -420,7 +423,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
                         icon: Icons.phone_forwarded_rounded,
                         label: 'alt_call'.tr(context),
                         color: Colors.blue,
-                        onTap: () => _makePhoneCall(provider.alternatePhone),
+                        onTap: () => _makePhoneCall(context, provider.alternatePhone),
                       ),
                     ),
                   ],
@@ -431,7 +434,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
                         icon: Icons.email_rounded,
                         label: 'email'.tr(context),
                         color: Colors.orange,
-                        onTap: () => _sendEmail(provider.email),
+                        onTap: () => _sendEmail(context, provider.email),
                       ),
                     ),
                   ],

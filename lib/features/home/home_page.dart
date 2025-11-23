@@ -422,7 +422,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             8.horizontalGap,
                             Expanded(
                               child: AppText(
-                                weather?.location ?? 'Unknown',
+                                weather?.location ?? 'unknown'.tr(context),
                                 style: Get.bodyMedium.px14.w600.copyWith(
                                   color: AppColors.white,
                                   letterSpacing: 0.3,
@@ -722,8 +722,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         12.verticalGap,
         _buildMainServiceCard(
-          title: 'notices',
-          description: 'important_announcements',
+          title: 'notices'.tr(context),
+          description: 'important_announcements'.tr(context),
           icon: Icons.notifications_active_rounded,
           gradient: const LinearGradient(
             colors: [Color(0xFFFF6F00), Color(0xFFFF8F00)],
@@ -736,8 +736,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         12.verticalGap,
         _buildMainServiceCard(
-          title: 'Programs',
-          description: 'Agricultural development programs',
+          title: 'programs'.tr(context),
+          description: 'agricultural_development_programs'.tr(context),
           icon: Icons.agriculture_rounded,
           gradient: const LinearGradient(
             colors: [Color(0xFF388E3C), Color(0xFF66BB6A)],
@@ -745,7 +745,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             end: Alignment.bottomRight,
           ),
           onTap: () {
-            Get.snackbar('Coming soon!');
+            Get.snackbar('coming_soon'.tr(context));
           },
         ),
       ],
@@ -821,8 +821,8 @@ class _HomePageState extends ConsumerState<HomePage> {
           childAspectRatio: 1.0,
           children: [
             _buildKnowledgeCard(
-              title: 'Krishi Gyan',
-              subtitle: 'Farming Knowledge',
+              title: 'krishi_gyaan'.tr(context),
+              subtitle: 'farming_knowledge_home'.tr(context),
               icon: Icons.local_library_rounded,
               gradient: const LinearGradient(
                 colors: [Color(0xFF6A1B9A), Color(0xFF9C27B0)],
@@ -834,8 +834,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               },
             ),
             _buildKnowledgeCard(
-              title: 'News & Info',
-              subtitle: 'Latest Updates',
+              title: 'news_information'.tr(context),
+              subtitle: 'latest_updates'.tr(context),
               icon: Icons.article_rounded,
               gradient: const LinearGradient(
                 colors: [Color(0xFFD32F2F), Color(0xFFE57373)],
@@ -847,8 +847,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               },
             ),
             _buildKnowledgeCard(
-              title: 'Videos',
-              subtitle: 'Watch & Learn',
+              title: 'videos'.tr(context),
+              subtitle: 'watch_learn'.tr(context),
               icon: Icons.video_library_rounded,
               gradient: const LinearGradient(
                 colors: [Color(0xFFE65100), Color(0xFFFF6F00)],
@@ -860,8 +860,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               },
             ),
             _buildKnowledgeCard(
-              title: 'Crop Calendar',
-              subtitle: 'Planting Guide',
+              title: 'crop_calendar'.tr(context),
+              subtitle: 'planting_guide'.tr(context),
               icon: Icons.calendar_month_rounded,
               gradient: const LinearGradient(
                 colors: [Color(0xFF558B2F), Color(0xFF8BC34A)],
@@ -1082,7 +1082,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             AppText(
-              'Market Prices',
+              'market_prices'.tr(context),
               style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
             ),
             GestureDetector(
@@ -1102,7 +1102,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: Row(
                   children: [
                     AppText(
-                      'View All',
+                      'view_all'.tr(context),
                       style: Get.bodyMedium.px12.w600.copyWith(
                         color: AppColors.primary,
                       ),
@@ -1137,28 +1137,32 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: Column(
             children: [
               _buildPriceItem(
-                'Rice',
+                context,
+                'rice'.tr(context),
                 'NPR 45/kg',
                 Icons.rice_bowl_rounded,
                 Colors.orange,
               ),
               Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
               _buildPriceItem(
-                'Wheat',
+                context,
+                'wheat'.tr(context),
                 'NPR 38/kg',
                 Icons.grain_rounded,
                 Colors.amber,
               ),
               Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
               _buildPriceItem(
-                'Tomato',
+                context,
+                'tomato'.tr(context),
                 'NPR 60/kg',
                 Icons.local_pizza_rounded,
                 Colors.red,
               ),
               Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
               _buildPriceItem(
-                'Potato',
+                context,
+                'potato'.tr(context),
                 'NPR 35/kg',
                 Icons.emoji_food_beverage_rounded,
                 Colors.brown,
@@ -1172,6 +1176,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   // Price Item Widget
   Widget _buildPriceItem(
+    BuildContext context,
     String item,
     String price,
     IconData icon,

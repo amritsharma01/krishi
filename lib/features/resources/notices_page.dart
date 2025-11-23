@@ -6,6 +6,7 @@ import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/resources/notice_detail_page.dart';
@@ -23,14 +24,16 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
   bool _isLoading = true;
   String _selectedFilter = 'all';
 
-  final Map<String, String> _filterOptions = {
-    'all': 'All Notices',
-    'general': 'General',
-    'important': 'Important',
-    'urgent': 'Urgent',
-    'event': 'Events',
-    'training': 'Training',
-  };
+  Map<String, String> _getFilterOptions(BuildContext context) {
+    return {
+      'all': 'all_notices'.tr(context),
+      'general': 'general'.tr(context),
+      'important': 'important'.tr(context),
+      'urgent': 'urgent'.tr(context),
+      'event': 'events'.tr(context),
+      'training': 'training'.tr(context),
+    };
+  }
 
   final Map<String, IconData> _filterIcons = {
     'general': Icons.article_rounded,
@@ -114,7 +117,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
-          'Notices & Announcements',
+          'notices_announcements'.tr(context),
           style: Get.bodyLarge.px24.w600.copyWith(color: Colors.white),
         ),
         centerTitle: true,
@@ -124,20 +127,21 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
       ),
       body: Column(
         children: [
-          _buildFilterChips(),
+          _buildFilterChips(context),
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _notices.isEmpty
-                    ? _buildEmptyState()
-                    : _buildNoticesList(),
+                    ? _buildEmptyState(context)
+                    : _buildNoticesList(context),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChips() {
+  Widget _buildFilterChips(BuildContext context) {
+    final filterOptions = _getFilterOptions(context);
     return Container(
       padding: EdgeInsets.only(
         left: 16.w,
@@ -170,7 +174,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
               ),
               8.horizontalGap,
               AppText(
-                'Filter notices',
+                'filter_notices'.tr(context),
                 style: Get.bodyMedium.w600.copyWith(
                   color: Get.primaryColor,
                 ),
@@ -181,7 +185,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              children: _filterOptions.entries.map((entry) {
+              children: filterOptions.entries.map((entry) {
                 final isSelected = _selectedFilter == entry.key;
                 final color = _filterColors[entry.key] ?? Get.primaryColor;
                 final icon = entry.key == 'all'
@@ -263,7 +267,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -275,12 +279,12 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
           ),
           16.verticalGap,
           AppText(
-            'No notices available',
+            'no_notices_available'.tr(context),
             style: Get.bodyLarge.px18.w600.copyWith(color: Colors.grey.shade600),
           ),
           8.verticalGap,
           AppText(
-            'Check back later for updates',
+            'check_back_later_updates'.tr(context),
             style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
           ),
         ],
@@ -288,7 +292,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
     );
   }
 
-  Widget _buildNoticesList() {
+  Widget _buildNoticesList(BuildContext context) {
     return RefreshIndicator(
       onRefresh: () => _loadNotices(noticeType: _selectedFilter),
       child: ListView.builder(
@@ -296,13 +300,13 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
         itemCount: _notices.length,
         itemBuilder: (context, index) {
           final notice = _notices[index];
-          return _buildNoticeCard(notice);
+          return _buildNoticeCard(context, notice);
         },
       ),
     );
   }
 
-  Widget _buildNoticeCard(Notice notice) {
+  Widget _buildNoticeCard(BuildContext context, Notice notice) {
     final typeColor = _getNoticeTypeColor(notice.noticeType);
     final typeIcon = _getNoticeTypeIcon(notice.noticeType);
 
@@ -435,7 +439,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
                               ),
                               6.horizontalGap,
                               AppText(
-                                'PDF Attached',
+                                'pdf_attached'.tr(context),
                                 style: Get.bodySmall.copyWith(
                                   color: Colors.red.shade700,
                                   fontWeight: FontWeight.w600,
@@ -465,7 +469,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
                               ),
                               6.horizontalGap,
                               AppText(
-                                'Image Attached',
+                                'image_attached'.tr(context),
                                 style: Get.bodySmall.copyWith(
                                   color: Colors.blue.shade700,
                                   fontWeight: FontWeight.w600,

@@ -164,7 +164,7 @@ class SupportPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
-                        'Quick Contact',
+                        'quick_contact'.tr(context),
                         style: Get.bodyMedium.px16.w700.copyWith(
                           color: Get.disabledColor,
                         ),
