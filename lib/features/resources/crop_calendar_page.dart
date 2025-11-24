@@ -116,12 +116,7 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
   Widget _buildTypeFilter(BuildContext context) {
     final cropTypes = _getCropTypes(context);
     return Container(
-      padding: EdgeInsets.only(
-        left: 16.w,
-        right: 16.w,
-        top: 20.h,
-        bottom: 14.h,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.vertical(
@@ -135,54 +130,32 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.filter_alt_rounded,
-                color: Colors.green.shade600,
-                size: 20.st,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: cropTypes.entries.map((entry) {
+            final isSelected = _selectedType == entry.key;
+            final color = _cropColors[entry.key] ?? Colors.green;
+            final icon = entry.key == 'all'
+                ? Icons.all_inclusive
+                : _cropIcons[entry.key] ?? Icons.agriculture_rounded;
+            return Padding(
+              padding: EdgeInsets.only(right: 8.w),
+              child: _buildFilterPill(
+                label: entry.value,
+                icon: icon,
+                color: color,
+                isSelected: isSelected,
+                onTap: () {
+                  setState(() {
+                    _selectedType = entry.key;
+                  });
+                  _loadCrops(cropType: entry.key);
+                },
               ),
-              8.horizontalGap,
-              AppText(
-                'filter_crops'.tr(context),
-                style: Get.bodyMedium.w600.copyWith(
-                  color: Colors.green.shade800,
-                ),
-              ),
-            ],
-          ),
-          12.verticalGap,
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: cropTypes.entries.map((entry) {
-                final isSelected = _selectedType == entry.key;
-                final color = _cropColors[entry.key] ?? Colors.green;
-                final icon = entry.key == 'all'
-                    ? Icons.all_inclusive
-                    : _cropIcons[entry.key] ?? Icons.agriculture_rounded;
-                return Padding(
-                  padding: EdgeInsets.only(right: 10.w),
-                  child: _buildFilterPill(
-                    label: entry.value,
-                    icon: icon,
-                    color: color,
-                    isSelected: isSelected,
-                    onTap: () {
-                      setState(() {
-                        _selectedType = entry.key;
-                      });
-                      _loadCrops(cropType: entry.key);
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -370,36 +343,24 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 9.h),
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
         decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(colors: [color, color.withValues(alpha: 0.85)])
-              : null,
-          color: isSelected ? null : Get.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(24).rt,
+          color: isSelected ? color : color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16).rt,
           border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : color.withValues(alpha: 0.3),
+            color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
+            width: 1,
           ),
-          boxShadow: [
-            if (isSelected)
-              BoxShadow(
-                color: color.withValues(alpha: 0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16.st, color: isSelected ? Colors.white : color),
-            8.horizontalGap,
+            Icon(icon, size: 14.st, color: isSelected ? Colors.white : color),
+            6.horizontalGap,
             AppText(
               label,
-              style: Get.bodySmall.w600.copyWith(
+              style: Get.bodySmall.px12.w600.copyWith(
                 color: isSelected ? Colors.white : color,
               ),
             ),

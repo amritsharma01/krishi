@@ -59,29 +59,38 @@ class CropDetailPage extends StatelessWidget {
         slivers: [
           // App Bar with Image
           SliverAppBar(
-            expandedHeight: 280.h,
+            expandedHeight: 240.h,
             pinned: true,
-            backgroundColor: color,
-            iconTheme: const IconThemeData(color: Colors.white),
-            flexibleSpace: FlexibleSpaceBar(
-              title: AppText(
-                crop.cropName,
-                style: Get.bodyLarge.px18.w700.copyWith(
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.5),
-                      blurRadius: 8,
-                    ),
-                  ],
+            backgroundColor: Get.scaffoldBackgroundColor,
+            leadingWidth: 70.rt,
+            leading: Padding(
+              padding: EdgeInsets.only(left: 12.rt, top: 8.rt, bottom: 8.rt),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 18.st,
+                  ),
+                  onPressed: () => Navigator.pop(context),
                 ),
               ),
-              background: crop.image != null && crop.image!.isNotEmpty
-                  ? Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl: crop.image!,
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              stretchModes: const [
+                StretchMode.blurBackground,
+                StretchMode.fadeTitle,
+              ],
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  crop.image != null && crop.image!.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: Get.imageUrl(crop.image!),
                           fit: BoxFit.cover,
                           placeholder: (context, url) => Container(
                             color: color.withValues(alpha: 0.1),
@@ -89,44 +98,24 @@ class CropDetailPage extends StatelessWidget {
                               child: CircularProgressIndicator(color: color),
                             ),
                           ),
-                          errorWidget: (context, url, error) => Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  color.withValues(alpha: 0.7),
-                                  color,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                            ),
-                            child: Icon(icon, size: 100.st, color: Colors.white),
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.black.withValues(alpha: 0.7),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [color.withValues(alpha: 0.7), color],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                          errorWidget: (context, url, error) =>
+                              _buildPlaceholder(color, icon),
+                        )
+                      : _buildPlaceholder(color, icon),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.2),
+                          Colors.black.withValues(alpha: 0.6),
+                        ],
                       ),
-                      child: Icon(icon, size: 100.st, color: Colors.white),
                     ),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -137,107 +126,87 @@ class CropDetailPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Type Badge
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(8).rt,
-                    ),
-                    child: AppText(
-                      crop.cropTypeDisplay.toUpperCase(),
-                      style: Get.bodySmall.copyWith(
-                        color: color,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
+                  // Title and Type Badge
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10.w,
+                          vertical: 5.h,
+                        ),
+                        decoration: BoxDecoration(
+                          color: color.withValues(
+                            alpha: Get.isDark ? 0.15 : 0.1,
+                          ),
+                          borderRadius: BorderRadius.circular(12).rt,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(icon, color: color, size: 14.st),
+                            6.horizontalGap,
+                            AppText(
+                              crop.cropTypeDisplay,
+                              style: Get.bodySmall.px12.w600.copyWith(
+                                color: color,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    ],
+                  ),
+                  12.verticalGap,
+                  AppText(
+                    crop.cropName,
+                    style: Get.bodyLarge.px20.w700.copyWith(
+                      color:
+                          Get.bodyLarge.color ??
+                          (Get.isDark ? Colors.white : Colors.black87),
+                      height: 1.35,
                     ),
+                    maxLines: 10,
+                    overflow: TextOverflow.visible,
                   ),
-
-                  24.verticalGap,
-
-                  // Duration Card
-                  _buildInfoCard(
-                    context,
-                    icon: Icons.schedule_rounded,
-                    title: 'growing_duration'.tr(context),
-                    content: '${crop.durationDays} days',
-                    color: Colors.blue,
-                  ),
-
-                  16.verticalGap,
-
-                  // Planting Season
-                  _buildInfoCard(
-                    context,
-                    icon: Icons.wb_sunny_rounded,
-                    title: 'planting_season'.tr(context),
-                    content: crop.plantingSeason,
-                    color: Colors.orange,
-                  ),
-
-                  16.verticalGap,
-
-                  // Harvesting Season
-                  _buildInfoCard(
-                    context,
-                    icon: Icons.agriculture_rounded,
-                    title: 'harvesting_season'.tr(context),
-                    content: crop.harvestingSeason,
-                    color: Colors.green,
-                  ),
-
-                  24.verticalGap,
-
+                  20.verticalGap,
+                  // Quick Info
+                  _buildQuickInfo(context, color),
+                  20.verticalGap,
                   // Detailed Information
                   _buildDetailSection(
                     context,
                     icon: Icons.thermostat_rounded,
                     title: 'climate_requirement'.tr(context),
                     content: crop.climateRequirement,
-                    color: Colors.red,
                   ),
-
                   16.verticalGap,
-
                   _buildDetailSection(
                     context,
                     icon: Icons.landscape_rounded,
                     title: 'soil_type'.tr(context),
                     content: crop.soilType,
-                    color: Colors.brown,
                   ),
-
                   16.verticalGap,
-
                   _buildDetailSection(
                     context,
                     icon: Icons.water_drop_rounded,
                     title: 'water_requirement'.tr(context),
                     content: crop.waterRequirement,
-                    color: Colors.cyan,
                   ),
-
                   16.verticalGap,
-
                   _buildDetailSection(
                     context,
                     icon: Icons.checklist_rounded,
                     title: 'best_practices'.tr(context),
                     content: crop.bestPractices,
-                    color: Colors.green,
                   ),
-
                   16.verticalGap,
-
                   _buildDetailSection(
                     context,
                     icon: Icons.bug_report_rounded,
                     title: 'common_pests_diseases'.tr(context),
                     content: crop.commonPests,
-                    color: Colors.deepOrange,
                   ),
-
                   32.verticalGap,
                 ],
               ),
@@ -248,54 +217,83 @@ class CropDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String content,
-    required Color color,
-  }) {
+  Widget _buildPlaceholder(Color color, IconData icon) {
+    return Container(
+      color: color.withValues(alpha: 0.1),
+      child: Center(
+        child: Icon(icon, size: 80.st, color: color.withValues(alpha: 0.3)),
+      ),
+    );
+  }
+
+  Widget _buildQuickInfo(BuildContext context, Color color) {
     return Container(
       padding: EdgeInsets.all(16.rt),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
-        ),
-        borderRadius: BorderRadius.circular(12).rt,
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(16).rt,
+        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            padding: EdgeInsets.all(12.rt),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(10).rt,
-            ),
-            child: Icon(icon, color: color, size: 24.st),
+          _buildQuickInfoRow(
+            Icons.schedule_rounded,
+            'growing_duration'.tr(context),
+            '${crop.durationDays} days',
           ),
-          16.horizontalGap,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  title,
-                  style: Get.bodySmall.copyWith(
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                4.verticalGap,
-                AppText(
-                  content,
-                  style: Get.bodyLarge.w600.copyWith(color: color),
-                ),
-              ],
-            ),
+          12.verticalGap,
+          Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
+          12.verticalGap,
+          _buildQuickInfoRow(
+            Icons.wb_sunny_rounded,
+            'planting_season'.tr(context),
+            crop.plantingSeason,
+          ),
+          12.verticalGap,
+          Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
+          12.verticalGap,
+          _buildQuickInfoRow(
+            Icons.agriculture_rounded,
+            'harvesting_season'.tr(context),
+            crop.harvestingSeason,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildQuickInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 18.st,
+          color: Get.disabledColor.withValues(alpha: 0.7),
+        ),
+        12.horizontalGap,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                label,
+                style: Get.bodySmall.px12.copyWith(
+                  color: Get.disabledColor.withValues(alpha: 0.7),
+                ),
+              ),
+              4.verticalGap,
+              AppText(
+                value,
+                style: Get.bodyMedium.px14.w600.copyWith(
+                  color:
+                      Get.bodyMedium.color ??
+                      (Get.isDark ? Colors.white : Colors.black87),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -304,39 +302,33 @@ class CropDetailPage extends StatelessWidget {
     required IconData icon,
     required String title,
     required String content,
-    required Color color,
   }) {
     return Container(
-      padding: EdgeInsets.all(16.rt),
+      padding: EdgeInsets.all(18.rt),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12).rt,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(16).rt,
+        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: EdgeInsets.all(8.rt),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8).rt,
-                ),
-                child: Icon(icon, color: color, size: 20.st),
+              Icon(
+                icon,
+                size: 18.st,
+                color: Get.disabledColor.withValues(alpha: 0.7),
               ),
-              12.horizontalGap,
+              10.horizontalGap,
               Expanded(
                 child: AppText(
                   title,
-                  style: Get.bodyLarge.w600,
+                  style: Get.bodyMedium.px15.w600.copyWith(
+                    color:
+                        Get.bodyMedium.color ??
+                        (Get.isDark ? Colors.white : Colors.black87),
+                  ),
                 ),
               ),
             ],
@@ -344,10 +336,14 @@ class CropDetailPage extends StatelessWidget {
           12.verticalGap,
           AppText(
             content,
-            style: Get.bodyMedium.copyWith(
-              color: Colors.grey.shade700,
-              height: 1.5,
+            style: Get.bodyMedium.px14.copyWith(
+              color:
+                  Get.bodyMedium.color ??
+                  (Get.isDark ? Colors.white70 : Colors.black87),
+              height: 1.6,
             ),
+            maxLines: 100,
+            overflow: TextOverflow.visible,
           ),
         ],
       ),

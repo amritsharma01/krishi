@@ -101,11 +101,13 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
       Get.snackbar('no_email_available'.tr(context));
       return;
     }
-    final uri = Uri.parse('mailto:$email');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      Get.snackbar('could_not_send_email'.tr(context));
+    try {
+      final uri = Uri.parse('mailto:$email');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar('could_not_send_email'.tr(context));
+      }
     }
   }
 
@@ -142,12 +144,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
   Widget _buildTypeFilter(BuildContext context) {
     final serviceTypes = _getServiceTypes(context);
     return Container(
-      padding: EdgeInsets.only(
-        left: 16.wt,
-        right: 16.wt,
-        top: 20.ht,
-        bottom: 14.ht,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.vertical(
@@ -161,50 +158,32 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.tune_rounded, color: Colors.teal.shade600, size: 20.st),
-              8.horizontalGap,
-              AppText(
-                'filter_services'.tr(context),
-                style: Get.bodyMedium.w600.copyWith(
-                  color: Colors.teal.shade700,
-                ),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: serviceTypes.entries.map((entry) {
+            final isSelected = _selectedType == entry.key;
+            final color = _serviceColors[entry.key] ?? Colors.teal;
+            final icon = entry.key == 'all'
+                ? Icons.all_inclusive
+                : _serviceIcons[entry.key] ?? Icons.business_rounded;
+            return Padding(
+              padding: EdgeInsets.only(right: 8.wt),
+              child: _buildFilterPill(
+                label: entry.value,
+                icon: icon,
+                color: color,
+                isSelected: isSelected,
+                onTap: () {
+                  setState(() {
+                    _selectedType = entry.key;
+                  });
+                  _loadProviders(serviceType: entry.key);
+                },
               ),
-            ],
-          ),
-          12.verticalGap,
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: serviceTypes.entries.map((entry) {
-                final isSelected = _selectedType == entry.key;
-                final color = _serviceColors[entry.key] ?? Colors.teal;
-                final icon = entry.key == 'all'
-                    ? Icons.all_inclusive
-                    : _serviceIcons[entry.key] ?? Icons.business_rounded;
-                return Padding(
-                  padding: EdgeInsets.only(right: 10.wt),
-                  child: _buildFilterPill(
-                    label: entry.value,
-                    icon: icon,
-                    color: color,
-                    isSelected: isSelected,
-                    onTap: () {
-                      setState(() {
-                        _selectedType = entry.key;
-                      });
-                      _loadProviders(serviceType: entry.key);
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -258,40 +237,28 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 9.ht),
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 12.wt, vertical: 6.ht),
         decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [color, color.withValues(alpha: 0.8)],
-                )
-              : null,
-          color: isSelected ? null : Get.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(24).rt,
+          color: isSelected ? color : color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16).rt,
           border: Border.all(
             color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
+            width: 1,
           ),
-          boxShadow: [
-            if (isSelected)
-              BoxShadow(
-                color: color.withValues(alpha: 0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              size: 16.st,
+              size: 14.st,
               color: isSelected ? Colors.white : color,
             ),
-            8.horizontalGap,
+            6.horizontalGap,
             AppText(
               label,
-              style: Get.bodySmall.w600.copyWith(
+              style: Get.bodySmall.px12.w600.copyWith(
                 color: isSelected ? Colors.white : color,
               ),
             ),
@@ -406,30 +373,37 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
               ],
               20.verticalGap,
               // Contact Actions
-              Row(
+              Column(
                 children: [
-                  Expanded(
-                    child: _buildContactButton(
-                      icon: Icons.phone_rounded,
-                      label: 'call'.tr(context),
-                      color: Colors.green,
-                      onTap: () => _makePhoneCall(context, provider.phoneNumber),
-                    ),
-                  ),
-                  if (provider.alternatePhone.isNotEmpty) ...[
-                    12.horizontalGap,
-                    Expanded(
-                      child: _buildContactButton(
-                        icon: Icons.phone_forwarded_rounded,
-                        label: 'alt_call'.tr(context),
-                        color: Colors.blue,
-                        onTap: () => _makePhoneCall(context, provider.alternatePhone),
+                  // Call and Alternate Call side by side
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildContactButton(
+                          icon: Icons.phone_rounded,
+                          label: 'call'.tr(context),
+                          color: Colors.green,
+                          onTap: () => _makePhoneCall(context, provider.phoneNumber),
+                        ),
                       ),
-                    ),
-                  ],
+                      if (provider.alternatePhone.isNotEmpty) ...[
+                        12.horizontalGap,
+                        Expanded(
+                          child: _buildContactButton(
+                            icon: Icons.phone_forwarded_rounded,
+                            label: 'alt_call'.tr(context),
+                            color: Colors.blue,
+                            onTap: () => _makePhoneCall(context, provider.alternatePhone),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  // Email button below if available
                   if (provider.email.isNotEmpty) ...[
-                    if (provider.alternatePhone.isEmpty) 12.horizontalGap,
-                    Expanded(
+                    12.verticalGap,
+                    SizedBox(
+                      width: double.infinity,
                       child: _buildContactButton(
                         icon: Icons.email_rounded,
                         label: 'email'.tr(context),
@@ -496,7 +470,8 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12).rt,
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.rt),
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: 12.rt, horizontal: 8.rt),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12).rt,
@@ -509,7 +484,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 18.st, color: color),
-              8.horizontalGap,
+              6.horizontalGap,
               Flexible(
                 child: AppText(
                   label,

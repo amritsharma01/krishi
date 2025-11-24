@@ -29,11 +29,14 @@ class NewsDetailPage extends ConsumerWidget {
                 children: [
                   AppText(
                     news.title,
-                    style: Get.bodyLarge.px22.w700.copyWith(
-                      color: Get.bodyLarge.color ??
+                    style: Get.bodyLarge.px20.w700.copyWith(
+                      color:
+                          Get.bodyLarge.color ??
                           (Get.isDark ? Colors.white : Colors.black87),
                       height: 1.35,
                     ),
+                    maxLines: 10,
+                    overflow: TextOverflow.visible,
                   ),
                   14.verticalGap,
                   Wrap(
@@ -50,12 +53,12 @@ class NewsDetailPage extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  20.verticalGap,
+                  10.verticalGap,
                   Divider(color: Get.disabledColor.withValues(alpha: 0.2)),
-                  20.verticalGap,
+                  10.verticalGap,
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(18).rt,
+                    padding: const EdgeInsets.all(12).rt,
                     decoration: BoxDecoration(
                       color: Get.cardColor,
                       borderRadius: BorderRadius.circular(16).rt,
@@ -65,11 +68,14 @@ class NewsDetailPage extends ConsumerWidget {
                     ),
                     child: AppText(
                       news.content,
-                      style: Get.bodyMedium.px15.w400.copyWith(
-                        color: Get.bodyMedium.color ??
+                      style: Get.bodyMedium.px14.w400.copyWith(
+                        color:
+                            Get.bodyMedium.color ??
                             (Get.isDark ? Colors.white : Colors.black87),
                         height: 1.7,
                       ),
+                      maxLines: 100,
+                      overflow: TextOverflow.visible,
                     ),
                   ),
                   32.verticalGap,
@@ -107,10 +113,7 @@ class NewsDetailPage extends ConsumerWidget {
         ),
       ),
       flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [
-          StretchMode.blurBackground,
-          StretchMode.fadeTitle,
-        ],
+        stretchModes: const [StretchMode.blurBackground, StretchMode.fadeTitle],
         background: Stack(
           fit: StackFit.expand,
           children: [
@@ -150,19 +153,22 @@ class NewsDetailPage extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(12).rt,
-        border: Border.all(
-          color: Get.disabledColor.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14.st, color: Get.disabledColor.withValues(alpha: 0.8)),
+          Icon(
+            icon,
+            size: 14.st,
+            color: Get.disabledColor.withValues(alpha: 0.8),
+          ),
           6.horizontalGap,
           AppText(
             label,
             style: Get.bodySmall.copyWith(
-              color: Get.bodySmall.color ??
+              color:
+                  Get.bodySmall.color ??
                   (Get.isDark ? Colors.white70 : Colors.black87),
             ),
           ),
@@ -201,4 +207,3 @@ class NewsDetailPage extends ConsumerWidget {
     }
   }
 }
-

@@ -137,12 +137,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
   Widget _buildTypeFilter(BuildContext context) {
     final contactTypes = _getContactTypes(context);
     return Container(
-      padding: EdgeInsets.only(
-        left: 16.wt,
-        right: 16.wt,
-        top: 20.ht,
-        bottom: 14.ht,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.vertical(
@@ -156,52 +151,32 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.settings_input_component_rounded,
-                color: Colors.red.shade600,
-                size: 20.st,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: contactTypes.entries.map((entry) {
+            final isSelected = _selectedType == entry.key;
+            final color = _contactColors[entry.key] ?? Colors.red;
+            final icon = entry.key == 'all'
+                ? Icons.all_inclusive
+                : _contactIcons[entry.key] ?? Icons.phone_rounded;
+            return Padding(
+              padding: EdgeInsets.only(right: 8.wt),
+              child: _buildFilterPill(
+                label: entry.value,
+                icon: icon,
+                color: color,
+                isSelected: isSelected,
+                onTap: () {
+                  setState(() {
+                    _selectedType = entry.key;
+                  });
+                  _loadContacts(contactType: entry.key);
+                },
               ),
-              8.horizontalGap,
-              AppText(
-                'quick_filters'.tr(context),
-                style: Get.bodyMedium.w600.copyWith(color: Colors.red.shade700),
-              ),
-            ],
-          ),
-          12.verticalGap,
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: contactTypes.entries.map((entry) {
-                final isSelected = _selectedType == entry.key;
-                final color = _contactColors[entry.key] ?? Colors.red;
-                final icon = entry.key == 'all'
-                    ? Icons.all_inclusive
-                    : _contactIcons[entry.key] ?? Icons.phone_rounded;
-                return Padding(
-                  padding: EdgeInsets.only(right: 10.wt),
-                  child: _buildFilterPill(
-                    label: entry.value,
-                    icon: icon,
-                    color: color,
-                    isSelected: isSelected,
-                    onTap: () {
-                      setState(() {
-                        _selectedType = entry.key;
-                      });
-                      _loadContacts(contactType: entry.key);
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
+            );
+          }).toList(),
+        ),
       ),
     );
   }
@@ -257,36 +232,24 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 9.ht),
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 12.wt, vertical: 6.ht),
         decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(colors: [color, color.withValues(alpha: 0.85)])
-              : null,
-          color: isSelected ? null : Get.scaffoldBackgroundColor,
-          borderRadius: BorderRadius.circular(24).rt,
+          color: isSelected ? color : color.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(16).rt,
           border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : color.withValues(alpha: 0.3),
+            color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
+            width: 1,
           ),
-          boxShadow: [
-            if (isSelected)
-              BoxShadow(
-                color: color.withValues(alpha: 0.3),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-          ],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16.st, color: isSelected ? Colors.white : color),
-            8.horizontalGap,
+            Icon(icon, size: 14.st, color: isSelected ? Colors.white : color),
+            6.horizontalGap,
             AppText(
               label,
-              style: Get.bodySmall.w600.copyWith(
+              style: Get.bodySmall.px12.w600.copyWith(
                 color: isSelected ? Colors.white : color,
               ),
             ),

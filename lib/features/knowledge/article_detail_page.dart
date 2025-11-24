@@ -106,6 +106,8 @@ class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
                           (Get.isDark ? Colors.white : Colors.black87),
                       height: 1.35,
                     ),
+                    maxLines: 10,
+                    overflow: TextOverflow.visible,
                   ),
                   14.verticalGap,
                   Wrap(
@@ -122,11 +124,11 @@ class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
                       ),
                     ],
                   ),
-                  20.verticalGap,
+                  10.verticalGap,
                   Divider(
                     color: Get.disabledColor.withValues(alpha: 0.2),
                   ),
-                  20.verticalGap,
+                  10.verticalGap,
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(18).rt,
@@ -144,6 +146,8 @@ class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
                             (Get.isDark ? Colors.white : Colors.black87),
                         height: 1.7,
                       ),
+                      maxLines: 100,
+                      overflow: TextOverflow.visible,
                     ),
                   ),
                   32.verticalGap,
