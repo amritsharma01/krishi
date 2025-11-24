@@ -12,7 +12,6 @@ import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/models/resources.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'expert_detail_page.dart';
 
 class ExpertsPage extends ConsumerStatefulWidget {
   const ExpertsPage({super.key});
@@ -67,11 +66,53 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
       Get.snackbar('no_email_available'.tr(context));
       return;
     }
-    final uri = Uri.parse('mailto:$email');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      Get.snackbar('could_not_send_email'.tr(context));
+    try {
+      final uri = Uri.parse('mailto:$email');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar('could_not_send_email'.tr(context));
+      }
+    }
+  }
+
+  Future<void> _openWhatsApp(BuildContext context, String phoneNumber) async {
+    try {
+      // Remove any spaces or special characters
+      String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+      
+      // Add country code if not present (Nepal country code is +977)
+      if (!cleanNumber.startsWith('+') && !cleanNumber.startsWith('977')) {
+        cleanNumber = '977$cleanNumber';
+      }
+      
+      // Ensure it starts with + for WhatsApp
+      if (!cleanNumber.startsWith('+')) {
+        cleanNumber = '+$cleanNumber';
+      }
+      
+      final Uri whatsappUri = Uri.parse('https://wa.me/$cleanNumber');
+      
+      // Try multiple launch modes
+      try {
+        await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
+      } catch (e) {
+        try {
+          await launchUrl(whatsappUri, mode: LaunchMode.platformDefault);
+        } catch (e2) {
+          try {
+            await launchUrl(whatsappUri, mode: LaunchMode.inAppWebView);
+          } catch (e3) {
+            if (mounted) {
+              Get.snackbar('whatsapp_failed'.tr(context), color: Colors.red);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar('whatsapp_failed'.tr(context), color: Colors.red);
+      }
     }
   }
 
@@ -157,24 +198,11 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20).rt,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(20).rt,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ExpertDetailPage(expert: expert),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(20).rt,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+      child: Padding(
+        padding: const EdgeInsets.all(20).rt,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
                 // Header with photo and basic info
                 Row(
                   children: [
@@ -272,33 +300,44 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
                 ),
                 20.verticalGap,
                 // Contact Actions
-                Row(
+                Column(
                   children: [
-                    Expanded(
-                      child: _buildContactButton(
-                        icon: Icons.phone_rounded,
-                        label: 'call'.tr(context),
-                        color: Colors.green,
-                        onTap: () => _makePhoneCall(context, expert.phoneNumber),
-                      ),
-                    ),
-                    if (expert.email.isNotEmpty) ...[
-                      12.horizontalGap,
-                      Expanded(
-                        child: _buildContactButton(
-                          icon: Icons.email_rounded,
-                          label: 'email'.tr(context),
-                          color: Colors.blue,
-                          onTap: () => _sendEmail(context, expert.email),
+                    // Call and WhatsApp side by side
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildContactButton(
+                            icon: Icons.phone_rounded,
+                            label: 'call'.tr(context),
+                            color: Colors.green,
+                            onTap: () => _makePhoneCall(context, expert.phoneNumber),
+                          ),
                         ),
+                        12.horizontalGap,
+                        Expanded(
+                          child: _buildContactButton(
+                            icon: Icons.chat_rounded,
+                            label: 'whatsapp'.tr(context),
+                            color: const Color(0xFF25D366),
+                            onTap: () => _openWhatsApp(context, expert.phoneNumber),
+                          ),
+                        ),
+                      ],
+                    ),
+                    // Email button below if email exists
+                    if (expert.email.isNotEmpty) ...[
+                      12.verticalGap,
+                      _buildContactButton(
+                        icon: Icons.email_rounded,
+                        label: 'email'.tr(context),
+                        color: Colors.blue,
+                        onTap: () => _sendEmail(context, expert.email),
                       ),
                     ],
                   ],
                 ),
               ],
             ),
-          ),
-        ),
       ),
     );
   }
@@ -352,7 +391,8 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12).rt,
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.rt),
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: 12.rt, horizontal: 8.rt),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12).rt,
@@ -365,10 +405,14 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(icon, size: 18.st, color: color),
-              8.horizontalGap,
-              AppText(
-                label,
-                style: Get.bodyMedium.px14.w600.copyWith(color: color),
+              6.horizontalGap,
+              Flexible(
+                child: AppText(
+                  label,
+                  style: Get.bodyMedium.px14.w600.copyWith(color: color),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

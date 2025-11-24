@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
@@ -331,7 +332,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
           children: [
             // Tab Selector
             _buildTabSelector(),
-            16.verticalGap,
+            8.verticalGap,
             // Content
             Expanded(
               child: isBuyTab
@@ -454,7 +455,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
         controller: _buyScrollController,
         physics: Get.scrollPhysics,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16).rt,
+          padding: const EdgeInsets.symmetric(horizontal: 10).rt,
           child: Column(
             children: [
               AppTextFormField(
@@ -474,9 +475,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 },
               ),
 
-              16.verticalGap,
+              5.verticalGap,
               _buildCategoryFilters(isNepali),
-              16.verticalGap,
+              5.verticalGap,
               // Products Grid
               if (isLoadingBuyProducts)
                 _buildBuySkeleton()
@@ -542,7 +543,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 },
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14).rt,
+                  padding: const EdgeInsets.symmetric(vertical: 10).rt,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -578,7 +579,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                   ),
                 ),
               ),
-              20.verticalGap,
+              12.verticalGap,
               // Your Listings
               AppText(
                 'your_listings'.tr(context),
@@ -586,7 +587,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                   color: Get.disabledColor,
                 ),
               ),
-              16.verticalGap,
+              12.verticalGap,
               // Listings
               if (isLoadingUserListings)
                 _buildSellSkeleton()
@@ -775,10 +776,10 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   Widget _buildCategoryFilters(bool isNepali) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14).rt,
+      padding: const EdgeInsets.all(10).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(14).rt,
+        borderRadius: BorderRadius.circular(30).rt,
         border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
       ),
       child: isLoadingCategoryFilters
@@ -786,23 +787,6 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.filter_alt_rounded,
-                      size: 18.st,
-                      color: AppColors.primary,
-                    ),
-                    8.horizontalGap,
-                    AppText(
-                      'filter_categories'.tr(context),
-                      style: Get.bodyMedium.w600.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                  ],
-                ),
-                12.verticalGap,
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(children: _buildCategoryChips(isNepali)),
@@ -832,7 +816,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     return chips
         .map(
           (chip) => Padding(
-            padding: EdgeInsets.only(right: 10.rt),
+            padding: EdgeInsets.only(right: 6.rt),
             child: chip,
           ),
         )
@@ -868,7 +852,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: EdgeInsets.symmetric(horizontal: 16.rt, vertical: 9.rt),
+        padding: EdgeInsets.symmetric(horizontal: 8.rt, vertical: 6.rt),
         decoration: BoxDecoration(
           gradient: isSelected
               ? LinearGradient(
@@ -908,6 +892,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             AppText(
               label,
               style: Get.bodySmall.w600.copyWith(
+                fontSize: 12.sp,
                 color: isSelected ? Colors.white : Get.disabledColor,
               ),
             ),
@@ -1050,7 +1035,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   Widget _buildListingCard(Product listing, bool isNepali) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.rt),
-      padding: const EdgeInsets.all(14).rt,
+      padding: const EdgeInsets.all(8).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(16).rt,
