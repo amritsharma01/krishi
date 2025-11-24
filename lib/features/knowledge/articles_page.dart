@@ -70,7 +70,7 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
         ),
         title: AppText(
           'kishan_gyaan'.tr(context),
-          style: Get.bodyLarge.px22.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
         ),
       ),
       body: _buildBody(),
@@ -115,122 +115,122 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
         Get.to(ArticleDetailPage(articleId: article.id));
       },
       child: Container(
-      margin: EdgeInsets.only(bottom: 16.rt),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.circular(16).rt,
-        border: Border.all(
-          color: Get.disabledColor.withValues(alpha: 0.08),
-          width: 1,
+        margin: EdgeInsets.only(bottom: 16.rt),
+        decoration: BoxDecoration(
+          color: Get.cardColor,
+          borderRadius: BorderRadius.circular(16).rt,
+          border: Border.all(
+            color: Get.disabledColor.withValues(alpha: 0.08),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (article.image != null)
-            ClipRRect(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(16.rt),
-                topRight: Radius.circular(16.rt),
-              ),
-              child: Image.network(
-                Get.imageUrl(article.image),
-                width: double.infinity,
-                height: 200.rt,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: double.infinity,
-                    height: 200.rt,
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    child: Icon(
-                      Icons.image_not_supported,
-                      size: 48.st,
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                    ),
-                  );
-                },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    width: double.infinity,
-                    height: 200.rt,
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                        value: loadingProgress.expectedTotalBytes != null
-                            ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                            : null,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (article.image != null)
+              ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16.rt),
+                  topRight: Radius.circular(16.rt),
+                ),
+                child: Image.network(
+                  Get.imageUrl(article.image),
+                  width: double.infinity,
+                  height: 200.rt,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      width: double.infinity,
+                      height: 200.rt,
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      child: Icon(
+                        Icons.image_not_supported,
+                        size: 48.st,
+                        color: AppColors.primary.withValues(alpha: 0.3),
                       ),
+                    );
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      width: double.infinity,
+                      height: 200.rt,
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(16).rt,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    article.title,
+                    style: Get.bodyLarge.px18.w700.copyWith(
+                      color: Get.disabledColor,
                     ),
-                  );
-                },
+                    maxLines: 2,
+                  ),
+                  12.verticalGap,
+                  AppText(
+                    article.content,
+                    style: Get.bodyMedium.px14.copyWith(
+                      color: Get.disabledColor.withValues(alpha: 0.7),
+                    ),
+                    maxLines: 3,
+                  ),
+                  12.verticalGap,
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.person_outline,
+                        size: 16.st,
+                        color: Get.disabledColor.withValues(alpha: 0.5),
+                      ),
+                      6.horizontalGap,
+                      AppText(
+                        article.authorName,
+                        style: Get.bodySmall.px12.copyWith(
+                          color: Get.disabledColor.withValues(alpha: 0.6),
+                        ),
+                      ),
+                      16.horizontalGap,
+                      Icon(
+                        Icons.calendar_today,
+                        size: 16.st,
+                        color: Get.disabledColor.withValues(alpha: 0.5),
+                      ),
+                      6.horizontalGap,
+                      AppText(
+                        _formatDate(article.createdAt),
+                        style: Get.bodySmall.px12.copyWith(
+                          color: Get.disabledColor.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.all(16).rt,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  article.title,
-                  style: Get.bodyLarge.px18.w700.copyWith(
-                    color: Get.disabledColor,
-                  ),
-                  maxLines: 2,
-                ),
-                12.verticalGap,
-                AppText(
-                  article.content,
-                  style: Get.bodyMedium.px14.copyWith(
-                    color: Get.disabledColor.withValues(alpha: 0.7),
-                  ),
-                  maxLines: 3,
-                ),
-                12.verticalGap,
-                Row(
-                  children: [
-                    Icon(
-                      Icons.person_outline,
-                      size: 16.st,
-                      color: Get.disabledColor.withValues(alpha: 0.5),
-                    ),
-                    6.horizontalGap,
-                    AppText(
-                      article.authorName,
-                      style: Get.bodySmall.px12.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    16.horizontalGap,
-                    Icon(
-                      Icons.calendar_today,
-                      size: 16.st,
-                      color: Get.disabledColor.withValues(alpha: 0.5),
-                    ),
-                    6.horizontalGap,
-                    AppText(
-                      _formatDate(article.createdAt),
-                      style: Get.bodySmall.px12.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

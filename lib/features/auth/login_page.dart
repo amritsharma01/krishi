@@ -174,28 +174,38 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: InkWell(
                         onTap: _isLoading ? null : _handleGoogleSignIn,
                         borderRadius: BorderRadius.circular(12).rt,
-                        splashColor: Colors.grey.shade200,
-                        highlightColor: Colors.grey.shade100,
+                        splashColor: isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.grey.shade200,
+                        highlightColor: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.grey.shade100,
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
                           curve: Curves.easeInOut,
                           width: double.infinity,
-                          height: 56.ht,
+                          height: 45.ht,
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12).rt,
+                            color: isDark ? Get.cardColor : Colors.white,
+                            borderRadius: BorderRadius.circular(20).rt,
                             border: Border.all(
-                              color: Colors.grey.shade300,
+                              color: isDark
+                                  ? Get.disabledColor.withValues(alpha: 0.2)
+                                  : Colors.grey.shade300,
                               width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
+                                color: Colors.black.withValues(
+                                  alpha: isDark ? 0.3 : 0.08,
+                                ),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.04),
+                                color: Colors.black.withValues(
+                                  alpha: isDark ? 0.15 : 0.04,
+                                ),
                                 blurRadius: 20,
                                 offset: const Offset(0, 4),
                               ),
@@ -217,8 +227,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   children: [
                                     // Google Logo SVG
                                     SizedBox(
-                                      height: 24.st,
-                                      width: 24.st,
+                                      height: 22.st,
+                                      width: 22.st,
                                       child: SvgPicture.asset(
                                         'assets/images/google_logo.svg',
                                         fit: BoxFit.contain,
@@ -226,15 +236,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                             Container(
                                               height: 24.st,
                                               width: 24.st,
-                                              color: Colors.grey.shade200,
+                                              color: isDark
+                                                  ? Get.disabledColor
+                                                        .withValues(alpha: 0.2)
+                                                  : Colors.grey.shade200,
                                             ),
                                       ),
                                     ),
                                     12.horizontalGap,
                                     AppText(
                                       'sign_in_with_google'.tr(context),
-                                      style: Get.bodyMedium.px16.w600.copyWith(
-                                        color: const Color(0xFF3C4043),
+                                      style: Get.bodyMedium.px14.w600.copyWith(
+                                        color: isDark
+                                            ? Get.disabledColor
+                                            : const Color(0xFF3C4043),
                                         letterSpacing: 0.3,
                                       ),
                                     ),
@@ -244,7 +259,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                     ),
 
-                    32.verticalGap,
+                    20.verticalGap,
 
                     // Additional Info with icon
                     Row(
@@ -270,7 +285,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ],
                     ),
 
-                    80.verticalGap,
+                    20.verticalGap,
                   ],
                 ),
               ),

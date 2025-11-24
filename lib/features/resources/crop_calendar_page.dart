@@ -91,7 +91,7 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
       appBar: AppBar(
         title: AppText(
           'crop_calendar'.tr(context),
-          style: Get.bodyLarge.px24.w600.copyWith(color: Colors.white),
+          style: Get.bodyLarge.px20.w600.copyWith(color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Colors.green.shade700,
@@ -349,7 +349,9 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
           color: isSelected ? color : color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16).rt,
           border: Border.all(
-            color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
+            color: isSelected
+                ? Colors.transparent
+                : color.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
