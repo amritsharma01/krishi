@@ -125,30 +125,24 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                   12.verticalGap,
 
                   // Theme Mode
-                  SettingsTile(
+                  _buildSettingsSection(
+                    context,
                     icon: Icons.palette_outlined,
                     title: 'theme_mode'.tr(context),
                     subtitle: 'choose_theme'.tr(context),
-                    trailing: Container(),
+                    child: const ThemeSwitcher(),
                   ),
-
-                  12.verticalGap,
-
-                  const ThemeSwitcher(),
 
                   16.verticalGap,
 
                   // Language
-                  SettingsTile(
+                  _buildSettingsSection(
+                    context,
                     icon: Icons.language_outlined,
                     title: 'language'.tr(context),
                     subtitle: 'select_language'.tr(context),
-                    trailing: Container(),
+                    child: const LanguageSwitcher(),
                   ),
-
-                  12.verticalGap,
-
-                  const LanguageSwitcher(),
 
                   24.verticalGap,
 
@@ -544,6 +538,66 @@ class _AccountPageState extends ConsumerState<AccountPage> {
         Icons.person_rounded,
         color: AppColors.primary.withValues(alpha: 0.6),
         size: 50.st,
+      ),
+    );
+  }
+
+  Widget _buildSettingsSection(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Widget child,
+  }) {
+    return Container(
+      padding: EdgeInsets.all(16.rt),
+      decoration: BoxDecoration(
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(16).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(10.rt),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10).rt,
+                ),
+                child: Icon(icon, color: AppColors.primary, size: 20.st),
+              ),
+              16.horizontalGap,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      title,
+                      style: Get.bodyMedium.px14.w600.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    4.verticalGap,
+                    AppText(
+                      subtitle,
+                      style: Get.bodySmall.px12.copyWith(
+                        color: Get.disabledColor.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          16.verticalGap,
+          child,
+        ],
       ),
     );
   }

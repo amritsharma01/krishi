@@ -1,9 +1,7 @@
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
-import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
-import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,12 +17,12 @@ class LanguageSwitcher extends ConsumerWidget {
     final currentIndex = langProvider.index;
 
     return Container(
-      padding: const EdgeInsets.all(4).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(14).rt,
+        borderRadius: BorderRadius.circular(16).rt,
         border: Border.all(
           color: Get.disabledColor.withValues(alpha: 0.1),
+          width: 1,
         ),
       ),
       child: Row(
@@ -32,16 +30,19 @@ class LanguageSwitcher extends ConsumerWidget {
           _buildLanguageOption(
             context,
             ref,
-            'english',
-            '🇬🇧',
+            'EN',
             0,
             currentIndex == 0,
+          ),
+          Container(
+            width: 1,
+            height: 24.rt,
+            color: Get.disabledColor.withValues(alpha: 0.1),
           ),
           _buildLanguageOption(
             context,
             ref,
-            'nepali',
-            '🇳🇵',
+            'ने',
             1,
             currentIndex == 1,
           ),
@@ -54,7 +55,6 @@ class LanguageSwitcher extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String label,
-    String flag,
     int index,
     bool isSelected,
   ) {
@@ -65,37 +65,25 @@ class LanguageSwitcher extends ConsumerWidget {
           onTap: () {
             ref.read(languageProvider).toggleLanguage(index);
           },
-          borderRadius: BorderRadius.circular(12).rt,
+          borderRadius: BorderRadius.circular(16).rt,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8).rt,
+            padding: EdgeInsets.symmetric(vertical: 14.rt),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary
+                  ? AppColors.primary.withValues(alpha: 0.1)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(12).rt,
+              borderRadius: BorderRadius.circular(16).rt,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  flag,
-                  style: TextStyle(fontSize: 20.st),
+            child: Center(
+              child: AppText(
+                label,
+                style: Get.bodyMedium.px15.w600.copyWith(
+                  color: isSelected
+                      ? AppColors.primary
+                      : Get.disabledColor.withValues(alpha: 0.6),
                 ),
-                8.horizontalGap,
-                Flexible(
-                  child: AppText(
-                    label.tr(context),
-                    style: Get.bodySmall.px12.w600.copyWith(
-                      color: isSelected
-                          ? AppColors.white
-                          : Get.disabledColor.withValues(alpha: 0.7),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ),
