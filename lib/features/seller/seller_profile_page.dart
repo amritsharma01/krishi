@@ -104,6 +104,7 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
     if (sellerProfile?.sellerProducts == null) return [];
     return sellerProfile!.sellerProducts!
         .map((json) => Product.fromJson(json as Map<String, dynamic>))
+        .where((product) => product.isAvailable)
         .toList();
   }
 

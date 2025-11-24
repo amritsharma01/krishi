@@ -15,9 +15,11 @@ import 'package:krishi/features/components/dialog_box.dart';
 import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/components/form_field.dart';
+import 'package:krishi/models/category.dart';
 import 'package:krishi/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class MarketplacePage extends ConsumerStatefulWidget {
   const MarketplacePage({super.key});
@@ -32,8 +34,10 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
 
   List<Product> buyProducts = [];
   List<Product> userListings = [];
+  List<Category> categories = [];
   bool isLoadingBuyProducts = true;
   bool isLoadingUserListings = true;
+  bool isLoadingCategoryFilters = true;
   String? buyProductsError;
   String? userListingsError;
   final ScrollController _buyScrollController = ScrollController();
@@ -45,6 +49,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   bool _sellHasMore = true;
   bool _isLoadingMoreUserListings = false;
   int? _currentUserId;
+  int? _selectedCategoryId;
 
   @override
   void initState() {
@@ -53,6 +58,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     _sellScrollController.addListener(_onSellScroll);
     _loadBuyProducts();
     _loadUserListings();
+    _loadMarketplaceCategories();
   }
 
   Future<void> _loadBuyProducts() async {
@@ -67,12 +73,17 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     try {
       final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
-      
-      // Only use cache if there's no search query
-      if (_searchController.text.isEmpty) {
+      final shouldUseCache =
+          _searchController.text.isEmpty && _selectedCategoryId == null;
+
+      // Only use cache if there's no search query or category filter
+      if (shouldUseCache) {
         final cachedProducts = await cacheService.getBuyProductsCache();
         if (cachedProducts != null) {
-          final products = cachedProducts.map((json) => Product.fromJson(json)).toList();
+          final products = cachedProducts
+              .map((json) => Product.fromJson(json))
+              .where((product) => product.isAvailable)
+              .toList();
           if (mounted) {
             setState(() {
               buyProducts = products;
@@ -81,23 +92,27 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
           }
         }
       }
-      
+
       // Fetch fresh data from API
       final response = await apiService.getProducts(
         page: _buyCurrentPage,
         search: _searchController.text.isEmpty ? null : _searchController.text,
+        category: _selectedCategoryId,
       );
-      
+      final filteredResults = response.results
+          .where((product) => product.isAvailable)
+          .toList();
+
       // Save to cache only if no search query
-      if (_searchController.text.isEmpty) {
+      if (shouldUseCache) {
         await cacheService.saveBuyProductsCache(
-          response.results.map((p) => p.toJson()).toList(),
+          filteredResults.map((p) => p.toJson()).toList(),
         );
       }
-      
+
       if (mounted) {
         setState(() {
-          buyProducts = response.results;
+          buyProducts = filteredResults;
           isLoadingBuyProducts = false;
           _buyHasMore = response.next != null;
           _buyCurrentPage = _buyCurrentPage + 1;
@@ -108,6 +123,29 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
         setState(() {
           buyProductsError = e.toString();
           isLoadingBuyProducts = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMarketplaceCategories() async {
+    setState(() {
+      isLoadingCategoryFilters = true;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final fetchedCategories = await apiService.getCategories();
+      if (mounted) {
+        setState(() {
+          categories = fetchedCategories;
+          isLoadingCategoryFilters = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          isLoadingCategoryFilters = false;
         });
       }
     }
@@ -124,10 +162,14 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       final response = await apiService.getProducts(
         page: _buyCurrentPage,
         search: _searchController.text.isEmpty ? null : _searchController.text,
+        category: _selectedCategoryId,
       );
+      final filteredResults = response.results
+          .where((product) => product.isAvailable)
+          .toList();
       if (mounted) {
         setState(() {
-          buyProducts = [...buyProducts, ...response.results];
+          buyProducts = [...buyProducts, ...filteredResults];
           _buyHasMore = response.next != null;
           _buyCurrentPage = _buyCurrentPage + 1;
           _isLoadingMoreBuyProducts = false;
@@ -156,11 +198,13 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
       _currentUserId ??= (await apiService.getCurrentUser()).id;
-      
+
       // Try to load from cache first
       final cachedProducts = await cacheService.getSellProductsCache();
       if (cachedProducts != null) {
-        final products = cachedProducts.map((json) => Product.fromJson(json)).toList();
+        final products = cachedProducts
+            .map((json) => Product.fromJson(json))
+            .toList();
         if (mounted) {
           setState(() {
             userListings = products;
@@ -168,18 +212,18 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
           });
         }
       }
-      
+
       // Fetch fresh data from API
       final response = await apiService.getProducts(
         page: _sellCurrentPage,
         sellerId: _currentUserId,
       );
-      
+
       // Save to cache
       await cacheService.saveSellProductsCache(
         response.results.map((p) => p.toJson()).toList(),
       );
-      
+
       if (mounted) {
         setState(() {
           userListings = response.results;
@@ -257,6 +301,14 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     }
   }
 
+  void _onCategorySelected(int? categoryId) {
+    if (_selectedCategoryId == categoryId) return;
+    setState(() {
+      _selectedCategoryId = categoryId;
+    });
+    _loadBuyProducts();
+  }
+
   @override
   void dispose() {
     _buyScrollController.removeListener(_onBuyScroll);
@@ -269,6 +321,8 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
 
   @override
   Widget build(BuildContext context) {
+    final langProvider = ref.watch(languageProvider);
+    final isNepali = langProvider.isNepali;
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: _buildAppBar(),
@@ -280,7 +334,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             16.verticalGap,
             // Content
             Expanded(
-              child: isBuyTab ? _buildBuyContent() : _buildSellContent(),
+              child: isBuyTab
+                  ? _buildBuyContent(isNepali)
+                  : _buildSellContent(isNepali),
             ),
           ],
         ),
@@ -391,7 +447,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     );
   }
 
-  Widget _buildBuyContent() {
+  Widget _buildBuyContent(bool isNepali) {
     return RefreshIndicator(
       onRefresh: _loadBuyProducts,
       child: SingleChildScrollView(
@@ -419,14 +475,11 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
               ),
 
               16.verticalGap,
+              _buildCategoryFilters(isNepali),
+              16.verticalGap,
               // Products Grid
               if (isLoadingBuyProducts)
-                Padding(
-                  padding: const EdgeInsets.all(32).rt,
-                  child: Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  ),
-                )
+                _buildBuySkeleton()
               else if (buyProductsError != null)
                 ErrorState(
                   subtitle: 'error_loading_products_subtitle'.tr(context),
@@ -450,7 +503,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                   ),
                   itemCount: buyProducts.length,
                   itemBuilder: (context, index) {
-                    return _buildProductCard(buyProducts[index]);
+                    return _buildProductCard(buyProducts[index], isNepali);
                   },
                 ),
               if (_isLoadingMoreBuyProducts)
@@ -468,7 +521,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     );
   }
 
-  Widget _buildSellContent() {
+  Widget _buildSellContent(bool isNepali) {
     return RefreshIndicator(
       onRefresh: _loadUserListings,
       child: SingleChildScrollView(
@@ -536,12 +589,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
               16.verticalGap,
               // Listings
               if (isLoadingUserListings)
-                Padding(
-                  padding: const EdgeInsets.all(32).rt,
-                  child: Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  ),
-                )
+                _buildSellSkeleton()
               else if (userListingsError != null)
                 ErrorState(
                   subtitle: 'error_loading_listings_subtitle'.tr(context),
@@ -555,7 +603,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 )
               else
                 ...userListings.map((listing) {
-                  return _buildListingCard(listing);
+                  return _buildListingCard(listing, isNepali);
                 }),
               if (_isLoadingMoreUserListings)
                 Padding(
@@ -572,7 +620,304 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     );
   }
 
-  Widget _buildProductCard(Product product) {
+  Widget _buildBuySkeleton() {
+    return Skeletonizer(
+      child: Column(
+        children: [
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12.rt,
+              mainAxisSpacing: 12.rt,
+              childAspectRatio: 0.75,
+            ),
+            itemCount: 4,
+            itemBuilder: (context, index) => Container(
+              decoration: BoxDecoration(
+                color: Get.cardColor,
+                borderRadius: BorderRadius.circular(20).rt,
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    height: 112.ht,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(16.rt),
+                        topRight: Radius.circular(16.rt),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(12).rt,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 14.rt,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Get.disabledColor.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8).rt,
+                          ),
+                        ),
+                        8.verticalGap,
+                        Container(
+                          height: 12.rt,
+                          width: 80.rt,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8).rt,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSellSkeleton() {
+    return Skeletonizer(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 18).rt,
+            decoration: BoxDecoration(
+              color: Get.cardColor,
+              borderRadius: BorderRadius.circular(12).rt,
+            ),
+          ),
+          20.verticalGap,
+          Container(
+            height: 20.rt,
+            width: 140.rt,
+            decoration: BoxDecoration(
+              color: Get.cardColor,
+              borderRadius: BorderRadius.circular(8).rt,
+            ),
+          ),
+          16.verticalGap,
+          Column(
+            children: List.generate(
+              3,
+              (_) => Container(
+                margin: EdgeInsets.only(bottom: 12.rt),
+                padding: const EdgeInsets.all(14).rt,
+                decoration: BoxDecoration(
+                  color: Get.cardColor,
+                  borderRadius: BorderRadius.circular(16).rt,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 70.rt,
+                      height: 70.rt,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12).rt,
+                      ),
+                    ),
+                    16.horizontalGap,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 14.rt,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Get.disabledColor.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8).rt,
+                            ),
+                          ),
+                          8.verticalGap,
+                          Container(
+                            height: 12.rt,
+                            width: 100.rt,
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8).rt,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    16.horizontalGap,
+                    Container(
+                      width: 32.rt,
+                      height: 32.rt,
+                      decoration: BoxDecoration(
+                        color: Get.disabledColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8).rt,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryFilters(bool isNepali) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14).rt,
+      decoration: BoxDecoration(
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(14).rt,
+        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
+      ),
+      child: isLoadingCategoryFilters
+          ? _buildCategoryFilterSkeleton()
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.filter_alt_rounded,
+                      size: 18.st,
+                      color: AppColors.primary,
+                    ),
+                    8.horizontalGap,
+                    AppText(
+                      'filter_categories'.tr(context),
+                      style: Get.bodyMedium.w600.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                  ],
+                ),
+                12.verticalGap,
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(children: _buildCategoryChips(isNepali)),
+                ),
+              ],
+            ),
+    );
+  }
+
+  List<Widget> _buildCategoryChips(bool isNepali) {
+    final chips = <Widget>[
+      _buildCategoryPill(
+        label: 'all_categories'.tr(context),
+        isSelected: _selectedCategoryId == null,
+        icon: Icons.all_inclusive,
+        onTap: () => _onCategorySelected(null),
+      ),
+      ...categories.map(
+        (category) => _buildCategoryPill(
+          label: category.localizedName(isNepali),
+          isSelected: _selectedCategoryId == category.id,
+          onTap: () => _onCategorySelected(category.id),
+        ),
+      ),
+    ];
+
+    return chips
+        .map(
+          (chip) => Padding(
+            padding: EdgeInsets.only(right: 10.rt),
+            child: chip,
+          ),
+        )
+        .toList();
+  }
+
+  Widget _buildCategoryFilterSkeleton() {
+    return Skeletonizer(
+      child: Row(
+        children: List.generate(
+          3,
+          (index) => Container(
+            margin: EdgeInsets.only(right: 10.rt),
+            padding: EdgeInsets.symmetric(horizontal: 20.rt, vertical: 10.rt),
+            decoration: BoxDecoration(
+              color: Get.disabledColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(24).rt,
+            ),
+            child: const SizedBox(width: 60, height: 12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryPill({
+    required String label,
+    required bool isSelected,
+    VoidCallback? onTap,
+    IconData? icon,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(horizontal: 16.rt, vertical: 9.rt),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withValues(alpha: 0.85),
+                  ],
+                )
+              : null,
+          color: isSelected ? null : Get.disabledColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(24).rt,
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : Get.disabledColor.withValues(alpha: 0.2),
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 14.st,
+                color: isSelected ? Colors.white : AppColors.primary,
+              ),
+              6.horizontalGap,
+            ],
+            AppText(
+              label,
+              style: Get.bodySmall.w600.copyWith(
+                color: isSelected ? Colors.white : Get.disabledColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProductCard(Product product, bool isNepali) {
     return Container(
       decoration: BoxDecoration(
         color: Get.cardColor,
@@ -660,12 +1005,12 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                       color: Get.disabledColor,
                       height: 1.2,
                     ),
-                    maxLines: 2,
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   4.verticalGap,
                   AppText(
-                    'Rs. ${product.price}/${product.unitName}',
+                    'Rs. ${product.price}/${product.localizedUnitName(isNepali)}',
                     style: Get.bodyMedium.px12.w700.copyWith(
                       color: AppColors.primary,
                     ),
@@ -702,7 +1047,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     );
   }
 
-  Widget _buildListingCard(Product listing) {
+  Widget _buildListingCard(Product listing, bool isNepali) {
     return Container(
       margin: EdgeInsets.only(bottom: 12.rt),
       padding: const EdgeInsets.all(14).rt,
@@ -779,7 +1124,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 ),
                 6.verticalGap,
                 AppText(
-                  'Rs. ${listing.price}/${listing.unitName}',
+                  'Rs. ${listing.price}/${listing.localizedUnitName(isNepali)}',
                   style: Get.bodyMedium.px14.w700.copyWith(
                     color: AppColors.primary,
                   ),

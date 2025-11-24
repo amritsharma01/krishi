@@ -181,6 +181,8 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
                             height: 1.6,
                             color: Get.disabledColor.withValues(alpha: 0.85),
                           ),
+                          maxLines: 50,
+                          overflow: TextOverflow.visible,
                         ),
                       ),
                     ],

@@ -299,7 +299,7 @@ class KrishiApiService {
     required String price,
     required String description,
     required int unit,
-
+    required bool isAvailable,
     String? imagePath,
   }) async {
     try {
@@ -310,6 +310,7 @@ class KrishiApiService {
         'price': price,
         'description': description,
         'unit': unit,
+        'is_available': isAvailable,
         if (imagePath != null) 'image': await MultipartFile.fromFile(imagePath),
       });
 
@@ -337,6 +338,7 @@ class KrishiApiService {
     String? price,
     String? description,
     int? unit,
+    bool? isAvailable,
     String? imagePath,
   }) async {
     try {
@@ -353,6 +355,11 @@ class KrishiApiService {
         formData.fields.add(MapEntry('description', description));
       }
       if (unit != null) formData.fields.add(MapEntry('unit', unit.toString()));
+      if (isAvailable != null) {
+        formData.fields.add(
+          MapEntry('is_available', isAvailable ? 'true' : 'false'),
+        );
+      }
 
       if (imagePath != null) {
         formData.files.add(

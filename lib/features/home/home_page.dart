@@ -158,9 +158,12 @@ class _HomePageState extends ConsumerState<HomePage> {
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final response = await apiService.getProducts(page: 1);
+      final filtered = response.results
+          .where((product) => product.isAvailable)
+          .toList();
       if (mounted) {
         setState(() {
-          trendingProducts = response.results.take(5).toList();
+          trendingProducts = filtered.take(5).toList();
           isLoadingProducts = false;
         });
       }
@@ -275,15 +278,23 @@ class _HomePageState extends ConsumerState<HomePage> {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
+        image: DecorationImage(
+          image: const AssetImage('assets/images/image.png'),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            AppColors.primary.withValues(alpha: 0.4),
+            BlendMode.srcATop,
+          ),
+        ),
         gradient: LinearGradient(
           colors: [
-            AppColors.primary,
+            AppColors.primary.withValues(alpha: 0.95),
             AppColors.primary.withValues(alpha: 0.85),
             AppColors.primary.withValues(alpha: 0.7),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          stops: const [0.0, 0.5, 1.0],
+          stops: const [0.05, 0.5, 1.0],
         ),
         borderRadius: BorderRadius.circular(20).rt,
         boxShadow: [
@@ -889,7 +900,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16).rt,
+        padding: const EdgeInsets.all(10).rt,
         decoration: BoxDecoration(
           gradient: gradient,
           borderRadius: BorderRadius.circular(16).rt,
@@ -1404,7 +1415,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         4.horizontalGap,
                         Expanded(
                           child: AppText(
-                            product.sellerEmail,
+                            product.sellerName ?? product.sellerEmail,
                             style: Get.bodySmall.px11.w500.copyWith(
                               color: Get.disabledColor.withValues(alpha: 0.6),
                             ),

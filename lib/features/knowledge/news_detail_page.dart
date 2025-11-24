@@ -29,63 +29,50 @@ class NewsDetailPage extends ConsumerWidget {
                 children: [
                   AppText(
                     news.title,
-                    style: Get.bodyLarge.px28.w800.copyWith(
-                      color: Get.disabledColor,
-                      height: 1.3,
+                    style: Get.bodyLarge.px22.w700.copyWith(
+                      color: Get.bodyLarge.color ??
+                          (Get.isDark ? Colors.white : Colors.black87),
+                      height: 1.35,
                     ),
                   ),
-                  20.verticalGap,
-                  Row(
+                  14.verticalGap,
+                  Wrap(
+                    spacing: 10.rt,
+                    runSpacing: 8.rt,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8).rt,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFF1976D2),
-                              const Color(0xFF42A5F5),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(8).rt,
-                        ),
-                        child: Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 20.st,
-                        ),
+                      _buildMetaChip(
+                        icon: Icons.person_outline,
+                        label: news.authorName,
                       ),
-                      12.horizontalGap,
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            AppText(
-                              news.authorName,
-                              style: Get.bodyMedium.px14.w600.copyWith(
-                                color: Get.disabledColor,
-                              ),
-                            ),
-                            4.verticalGap,
-                            AppText(
-                              _formatDate(context, news.createdAt),
-                              style: Get.bodySmall.px12.copyWith(
-                                color: Get.disabledColor.withValues(alpha: 0.6),
-                              ),
-                            ),
-                          ],
-                        ),
+                      _buildMetaChip(
+                        icon: Icons.calendar_today_outlined,
+                        label: _formatDate(context, news.createdAt),
                       ),
                     ],
                   ),
-                  24.verticalGap,
-                  AppText(
-                    news.content,
-                    style: Get.bodyMedium.px16.w400.copyWith(
-                      color: Get.disabledColor.withValues(alpha: 0.85),
-                      height: 1.7,
+                  20.verticalGap,
+                  Divider(color: Get.disabledColor.withValues(alpha: 0.2)),
+                  20.verticalGap,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18).rt,
+                    decoration: BoxDecoration(
+                      color: Get.cardColor,
+                      borderRadius: BorderRadius.circular(16).rt,
+                      border: Border.all(
+                        color: Get.disabledColor.withValues(alpha: 0.12),
+                      ),
+                    ),
+                    child: AppText(
+                      news.content,
+                      style: Get.bodyMedium.px15.w400.copyWith(
+                        color: Get.bodyMedium.color ??
+                            (Get.isDark ? Colors.white : Colors.black87),
+                        height: 1.7,
+                      ),
                     ),
                   ),
-                  40.verticalGap,
+                  32.verticalGap,
                 ],
               ),
             ),
@@ -97,64 +84,103 @@ class NewsDetailPage extends ConsumerWidget {
 
   Widget _buildAppBar(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 250.rt,
+      expandedHeight: 240.rt,
       pinned: true,
+      stretch: true,
       backgroundColor: Get.scaffoldBackgroundColor,
-      leading: IconButton(
-        icon: Container(
-          padding: const EdgeInsets.all(8).rt,
+      leadingWidth: 70.rt,
+      leading: Padding(
+        padding: EdgeInsets.only(left: 12.rt, top: 8.rt, bottom: 8.rt),
+        child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 8,
-              ),
-            ],
+            color: Colors.black.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(12).rt,
           ),
-          child: Icon(Icons.arrow_back, color: Get.disabledColor, size: 20.st),
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 18.st,
+            ),
+            onPressed: () => Get.pop(),
+          ),
         ),
-        onPressed: () => Get.pop(),
       ),
       flexibleSpace: FlexibleSpaceBar(
-        background: news.image != null
-            ? Image.network(
-                Get.imageUrl(news.image),
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: const Color(0xFF1976D2).withValues(alpha: 0.1),
-                    child: Center(
-                      child: Icon(
-                        Icons.newspaper,
-                        size: 80.st,
-                        color: const Color(0xFF1976D2).withValues(alpha: 0.3),
-                      ),
-                    ),
-                  );
-                },
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return Container(
-                    color: const Color(0xFF1976D2).withValues(alpha: 0.1),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: const Color(0xFF1976D2),
-                      ),
-                    ),
-                  );
-                },
-              )
-            : Container(
-                color: const Color(0xFF1976D2).withValues(alpha: 0.1),
-                child: Center(
-                  child: Icon(
-                    Icons.newspaper,
-                    size: 80.st,
-                    color: const Color(0xFF1976D2).withValues(alpha: 0.3),
-                  ),
+        stretchModes: const [
+          StretchMode.blurBackground,
+          StretchMode.fadeTitle,
+        ],
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            news.image != null
+                ? Image.network(
+                    Get.imageUrl(news.image),
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildHeroPlaceholder(),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return _buildHeroPlaceholder(isLoading: true);
+                    },
+                  )
+                : _buildHeroPlaceholder(),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.2),
+                    Colors.black.withValues(alpha: 0.6),
+                  ],
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMetaChip({required IconData icon, required String label}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.rt, vertical: 8.rt),
+      decoration: BoxDecoration(
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(12).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.15),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.st, color: Get.disabledColor.withValues(alpha: 0.8)),
+          6.horizontalGap,
+          AppText(
+            label,
+            style: Get.bodySmall.copyWith(
+              color: Get.bodySmall.color ??
+                  (Get.isDark ? Colors.white70 : Colors.black87),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeroPlaceholder({bool isLoading = false}) {
+    return Container(
+      color: const Color(0xFF1976D2).withValues(alpha: 0.1),
+      child: Center(
+        child: isLoading
+            ? CircularProgressIndicator(color: const Color(0xFF1976D2))
+            : Icon(
+                Icons.newspaper,
+                size: 80.st,
+                color: const Color(0xFF1976D2).withValues(alpha: 0.3),
               ),
       ),
     );

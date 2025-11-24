@@ -165,6 +165,14 @@ class AppTranslations {
       'en': 'Search for products...',
       'ne': 'उत्पादनहरू खोज्नुहोस्...',
     },
+    'filter_categories': {
+      'en': 'Filter by category',
+      'ne': 'श्रेणीबाट छनोट गर्नुहोस्',
+    },
+    'all_categories': {
+      'en': 'All categories',
+      'ne': 'सबै श्रेणीहरू',
+    },
     'add_new_product': {
       'en': 'Add New Product',
       'ne': 'नयाँ उत्पादन थप्नुहोस्',
@@ -188,6 +196,47 @@ class AppTranslations {
     'checkout': {'en': 'Checkout', 'ne': 'चेकआउट'},
     'quantity': {'en': 'Quantity', 'ne': 'परिमाण'},
     'remove_from_cart': {'en': 'Remove from cart', 'ne': 'कार्टबाट हटाउनुहोस्'},
+    'reviews': {'en': 'Reviews', 'ne': 'समीक्षा'},
+    'add_review': {'en': 'Add Review', 'ne': 'समीक्षा थप्नुहोस्'},
+    'error_loading_reviews': {
+      'en': 'Unable to load reviews. Tap to retry.',
+      'ne': 'समीक्षा लोड हुन सकेन। पुन: प्रयास गर्न ट्याप गर्नुहोस्।',
+    },
+    'no_reviews_yet': {
+      'en': 'No reviews yet',
+      'ne': 'अहिलेसम्म कुनै समीक्षा छैन',
+    },
+    'comments': {'en': 'Comments', 'ne': 'टिप्पणीहरू'},
+    'error_loading_comments': {
+      'en': 'Unable to load comments. Tap to retry.',
+      'ne': 'टिप्पणीहरू लोड हुन सकेन। पुन: प्रयास गर्न ट्याप गर्नुहोस्।',
+    },
+    'no_comments_yet': {
+      'en': 'No comments yet',
+      'ne': 'अहिलेसम्म कुनै टिप्पणी छैन',
+    },
+    'add_comment': {'en': 'Add a comment...', 'ne': 'टिप्पणी थप्नुहोस्...'},
+    'rating': {'en': 'Rating', 'ne': 'रेटिङ'},
+    'write_review': {'en': 'Write your review...', 'ne': 'तपाईंको समीक्षा लेख्नुहोस्...'},
+    'submit_review': {'en': 'Submit Review', 'ne': 'समीक्षा पठाउनुहोस्'},
+    'comment_added': {'en': 'Comment added', 'ne': 'टिप्पणी थपियो'},
+    'error_adding_comment': {
+      'en': 'Failed to add comment',
+      'ne': 'टिप्पणी थप्दा त्रुटि भयो',
+    },
+    'review_too_short': {
+      'en': 'Review is too short (min 10 characters)',
+      'ne': 'समीक्षा धेरै छोटो छ (कम्तिमा १० अक्षर)',
+    },
+    'review_added': {'en': 'Review added', 'ne': 'समीक्षा थपियो'},
+    'must_purchase_to_review': {
+      'en': 'You must purchase before leaving a review',
+      'ne': 'समीक्षा गर्नुअघि तपाईंले खरिद गर्नुपर्छ',
+    },
+    'error_adding_review': {
+      'en': 'Failed to add review',
+      'ne': 'समीक्षा थप्दा त्रुटि भयो',
+    },
 
     // Add/Edit Product
     'product_name': {'en': 'Product Name', 'ne': 'उत्पादन नाम'},
@@ -198,6 +247,14 @@ class AppTranslations {
     'update_product': {'en': 'Update Product', 'ne': 'उत्पादन अपडेट गर्नुहोस्'},
     'edit_product': {'en': 'Edit Product', 'ne': 'उत्पादन सम्पादन गर्नुहोस्'},
     'delete_product': {'en': 'Delete Product', 'ne': 'उत्पादन मेटाउनुहोस्'},
+    'available_for_sale': {
+      'en': 'Available for sale',
+      'ne': 'बिक्रीका लागि उपलब्ध',
+    },
+    'available_for_sale_hint': {
+      'en': 'Toggle off to hide this product when it is out of stock.',
+      'ne': 'स्टक नभएका बेला उत्पादन लुकाउन टगल गर्नुहोस्।',
+    },
     'delete_confirmation': {
       'en': 'Are you sure you want to delete this product?',
       'ne': 'के तपाईं यो उत्पादन मेटाउन चाहनुहुन्छ?',

@@ -118,7 +118,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
       appBar: AppBar(
         title: AppText(
           'notices_announcements'.tr(context),
-          style: Get.bodyLarge.px24.w600.copyWith(color: Colors.white),
+          style: Get.bodyLarge.px18.w600.copyWith(color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Get.primaryColor,
@@ -275,17 +275,22 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
           Icon(
             Icons.notifications_off_rounded,
             size: 80.st,
-            color: Colors.grey.shade400,
+            color: Get.disabledColor.withValues(alpha: 0.6),
           ),
           16.verticalGap,
           AppText(
             'no_notices_available'.tr(context),
-            style: Get.bodyLarge.px18.w600.copyWith(color: Colors.grey.shade600),
+            style: Get.bodyLarge.px18.w600.copyWith(
+              color: Get.bodyLarge.color ??
+                  (Get.isDark ? Colors.white : Colors.black87),
+            ),
           ),
           8.verticalGap,
           AppText(
             'check_back_later_updates'.tr(context),
-            style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
+            style: Get.bodyMedium.copyWith(
+              color: Get.disabledColor.withValues(alpha: 0.9),
+            ),
           ),
         ],
       ),
@@ -309,19 +314,20 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
   Widget _buildNoticeCard(BuildContext context, Notice notice) {
     final typeColor = _getNoticeTypeColor(notice.noticeType);
     final typeIcon = _getNoticeTypeIcon(notice.noticeType);
+    final titleColor = Get.bodyLarge.color ??
+        (Get.isDark ? Colors.white : Colors.black87);
+    final bodyColor = Get.bodyMedium.color ??
+        (Get.isDark ? Colors.white70 : Colors.black87);
+    final mutedColor = Get.disabledColor.withValues(alpha: 0.9);
 
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16).rt,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(18).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.2),
+        ),
       ),
       child: Material(
         color: Colors.transparent,
@@ -343,142 +349,73 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
                 Row(
                   children: [
                     Container(
-                      padding: EdgeInsets.all(8.rt),
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
                       decoration: BoxDecoration(
-                        color: typeColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8).rt,
+                        color: typeColor.withValues(alpha: Get.isDark ? 0.2 : 0.12),
+                        borderRadius: BorderRadius.circular(24).rt,
                       ),
-                      child: Icon(
-                        typeIcon,
-                        color: typeColor,
-                        size: 20.st,
-                      ),
-                    ),
-                    12.horizontalGap,
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
+                          Icon(typeIcon, size: 14.st, color: typeColor),
+                          6.horizontalGap,
                           AppText(
-                            notice.title,
-                            style: Get.bodyLarge.w600,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          4.verticalGap,
-                          Row(
-                            children: [
-                              Container(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: 8.w,
-                                  vertical: 4.h,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: typeColor.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(4).rt,
-                                ),
-                                child: AppText(
-                                  notice.noticeTypeDisplay,
-                                  style: Get.bodySmall.copyWith(
-                                    color: typeColor,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 11.sp,
-                                  ),
-                                ),
-                              ),
-                              8.horizontalGap,
-                              Icon(
-                                Icons.calendar_today_rounded,
-                                size: 12.st,
-                                color: Colors.grey.shade600,
-                              ),
-                              4.horizontalGap,
-                              AppText(
-                                DateFormat('MMM dd, yyyy')
-                                    .format(notice.publishedDate),
-                                style: Get.bodySmall.copyWith(
-                                  color: Colors.grey.shade600,
-                                  fontSize: 11.sp,
-                                ),
-                              ),
-                            ],
+                            notice.noticeTypeDisplay,
+                            style: Get.bodySmall.copyWith(
+                              color: typeColor,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ],
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(Icons.calendar_today_outlined, size: 14.st, color: mutedColor),
+                    6.horizontalGap,
+                    AppText(
+                      DateFormat('MMM dd, yyyy').format(notice.publishedDate),
+                      style: Get.bodySmall.copyWith(
+                        color: mutedColor,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
                 12.verticalGap,
                 AppText(
+                  notice.title,
+                  style: Get.bodyLarge.px16.w600.copyWith(color: titleColor),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                8.verticalGap,
+                AppText(
                   notice.description,
-                  style: Get.bodyMedium.copyWith(color: Colors.grey.shade700),
+                  style: Get.bodyMedium.copyWith(
+                    color: bodyColor.withValues(alpha: 0.85),
+                    height: 1.4,
+                  ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (notice.pdfFile != null || notice.image != null) ...[
                   12.verticalGap,
-                  Row(
+                  Wrap(
+                    spacing: 8.w,
+                    runSpacing: 6.h,
                     children: [
                       if (notice.pdfFile != null)
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 6.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade50,
-                            borderRadius: BorderRadius.circular(6).rt,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.picture_as_pdf_rounded,
-                                size: 16.st,
-                                color: Colors.red.shade700,
-                              ),
-                              6.horizontalGap,
-                              AppText(
-                                'pdf_attached'.tr(context),
-                                style: Get.bodySmall.copyWith(
-                                  color: Colors.red.shade700,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                        _buildAttachmentChip(
+                          label: 'pdf_attached'.tr(context),
+                          icon: Icons.picture_as_pdf_rounded,
+                          color: Colors.red.shade600,
                         ),
-                      if (notice.image != null) ...[
-                        if (notice.pdfFile != null) 8.horizontalGap,
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 6.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(6).rt,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.image_rounded,
-                                size: 16.st,
-                                color: Colors.blue.shade700,
-                              ),
-                              6.horizontalGap,
-                              AppText(
-                                'image_attached'.tr(context),
-                                style: Get.bodySmall.copyWith(
-                                  color: Colors.blue.shade700,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                      if (notice.image != null)
+                        _buildAttachmentChip(
+                          label: 'image_attached'.tr(context),
+                          icon: Icons.image_rounded,
+                          color: Colors.blue.shade600,
                         ),
-                      ],
                     ],
                   ),
                 ],
@@ -486,6 +423,35 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildAttachmentChip({
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: Get.isDark ? 0.18 : 0.12),
+        borderRadius: BorderRadius.circular(10).rt,
+        border: Border.all(color: color.withValues(alpha: 0.4)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.st, color: color),
+          6.horizontalGap,
+          AppText(
+            label,
+            style: Get.bodySmall.copyWith(
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }

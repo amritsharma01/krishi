@@ -36,7 +36,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         Get.offAll(const MainNavigation());
 
         // Show success message
-        Get.snackbar('signin_success'.tr(context));
+        Get.snackbar('signin_success'.tr(context), color: AppColors.primary);
       } else if (mounted) {
         // User cancelled or authentication failed
         Get.snackbar('google_signin_cancelled'.tr(context));
@@ -55,7 +55,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return PlatformScaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       body: SafeArea(
@@ -69,10 +69,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Get.scaffoldBackgroundColor,
                       Get.scaffoldBackgroundColor.withValues(alpha: 0.95),
                     ]
-                  : [
-                      Colors.white,
-                      Colors.grey.shade50,
-                    ],
+                  : [Colors.white, Colors.grey.shade50],
             ),
           ),
           child: Center(
@@ -225,11 +222,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       child: SvgPicture.asset(
                                         'assets/images/google_logo.svg',
                                         fit: BoxFit.contain,
-                                        placeholderBuilder: (context) => Container(
-                                          height: 24.st,
-                                          width: 24.st,
-                                          color: Colors.grey.shade200,
-                                        ),
+                                        placeholderBuilder: (context) =>
+                                            Container(
+                                              height: 24.st,
+                                              width: 24.st,
+                                              color: Colors.grey.shade200,
+                                            ),
                                       ),
                                     ),
                                     12.horizontalGap,

@@ -42,6 +42,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   bool isLoadingCategories = true;
   bool isLoadingUnits = true;
   bool isSaving = false;
+  bool _isAvailable = true;
 
   @override
   void initState() {
@@ -53,6 +54,9 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
       _priceController.text = widget.product!.price;
       _descriptionController.text = widget.product!.description;
       _phoneController.text = widget.product!.sellerPhoneNumber ?? '';
+      _isAvailable = widget.product!.isAvailable;
+    } else {
+      _isAvailable = true;
     }
   }
 
@@ -332,6 +336,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             price: _priceController.text,
             description: _descriptionController.text,
             unit: selectedUnit!.id,
+            isAvailable: _isAvailable,
             imagePath: _selectedImage?.path,
           );
         } else {
@@ -344,6 +349,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             price: _priceController.text,
             description: _descriptionController.text,
             unit: selectedUnit!.id,
+            isAvailable: _isAvailable,
 
             imagePath: _selectedImage?.path,
           );
@@ -786,6 +792,56 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                         }
                         return null;
                       },
+                    ),
+                    24.verticalGap,
+
+                    // Availability Toggle
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16).rt,
+                      decoration: BoxDecoration(
+                        color: Get.cardColor,
+                        borderRadius: BorderRadius.circular(14).rt,
+                        border: Border.all(
+                          color: Get.disabledColor.withValues(alpha: 0.15),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    AppText(
+                                      'available_for_sale'.tr(context),
+                                      style: Get.bodyMedium.px15.w700.copyWith(
+                                        color: Get.disabledColor,
+                                      ),
+                                    ),
+                                    4.verticalGap,
+                                    AppText(
+                                      'available_for_sale_hint'.tr(context),
+                                      style: Get.bodySmall.copyWith(
+                                        color: Get.disabledColor
+                                            .withValues(alpha: 0.7),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Switch.adaptive(
+                                value: _isAvailable,
+                                onChanged: (value) =>
+                                    setState(() => _isAvailable = value),
+                                activeColor: AppColors.primary,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                     24.verticalGap,
 

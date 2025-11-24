@@ -404,28 +404,29 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       stretch: true,
       backgroundColor: Get.scaffoldBackgroundColor,
       elevation: 0,
+      leadingWidth: 72.rt,
       leading: Padding(
-        padding: const EdgeInsets.all(8).rt,
-        child: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8).rt,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: Icon(
-              Icons.arrow_back,
-              color: Get.disabledColor,
-              size: 20.st,
-            ),
+        padding: EdgeInsets.only(left: 12.rt, top: 10.rt, bottom: 10.rt),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.35),
+            borderRadius: BorderRadius.circular(14).rt,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          onPressed: () => Navigator.of(context).pop(),
+          child: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.white,
+              size: 18.st,
+            ),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
         ),
       ),
       flexibleSpace: FlexibleSpaceBar(

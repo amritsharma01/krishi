@@ -134,23 +134,62 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   }
 
   Future<void> _cancelOrder() async {
-    // Show confirmation dialog first
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: AppText('cancel_order'.tr(context)),
-        content: AppText('cancel_order_confirm'.tr(context)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: AppText('no'.tr(context)),
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        final theme = Theme.of(dialogContext);
+        final textColor = theme.textTheme.titleMedium?.color ??
+            (theme.brightness == Brightness.dark ? Colors.white : Colors.black87);
+        final secondaryTextColor = theme.textTheme.bodyMedium?.color ??
+            (theme.brightness == Brightness.dark ? Colors.white70 : Colors.black54);
+
+        return AlertDialog(
+          backgroundColor: theme.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20).rt,
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: AppText('yes'.tr(context), style: TextStyle(color: Colors.red)),
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8).rt,
+          contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16).rt,
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 12).rt,
+          title: Text(
+            'cancel_order'.tr(dialogContext),
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ],
-      ),
+          content: Text(
+            'cancel_order_confirm'.tr(dialogContext),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: secondaryTextColor,
+              height: 1.5,
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.end,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              style: TextButton.styleFrom(
+                foregroundColor: theme.disabledColor,
+              ),
+              child: Text('no'.tr(dialogContext)),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10).rt,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+              ),
+              child: Text('yes'.tr(dialogContext)),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirm != true) return;

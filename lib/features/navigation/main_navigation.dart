@@ -2,6 +2,7 @@ import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
@@ -13,6 +14,7 @@ import 'package:krishi/features/support/support_page.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class MainNavigation extends ConsumerStatefulWidget {
   const MainNavigation({super.key});
@@ -58,14 +60,76 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
   Widget build(BuildContext context) {
     // Show a minimal loading state while initializing
     if (!_isInitialized) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator.adaptive()),
+      return Scaffold(
+        backgroundColor: Get.scaffoldBackgroundColor,
+        body: SafeArea(
+          child: _buildInitialSkeleton(),
+        ),
       );
     }
 
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _pages),
       bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+  Widget _buildInitialSkeleton() {
+    return Skeletonizer(
+      child: ListView(
+        padding: const EdgeInsets.all(20).rt,
+        children: [
+          Container(
+            height: 48.rt,
+            decoration: BoxDecoration(
+              color: Get.cardColor,
+              borderRadius: BorderRadius.circular(16).rt,
+            ),
+          ),
+          20.verticalGap,
+          Container(
+            height: 160.rt,
+            decoration: BoxDecoration(
+              color: Get.cardColor,
+              borderRadius: BorderRadius.circular(20).rt,
+            ),
+          ),
+          20.verticalGap,
+          Row(
+            children: List.generate(
+              2,
+              (index) => Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: index == 1 ? 0 : 10.rt),
+                  child: Container(
+                    height: 120.rt,
+                    decoration: BoxDecoration(
+                      color: Get.cardColor,
+                      borderRadius: BorderRadius.circular(18).rt,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          20.verticalGap,
+          Column(
+            children: List.generate(
+              3,
+              (_) => Padding(
+                padding: EdgeInsets.only(bottom: 12.rt),
+                child: Container(
+                  height: 80.rt,
+                  decoration: BoxDecoration(
+                    color: Get.cardColor,
+                    borderRadius: BorderRadius.circular(16).rt,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

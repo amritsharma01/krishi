@@ -65,7 +65,7 @@ class NoticeDetailPage extends StatelessWidget {
       appBar: AppBar(
         title: AppText(
           'notice_details'.tr(context),
-          style: Get.bodyLarge.px24.w600.copyWith(color: Colors.white),
+          style: Get.bodyLarge.px18.w600.copyWith(color: Colors.white),
         ),
         centerTitle: true,
         backgroundColor: Get.primaryColor,
@@ -73,225 +73,199 @@ class NoticeDetailPage extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Card
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(20.rt),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [typeColor, typeColor.withValues(alpha: 0.7)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+        child: Padding(
+          padding: EdgeInsets.all(20.rt),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(20.rt),
+                decoration: BoxDecoration(
+                  color: Get.cardColor,
+                  borderRadius: BorderRadius.circular(20).rt,
+                  border: Border.all(
+                    color: typeColor.withValues(alpha: 0.35),
+                  ),
                 ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: EdgeInsets.all(12.rt),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                        child: Icon(
-                          typeIcon,
-                          color: Colors.white,
-                          size: 28.st,
-                        ),
-                      ),
-                      12.horizontalGap,
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 10.w,
-                                vertical: 5.h,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.3),
-                                borderRadius: BorderRadius.circular(6).rt,
-                              ),
-                              child: AppText(
-                                notice.noticeTypeDisplay.toUpperCase(),
-                                style: Get.bodySmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                            6.verticalGap,
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.calendar_today_rounded,
-                                  size: 14.st,
-                                  color: Colors.white.withValues(alpha: 0.9),
-                                ),
-                                6.horizontalGap,
-                                AppText(
-                                  DateFormat('MMMM dd, yyyy')
-                                      .format(notice.publishedDate),
-                                  style: Get.bodySmall.copyWith(
-                                    color: Colors.white.withValues(alpha: 0.9),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  16.verticalGap,
-                  AppText(
-                    notice.title,
-                    style: Get.bodyLarge.px22.w700.copyWith(
-                      color: Colors.white,
-                      height: 1.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Content
-            Padding(
-              padding: EdgeInsets.all(20.rt),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Description
-                  AppText(
-                    notice.description,
-                    style: Get.bodyLarge.copyWith(
-                      color: Colors.grey.shade800,
-                      height: 1.6,
-                    ),
-                  ),
-
-                  // Image
-                  if (notice.image != null) ...[
-                    24.verticalGap,
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16).rt,
-                      child: CachedNetworkImage(
-                        imageUrl: notice.image!,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          height: 200.h,
-                          color: Colors.grey.shade200,
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          height: 200.h,
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.error),
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  // PDF Button
-                  if (notice.pdfFile != null) ...[
-                    24.verticalGap,
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.red.shade600, Colors.red.shade700],
-                        ),
-                        borderRadius: BorderRadius.circular(12).rt,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.red.withValues(alpha: 0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => _openPdf(context, notice.pdfFile!),
-                          borderRadius: BorderRadius.circular(12).rt,
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16.h),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.picture_as_pdf_rounded,
-                                  color: Colors.white,
-                                  size: 24.st,
-                                ),
-                                12.horizontalGap,
-                                AppText(
-                                  'open_pdf_document'.tr(context),
-                                  style: Get.bodyLarge.w600.copyWith(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  // Posted by
-                  24.verticalGap,
-                  Container(
-                    padding: EdgeInsets.all(16.rt),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12).rt,
-                    ),
-                    child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Icon(
-                          Icons.admin_panel_settings_rounded,
-                          color: Get.primaryColor,
-                          size: 24.st,
-                        ),
-                        12.horizontalGap,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 6.h,
+                          ),
+                          decoration: BoxDecoration(
+                            color: typeColor.withValues(
+                              alpha: Get.isDark ? 0.2 : 0.12,
+                            ),
+                            borderRadius: BorderRadius.circular(24).rt,
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
+                              Icon(typeIcon, size: 16.st, color: typeColor),
+                              6.horizontalGap,
                               AppText(
-                                'posted_by'.tr(context),
+                                notice.noticeTypeDisplay,
                                 style: Get.bodySmall.copyWith(
-                                  color: Colors.grey.shade600,
+                                  color: typeColor,
+                                  fontWeight: FontWeight.w700,
                                 ),
-                              ),
-                              4.verticalGap,
-                              AppText(
-                                notice.createdByEmail,
-                                style: Get.bodyMedium.w600,
                               ),
                             ],
                           ),
                         ),
+                        const Spacer(),
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 14.st,
+                          color: Get.disabledColor.withValues(alpha: 0.9),
+                        ),
+                        6.horizontalGap,
+                        AppText(
+                          DateFormat('MMMM dd, yyyy')
+                              .format(notice.publishedDate),
+                          style: Get.bodySmall.copyWith(
+                            color: Get.disabledColor.withValues(alpha: 0.9),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ],
                     ),
-                  ),
-                ],
+                    14.verticalGap,
+                    AppText(
+                      notice.title,
+                      style: Get.bodyLarge.px20.w700.copyWith(
+                        color: Get.bodyLarge.color ??
+                            (Get.isDark ? Colors.white : Colors.black87),
+                        height: 1.35,
+                      ),
+                    ),
+                    8.verticalGap,
+                    AppText(
+                      notice.createdByEmail,
+                      style: Get.bodySmall.copyWith(
+                        color: Get.disabledColor.withValues(alpha: 0.9),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              24.verticalGap,
+              AppText(
+                notice.description,
+                style: Get.bodyLarge.copyWith(
+                  color: Get.bodyLarge.color ??
+                      (Get.isDark ? Colors.white : Colors.black87),
+                  height: 1.6,
+                ),
+              ),
+              if (notice.image != null) ...[
+                24.verticalGap,
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(18).rt,
+                  child: CachedNetworkImage(
+                    imageUrl: notice.image!,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => Container(
+                      height: 220.h,
+                      color: Get.cardColor
+                          .withValues(alpha: Get.isDark ? 0.4 : 0.8),
+                      child: const Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => Container(
+                      height: 220.h,
+                      color: Get.cardColor
+                          .withValues(alpha: Get.isDark ? 0.4 : 0.8),
+                      child: Icon(
+                        Icons.error,
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+              if (notice.pdfFile != null) ...[
+                24.verticalGap,
+                OutlinedButton.icon(
+                  onPressed: () => _openPdf(context, notice.pdfFile!),
+                  icon: Icon(Icons.picture_as_pdf_rounded, size: 20.st),
+                  label: AppText(
+                    'open_pdf_document'.tr(context),
+                    style: Get.bodyMedium.w600.copyWith(
+                      color: Colors.red.shade600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    side: BorderSide(color: Colors.red.shade600, width: 1.6),
+                    foregroundColor: Colors.red.shade600,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14).rt,
+                    ),
+                  ),
+                ),
+              ],
+              24.verticalGap,
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(18.rt),
+                decoration: BoxDecoration(
+                  color: Get.cardColor,
+                  borderRadius: BorderRadius.circular(16).rt,
+                  border: Border.all(
+                    color: Get.disabledColor.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10.rt),
+                      decoration: BoxDecoration(
+                        color: Get.primaryColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12).rt,
+                      ),
+                      child: Icon(
+                        Icons.admin_panel_settings_rounded,
+                        color: Get.primaryColor,
+                        size: 20.st,
+                      ),
+                    ),
+                    12.horizontalGap,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppText(
+                            'posted_by'.tr(context),
+                            style: Get.bodySmall.copyWith(
+                              color:
+                                  Get.disabledColor.withValues(alpha: 0.9),
+                            ),
+                          ),
+                          4.verticalGap,
+                          AppText(
+                            notice.createdByEmail,
+                            style: Get.bodyMedium.w600.copyWith(
+                              color: Get.bodyMedium.color ??
+                                  (Get.isDark ? Colors.white : Colors.black87),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
