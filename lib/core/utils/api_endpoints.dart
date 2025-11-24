@@ -67,4 +67,6 @@ final class ApiEndpoints {
   static String contactDetail(int id) => "resources/contacts/$id/";
   static const String faqs = "resources/faqs/";
   static String faqDetail(int id) => "resources/faqs/$id/";
+  static const String userManuals = "resources/user-manuals/";
+  static String userManualDetail(int id) => "resources/user-manuals/$id/";
 }

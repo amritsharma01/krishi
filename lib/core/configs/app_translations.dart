@@ -161,6 +161,8 @@ class AppTranslations {
     // Marketplace
     'buy': {'en': 'Buy', 'ne': 'किन्नुहोस्'},
     'sell': {'en': 'Sell', 'ne': 'बेच्नुहोस्'},
+    'buying': {'en': 'Buying', 'ne': 'किन्ने'},
+    'selling': {'en': 'Selling', 'ne': 'बेच्ने'},
     'search_products': {
       'en': 'Search for products...',
       'ne': 'उत्पादनहरू खोज्नुहोस्...',
@@ -1008,6 +1010,11 @@ class AppTranslations {
 
     // Support Page
     'quick_contact': {'en': 'Quick Contact', 'ne': 'द्रुत सम्पर्क'},
+    'no_manuals_available': {
+      'en': 'No manuals available',
+      'ne': 'कुनै म्यानुअल उपलब्ध छैन',
+    },
+    'watch_video': {'en': 'Watch Video', 'ne': 'भिडियो हेर्नुहोस्'},
 
     // Account Page
     'user': {'en': 'User', 'ne': 'प्रयोगकर्ता'},

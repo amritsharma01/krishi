@@ -7,6 +7,8 @@ import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/resources/faqs_page.dart';
+import 'package:krishi/features/support/user_guide_page.dart';
+import 'package:krishi/features/support/contact_us_page.dart';
 import 'package:flutter/material.dart';
 
 class SupportPage extends StatelessWidget {
@@ -92,9 +94,7 @@ class SupportPage extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const FAQsPage(),
-                      ),
+                      MaterialPageRoute(builder: (context) => const FAQsPage()),
                     );
                   },
                 ),
@@ -110,24 +110,12 @@ class SupportPage extends StatelessWidget {
                     colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
                   ),
                   onTap: () {
-                    // TODO: Navigate to Contact page
-                    Get.snackbar('Contact page coming soon!');
-                  },
-                ),
-
-                12.verticalGap,
-
-                _buildSupportOption(
-                  context,
-                  title: 'report_issue',
-                  subtitle: 'report_problem',
-                  icon: Icons.bug_report_rounded,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFE53935), Color(0xFFEF5350)],
-                  ),
-                  onTap: () {
-                    // TODO: Navigate to Report Issue page
-                    Get.snackbar('Report issue page coming soon!');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ContactUsPage(),
+                      ),
+                    );
                   },
                 ),
 
@@ -142,8 +130,12 @@ class SupportPage extends StatelessWidget {
                     colors: [Color(0xFFFF6F00), Color(0xFFFF8F00)],
                   ),
                   onTap: () {
-                    // TODO: Navigate to User Guide page
-                    Get.snackbar('User guide coming soon!');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UserGuidePage(),
+                      ),
+                    );
                   },
                 ),
 

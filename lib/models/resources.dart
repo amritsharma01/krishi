@@ -375,3 +375,49 @@ class FAQ {
   }
 }
 
+// 8. User Manual Model
+class UserManual {
+  final int id;
+  final String title;
+  final String content;
+  final String category;
+  final String categoryDisplay;
+  final int order;
+  final String? image;
+  final String? videoUrl;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  UserManual({
+    required this.id,
+    required this.title,
+    required this.content,
+    required this.category,
+    required this.categoryDisplay,
+    required this.order,
+    this.image,
+    this.videoUrl,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory UserManual.fromJson(Map<String, dynamic> json) {
+    return UserManual(
+      id: json['id'] as int? ?? 0,
+      title: (json['title'] as String?) ?? '',
+      content: (json['content'] as String?) ?? '',
+      category: (json['category'] as String?) ?? '',
+      categoryDisplay: (json['category_display'] as String?) ?? '',
+      order: json['order'] as int? ?? 0,
+      image: json['image'] as String?,
+      videoUrl: json['video_url'] as String?,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
+    );
+  }
+}
+

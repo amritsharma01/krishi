@@ -852,4 +852,36 @@ class KrishiApiService {
       rethrow;
     }
   }
+
+  // ==================== User Manuals ====================
+
+  /// Get list of user manuals
+  Future<List<UserManual>> getUserManuals({
+    String? category,
+    String? search,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (category != null) queryParams['category'] = category;
+      if (search != null) queryParams['search'] = search;
+
+      final response = await apiManager.get(
+        ApiEndpoints.userManuals,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+      return _parseListResponse(response.data, UserManual.fromJson);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get single user manual
+  Future<UserManual> getUserManual(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.userManualDetail(id));
+      return UserManual.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
