@@ -75,23 +75,26 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
   Future<void> _loadOrders({bool refresh = false}) async {
     _currentPage = 1;
     _hasMore = true;
-    
+
     final cacheService = ref.read(cacheServiceProvider);
     final apiService = ref.read(krishiApiServiceProvider);
-    
+
     // Try to load from cache first (only for initial load, not refresh)
     if (!refresh) {
       final cachedOrders = widget.showSales
           ? await cacheService.getMySalesCache()
           : await cacheService.getMyPurchasesCache();
-      
+
       if (cachedOrders != null && cachedOrders.isNotEmpty) {
-        final ordersList = cachedOrders.map((json) => Order.fromJson(json)).toList();
+        final ordersList = cachedOrders
+            .map((json) => Order.fromJson(json))
+            .toList();
         if (mounted) {
           setState(() {
             orders = ordersList;
             _filterOrders();
-            isLoading = false; // Show cached data immediately, no loading spinner
+            isLoading =
+                false; // Show cached data immediately, no loading spinner
             error = null;
           });
         }
@@ -120,7 +123,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
       final result = widget.showSales
           ? await apiService.getMySalesPaginated(page: _currentPage)
           : await apiService.getMyPurchasesPaginated(page: _currentPage);
-      
+
       // Save to cache (only first page)
       if (_currentPage == 1) {
         final ordersJson = result.results.map((o) => o.toJson()).toList();
@@ -130,7 +133,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
           await cacheService.saveMyPurchasesCache(ordersJson);
         }
       }
-      
+
       // Update UI with fresh data
       if (mounted) {
         setState(() {
@@ -203,14 +206,14 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
       final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.completeOrder(order.id);
-      
+
       // Clear cache to force refresh
       if (widget.showSales) {
         await cacheService.clearMySalesCache();
       } else {
         await cacheService.clearMyPurchasesCache();
       }
-      
+
       if (!mounted) return;
       Get.snackbar('order_marked_complete'.tr(context), color: Colors.green);
       _completingOrders.remove(order.id);
@@ -409,10 +412,10 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
       },
       borderRadius: BorderRadius.circular(16).rt,
       child: Container(
-        padding: const EdgeInsets.all(16).rt,
+        padding: const EdgeInsets.all(12).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
-          borderRadius: BorderRadius.circular(16).rt,
+          borderRadius: BorderRadius.circular(20).rt,
           border: Border.all(
             color: isCompleted
                 ? bgColor
@@ -458,7 +461,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                 ),
               ],
             ),
-            8.verticalGap,
+            3.verticalGap,
             AppText(
               _dateFormat.format(order.createdAt.toLocal()),
               style: Get.bodySmall.px12.w500.copyWith(
@@ -469,8 +472,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
             Row(
               children: [
                 _buildInfoChip(
-                  icon: Icons.paid_rounded,
-                  label: '${order.totalAmountAsDouble.toStringAsFixed(2)} NPR',
+                  label: 'Rs. ${order.totalAmountAsDouble.toStringAsFixed(2)}',
                 ),
                 8.horizontalGap,
                 _buildInfoChip(
@@ -479,9 +481,9 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                 ),
               ],
             ),
-            12.verticalGap,
+            3.verticalGap,
             Divider(color: Get.disabledColor.withValues(alpha: 0.12)),
-            12.verticalGap,
+            3.verticalGap,
             InkWell(
               onTap: widget.showSales
                   ? null // Don't navigate for buyers
@@ -546,7 +548,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
               ),
             ),
             if (_showQuickAction(order)) ...[
-              16.verticalGap,
+              5.verticalGap,
               Row(
                 children: [
                   Expanded(
@@ -624,9 +626,9 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     );
   }
 
-  Widget _buildInfoChip({required IconData icon, required String label}) {
+  Widget _buildInfoChip({IconData? icon, required String label}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6).rt,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(12).rt,
@@ -635,12 +637,13 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 16.st,
-            color: Get.disabledColor.withValues(alpha: 0.7),
-          ),
-          6.horizontalGap,
+          if (icon != null)
+            Icon(
+              icon,
+              size: 16.st,
+              color: Get.disabledColor.withValues(alpha: 0.7),
+            ),
+          if (icon != null) 6.horizontalGap,
           AppText(
             label,
             style: Get.bodySmall.px12.w600.copyWith(color: Get.disabledColor),

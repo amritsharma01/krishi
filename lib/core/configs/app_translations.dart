@@ -169,10 +169,7 @@ class AppTranslations {
       'en': 'Filter by category',
       'ne': 'श्रेणीबाट छनोट गर्नुहोस्',
     },
-    'all_categories': {
-      'en': 'All categories',
-      'ne': 'सबै श्रेणीहरू',
-    },
+    'all_categories': {'en': 'All categories', 'ne': 'सबै श्रेणीहरू'},
     'add_new_product': {
       'en': 'Add New Product',
       'ne': 'नयाँ उत्पादन थप्नुहोस्',
@@ -217,7 +214,10 @@ class AppTranslations {
     },
     'add_comment': {'en': 'Add a comment...', 'ne': 'टिप्पणी थप्नुहोस्...'},
     'rating': {'en': 'Rating', 'ne': 'रेटिङ'},
-    'write_review': {'en': 'Write your review...', 'ne': 'तपाईंको समीक्षा लेख्नुहोस्...'},
+    'write_review': {
+      'en': 'Write your review...',
+      'ne': 'तपाईंको समीक्षा लेख्नुहोस्...',
+    },
     'submit_review': {'en': 'Submit Review', 'ne': 'समीक्षा पठाउनुहोस्'},
     'comment_added': {'en': 'Comment added', 'ne': 'टिप्पणी थपियो'},
     'error_adding_comment': {
@@ -643,7 +643,10 @@ class AppTranslations {
     'completed': {'en': 'Completed', 'ne': 'पूरा भयो'},
     'add_phone_hint': {'en': 'Add phone number', 'ne': 'फोन नम्बर थप्नुहोस्'},
     'add_address_hint': {'en': 'Add address', 'ne': 'ठेगाना थप्नुहोस्'},
-    'seller_information': {'en': 'Seller Information', 'ne': 'विक्रेता जानकारी'},
+    'seller_information': {
+      'en': 'Seller Information',
+      'ne': 'विक्रेता जानकारी',
+    },
     'mark_as_complete': {
       'en': 'Mark as complete',
       'ne': 'पुरा भएको चिन्ह लगाउनुहोस्',
@@ -669,19 +672,25 @@ class AppTranslations {
     'view_details': {'en': 'View Details', 'ne': 'विवरण हेर्नुहोस्'},
     'order_not_found': {'en': 'Order not found', 'ne': 'अर्डर फेला परेन'},
     'processing': {'en': 'Processing...', 'ne': 'प्रशोधन हुँदैछ...'},
-    
+
     // Order Actions
     'accept_order': {'en': 'Accept Order', 'ne': 'अर्डर स्वीकार गर्नुहोस्'},
     'cancel_order': {'en': 'Cancel Order', 'ne': 'अर्डर रद्द गर्नुहोस्'},
-    'mark_in_transit': {'en': 'Mark In Transit', 'ne': 'ट्रान्जिटमा चिन्ह लगाउनुहोस्'},
-    'mark_delivered': {'en': 'Mark Delivered', 'ne': 'डेलिभर भएको चिन्ह लगाउनुहोस्'},
+    'mark_in_transit': {
+      'en': 'Mark In Transit',
+      'ne': 'ट्रान्जिटमा चिन्ह लगाउनुहोस्',
+    },
+    'mark_delivered': {
+      'en': 'Mark Delivered',
+      'ne': 'डेलिभर भएको चिन्ह लगाउनुहोस्',
+    },
     'cancel_order_confirm': {
       'en': 'Are you sure you want to cancel this order?',
       'ne': 'के तपाईं यो अर्डर रद्द गर्न निश्चित हुनुहुन्छ?',
     },
     'yes': {'en': 'Yes', 'ne': 'हो'},
     'no': {'en': 'No', 'ne': 'होइन'},
-    
+
     // Order Status Messages
     'order_accepted': {
       'en': 'Order accepted successfully',
@@ -719,22 +728,28 @@ class AppTranslations {
       'en': 'Failed to cancel order',
       'ne': 'अर्डर रद्द गर्न असफल',
     },
-    
+
     // Order Statuses
     'accepted': {'en': 'Accepted', 'ne': 'स्वीकृत'},
     'in_transit': {'en': 'In Transit', 'ne': 'ट्रान्जिटमा'},
     'delivered': {'en': 'Delivered', 'ne': 'डेलिभर भयो'},
     'cancelled': {'en': 'Cancelled', 'ne': 'रद्द गरियो'},
-    
+
     // Contact Actions
     'call_buyer': {'en': 'Call Buyer', 'ne': 'खरीददारलाई कल गर्नुहोस्'},
     'call_seller': {'en': 'Call Seller', 'ne': 'विक्रेतालाई कल गर्नुहोस्'},
     'whatsapp': {'en': 'WhatsApp', 'ne': 'व्हाट्सएप'},
     'call_failed': {'en': 'Unable to make call', 'ne': 'कल गर्न असमर्थ'},
-    'whatsapp_failed': {'en': 'Unable to open WhatsApp', 'ne': 'व्हाट्सएप खोल्न असमर्थ'},
-    
+    'whatsapp_failed': {
+      'en': 'Unable to open WhatsApp',
+      'ne': 'व्हाट्सएप खोल्न असमर्थ',
+    },
+
     // Status Reversal
-    'mark_accepted': {'en': 'Revert to Accepted', 'ne': 'स्वीकृतमा फर्कनुहोस्'},
+    'revert_to_accepted': {
+      'en': 'Revert to Accepted',
+      'ne': 'स्वीकृतमा फर्कनुहोस्',
+    },
     'mark_pending': {'en': 'Revert to Pending', 'ne': 'पेन्डिङमा फर्कनुहोस्'},
     'cannot_revert_pending': {
       'en': 'Cannot revert to pending status',
@@ -791,9 +806,12 @@ class AppTranslations {
       'en': 'Soil testing feature coming soon!',
       'ne': 'माटो परीक्षण सुविधा छिट्टै आउँदैछ!',
     },
-    
+
     // Videos Page
-    'educational_videos': {'en': 'Educational Videos', 'ne': 'शैक्षिक भिडियोहरू'},
+    'educational_videos': {
+      'en': 'Educational Videos',
+      'ne': 'शैक्षिक भिडियोहरू',
+    },
     'all_videos': {'en': 'All Videos', 'ne': 'सबै भिडियोहरू'},
     'farming': {'en': 'Farming', 'ne': 'खेती'},
     'pest_control': {'en': 'Pest Control', 'ne': 'कीट नियन्त्रण'},
@@ -802,28 +820,58 @@ class AppTranslations {
     'storage': {'en': 'Storage', 'ne': 'भण्डारण'},
     'marketing': {'en': 'Marketing', 'ne': 'विपणन'},
     'filter_videos': {'en': 'Filter videos', 'ne': 'भिडियो फिल्टर गर्नुहोस्'},
-    'no_videos_available': {'en': 'No videos available', 'ne': 'कुनै भिडियो उपलब्ध छैन'},
-    'check_back_later_videos': {'en': 'Check back later for new content', 'ne': 'नयाँ सामग्रीको लागि पछि फेरि जाँच गर्नुहोस्'},
+    'no_videos_available': {
+      'en': 'No videos available',
+      'ne': 'कुनै भिडियो उपलब्ध छैन',
+    },
+    'check_back_later_videos': {
+      'en': 'Check back later for new content',
+      'ne': 'नयाँ सामग्रीको लागि पछि फेरि जाँच गर्नुहोस्',
+    },
     'video_url_empty': {'en': 'Video URL is empty', 'ne': 'भिडियो URL खाली छ'},
-    'invalid_video_url': {'en': 'Invalid video URL format', 'ne': 'अमान्य भिडियो URL ढाँचा'},
-    'could_not_open_video': {'en': 'Could not open video. Please check your internet connection', 'ne': 'भिडियो खोल्न सकिएन। कृपया आफ्नो इन्टरनेट जडान जाँच गर्नुहोस्'},
-    'error_opening_video': {'en': 'Error opening video', 'ne': 'भिडियो खोल्दा त्रुटि'},
+    'invalid_video_url': {
+      'en': 'Invalid video URL format',
+      'ne': 'अमान्य भिडियो URL ढाँचा',
+    },
+    'could_not_open_video': {
+      'en': 'Could not open video. Please check your internet connection',
+      'ne': 'भिडियो खोल्न सकिएन। कृपया आफ्नो इन्टरनेट जडान जाँच गर्नुहोस्',
+    },
+    'error_opening_video': {
+      'en': 'Error opening video',
+      'ne': 'भिडियो खोल्दा त्रुटि',
+    },
     'views': {'en': 'views', 'ne': 'हेराइहरू'},
-    
+
     // Emergency Contacts Page
-    'emergency_contacts': {'en': 'Emergency Contacts', 'ne': 'आपतकालीन सम्पर्कहरू'},
+    'emergency_contacts': {
+      'en': 'Emergency Contacts',
+      'ne': 'आपतकालीन सम्पर्कहरू',
+    },
     'all_contacts': {'en': 'All Contacts', 'ne': 'सबै सम्पर्कहरू'},
     'emergency': {'en': 'Emergency', 'ne': 'आपतकालीन'},
     'technical': {'en': 'Technical', 'ne': 'प्राविधिक'},
     'sales': {'en': 'Sales', 'ne': 'बिक्री'},
     'general_contact': {'en': 'General', 'ne': 'सामान्य'},
     'quick_filters': {'en': 'Quick filters', 'ne': 'द्रुत फिल्टरहरू'},
-    'no_contacts_available': {'en': 'No contacts available', 'ne': 'कुनै सम्पर्क उपलब्ध छैन'},
-    'check_back_later': {'en': 'Check back later', 'ne': 'पछि फेरि जाँच गर्नुहोस्'},
-    'could_not_make_call': {'en': 'Could not make phone call', 'ne': 'फोन कल गर्न सकिएन'},
+    'no_contacts_available': {
+      'en': 'No contacts available',
+      'ne': 'कुनै सम्पर्क उपलब्ध छैन',
+    },
+    'check_back_later': {
+      'en': 'Check back later',
+      'ne': 'पछि फेरि जाँच गर्नुहोस्',
+    },
+    'could_not_make_call': {
+      'en': 'Could not make phone call',
+      'ne': 'फोन कल गर्न सकिएन',
+    },
     'no_email_available': {'en': 'No email available', 'ne': 'इमेल उपलब्ध छैन'},
-    'could_not_send_email': {'en': 'Could not send email', 'ne': 'इमेल पठाउन सकिएन'},
-    
+    'could_not_send_email': {
+      'en': 'Could not send email',
+      'ne': 'इमेल पठाउन सकिएन',
+    },
+
     // Service Providers Page
     'service_providers': {'en': 'Service Providers', 'ne': 'सेवा प्रदायकहरू'},
     'all_services': {'en': 'All Services', 'ne': 'सबै सेवाहरू'},
@@ -833,21 +881,33 @@ class AppTranslations {
     'equipment': {'en': 'Equipment', 'ne': 'उपकरण'},
     'veterinary': {'en': 'Veterinary', 'ne': 'पशु चिकित्सा'},
     'transport': {'en': 'Transport', 'ne': 'यातायात'},
-    'filter_services': {'en': 'Filter services', 'ne': 'सेवाहरू फिल्टर गर्नुहोस्'},
-    'no_service_providers_available': {'en': 'No service providers available', 'ne': 'कुनै सेवा प्रदायक उपलब्ध छैन'},
+    'filter_services': {
+      'en': 'Filter services',
+      'ne': 'सेवाहरू फिल्टर गर्नुहोस्',
+    },
+    'no_service_providers_available': {
+      'en': 'No service providers available',
+      'ne': 'कुनै सेवा प्रदायक उपलब्ध छैन',
+    },
     'delivery_available': {'en': 'Delivery Available', 'ne': 'डेलिभरी उपलब्ध'},
     'alt_call': {'en': 'Alt. Call', 'ne': 'वैकल्पिक कल'},
-    
+
     // Experts Page
     'agri_experts': {'en': 'Agri Experts', 'ne': 'कृषि विशेषज्ञहरू'},
-    'no_experts_available': {'en': 'No experts available', 'ne': 'कुनै विशेषज्ञ उपलब्ध छैन'},
+    'no_experts_available': {
+      'en': 'No experts available',
+      'ne': 'कुनै विशेषज्ञ उपलब्ध छैन',
+    },
     'call': {'en': 'Call', 'ne': 'कल'},
     'email': {'en': 'Email', 'ne': 'इमेल'},
-    
+
     // Home Page
     'unknown': {'en': 'Unknown', 'ne': 'अज्ञात'},
     'programs': {'en': 'Programs', 'ne': 'कार्यक्रमहरू'},
-    'agricultural_development_programs': {'en': 'Agricultural development programs', 'ne': 'कृषि विकास कार्यक्रमहरू'},
+    'agricultural_development_programs': {
+      'en': 'Agricultural development programs',
+      'ne': 'कृषि विकास कार्यक्रमहरू',
+    },
     'krishi_gyaan': {'en': 'Krishi Gyan', 'ne': 'कृषि ज्ञान'},
     'farming_knowledge_home': {'en': 'Farming Knowledge', 'ne': 'खेती ज्ञान'},
     'videos': {'en': 'Videos', 'ne': 'भिडियोहरू'},
@@ -860,48 +920,75 @@ class AppTranslations {
     'tomato': {'en': 'Tomato', 'ne': 'गोलभेडा'},
     'potato': {'en': 'Potato', 'ne': 'आलु'},
     'main_services': {'en': 'Main Services', 'ne': 'मुख्य सेवाहरू'},
-    'services_directory': {'en': 'Services & Directory', 'ne': 'सेवा र निर्देशिका'},
+    'services_directory': {
+      'en': 'Services & Directory',
+      'ne': 'सेवा र निर्देशिका',
+    },
     'knowledge_base': {'en': 'Knowledge Base', 'ne': 'ज्ञान आधार'},
     'notices': {'en': 'Notices', 'ne': 'सूचनाहरू'},
-    'important_announcements': {'en': 'Important announcements', 'ne': 'महत्वपूर्ण घोषणाहरू'},
+    'important_announcements': {
+      'en': 'Important announcements',
+      'ne': 'महत्वपूर्ण घोषणाहरू',
+    },
     'coming_soon': {'en': 'Coming soon!', 'ne': 'छिट्टै आउँदैछ!'},
-    
+
     // Notices Page
-    'notices_announcements': {'en': 'Notices & Announcements', 'ne': 'सूचना र घोषणाहरू'},
+    'notices_announcements': {
+      'en': 'Notices & Announcements',
+      'ne': 'सूचना र घोषणाहरू',
+    },
     'all_notices': {'en': 'All Notices', 'ne': 'सबै सूचनाहरू'},
     'important': {'en': 'Important', 'ne': 'महत्वपूर्ण'},
     'urgent': {'en': 'Urgent', 'ne': 'तत्काल'},
     'events': {'en': 'Events', 'ne': 'घटनाहरू'},
     'training': {'en': 'Training', 'ne': 'प्रशिक्षण'},
-    'filter_notices': {'en': 'Filter notices', 'ne': 'सूचनाहरू फिल्टर गर्नुहोस्'},
-    'no_notices_available': {'en': 'No notices available', 'ne': 'कुनै सूचना उपलब्ध छैन'},
-    'check_back_later_updates': {'en': 'Check back later for updates', 'ne': 'अपडेटहरूको लागि पछि फेरि जाँच गर्नुहोस्'},
+    'filter_notices': {
+      'en': 'Filter notices',
+      'ne': 'सूचनाहरू फिल्टर गर्नुहोस्',
+    },
+    'no_notices_available': {
+      'en': 'No notices available',
+      'ne': 'कुनै सूचना उपलब्ध छैन',
+    },
+    'check_back_later_updates': {
+      'en': 'Check back later for updates',
+      'ne': 'अपडेटहरूको लागि पछि फेरि जाँच गर्नुहोस्',
+    },
     'pdf_attached': {'en': 'PDF Attached', 'ne': 'PDF संलग्न'},
     'image_attached': {'en': 'Image Attached', 'ne': 'छवि संलग्न'},
-    
+
     // Notice Detail Page
     'notice_details': {'en': 'Notice Details', 'ne': 'सूचना विवरण'},
     'could_not_open_pdf': {'en': 'Could not open PDF', 'ne': 'PDF खोल्न सकिएन'},
-    'open_pdf_document': {'en': 'Open PDF Document', 'ne': 'PDF कागजात खोल्नुहोस्'},
+    'open_pdf_document': {
+      'en': 'Open PDF Document',
+      'ne': 'PDF कागजात खोल्नुहोस्',
+    },
     'posted_by': {'en': 'Posted By', 'ne': 'द्वारा पोस्ट गरियो'},
-    
+
     // Expert Detail Page
     'qualifications': {'en': 'Qualifications', 'ne': 'योग्यताहरू'},
     'office': {'en': 'Office', 'ne': 'कार्यालय'},
     'available_days': {'en': 'Available Days', 'ne': 'उपलब्ध दिनहरू'},
     'available_hours': {'en': 'Available Hours', 'ne': 'उपलब्ध घण्टाहरू'},
     'consultation_fee': {'en': 'Consultation Fee', 'ne': 'परामर्श शुल्क'},
-    
+
     // Crop Detail Page
     'growing_duration': {'en': 'Growing Duration', 'ne': 'बढ्दो अवधि'},
     'planting_season': {'en': 'Planting Season', 'ne': 'रोपाइँ मौसम'},
     'harvesting_season': {'en': 'Harvesting Season', 'ne': 'कटाइ मौसम'},
-    'climate_requirement': {'en': 'Climate Requirement', 'ne': 'जलवायु आवश्यकता'},
+    'climate_requirement': {
+      'en': 'Climate Requirement',
+      'ne': 'जलवायु आवश्यकता',
+    },
     'soil_type': {'en': 'Soil Type', 'ne': 'माटो प्रकार'},
     'water_requirement': {'en': 'Water Requirement', 'ne': 'पानी आवश्यकता'},
     'best_practices': {'en': 'Best Practices', 'ne': 'उत्तम अभ्यासहरू'},
-    'common_pests_diseases': {'en': 'Common Pests & Diseases', 'ne': 'सामान्य कीट र रोगहरू'},
-    
+    'common_pests_diseases': {
+      'en': 'Common Pests & Diseases',
+      'ne': 'सामान्य कीट र रोगहरू',
+    },
+
     // Crop Calendar Page
     'all_crops': {'en': 'All Crops', 'ne': 'सबै बालीहरू'},
     'cereals': {'en': 'Cereals', 'ne': 'अनाजहरू'},
@@ -910,15 +997,21 @@ class AppTranslations {
     'pulses': {'en': 'Pulses', 'ne': 'दालहरू'},
     'cash_crops': {'en': 'Cash Crops', 'ne': 'नगदे बालीहरू'},
     'filter_crops': {'en': 'Filter crops', 'ne': 'बालीहरू फिल्टर गर्नुहोस्'},
-    'no_crops_available': {'en': 'No crops available', 'ne': 'कुनै बाली उपलब्ध छैन'},
-    'check_back_later_info': {'en': 'Check back later for information', 'ne': 'जानकारीको लागि पछि फेरि जाँच गर्नुहोस्'},
-    
+    'no_crops_available': {
+      'en': 'No crops available',
+      'ne': 'कुनै बाली उपलब्ध छैन',
+    },
+    'check_back_later_info': {
+      'en': 'Check back later for information',
+      'ne': 'जानकारीको लागि पछि फेरि जाँच गर्नुहोस्',
+    },
+
     // Support Page
     'quick_contact': {'en': 'Quick Contact', 'ne': 'द्रुत सम्पर्क'},
-    
+
     // Account Page
     'user': {'en': 'User', 'ne': 'प्रयोगकर्ता'},
-    
+
     // Navigation
     'market': {'en': 'Market', 'ne': 'बजार'},
   };
