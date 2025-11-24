@@ -123,7 +123,7 @@ class AppTranslations {
       'ne': 'एपसँग मद्दत प्राप्त गर्नुहोस्',
     },
     'about': {'en': 'About', 'ne': 'बारेमा'},
-    'version': {'en': 'Version 1.0.0', 'ne': 'संस्करण १.०.०'},
+    'version': {'en': 'Version', 'ne': 'संस्करण'},
     'appbar': {'en': 'Appbar', 'ne': 'एपबार'},
 
     // Homepage New
@@ -1018,6 +1018,27 @@ class AppTranslations {
 
     // Account Page
     'user': {'en': 'User', 'ne': 'प्रयोगकर्ता'},
+    'profile_picture': {'en': 'Profile Picture', 'ne': 'प्रोफाइल तस्बिर'},
+    'upload_image': {'en': 'Upload', 'ne': 'अपलोड गर्नुहोस्'},
+    'profile_picture_updated': {
+      'en': 'Profile picture updated successfully',
+      'ne': 'प्रोफाइल तस्बिर सफलतापूर्वक अपडेट भयो',
+    },
+    'profile_picture_update_failed': {
+      'en': 'Failed to update profile picture',
+      'ne': 'प्रोफाइल तस्बिर अपडेट गर्न असफल भयो',
+    },
+    'app_tagline': {
+      'en': 'Empowering farmers with technology',
+      'ne': 'प्रविधिको साथ किसानहरूलाई सशक्त बनाउँदै',
+    },
+    'about_app': {'en': 'About App', 'ne': 'एपको बारेमा'},
+    'about_app_description': {
+      'en':
+          'Krishi is a comprehensive agricultural platform designed to connect farmers, buyers, and sellers. Access expert advice, crop information, weather updates, marketplace services, and more to enhance your farming experience.',
+      'ne':
+          'कृषि एक व्यापक कृषि प्लेटफर्म हो जुन किसानहरू, खरीददारहरू र विक्रेताहरू जडान गर्न डिजाइन गरिएको छ। विशेषज्ञ सल्लाह, बाली जानकारी, मौसम अपडेट, बजार सेवाहरू र थप पहुँच गर्नुहोस् ताकि तपाईंको खेती अनुभवलाई बढाउन सकुन्।',
+    },
 
     // Navigation
     'market': {'en': 'Market', 'ne': 'बजार'},

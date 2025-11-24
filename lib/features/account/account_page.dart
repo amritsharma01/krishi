@@ -10,6 +10,7 @@ import 'package:krishi/core/services/get.dart';
 import 'package:krishi/core/services/cache_service.dart';
 import 'package:krishi/features/auth/login_page.dart';
 import 'package:krishi/features/account/edit_profile_page.dart';
+import 'package:krishi/features/account/about_page.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/button.dart';
 import 'package:krishi/features/components/dialog_box.dart';
@@ -48,7 +49,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     try {
       final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
-      
+
       // Try to load from cache first
       final cachedProfile = await cacheService.getUserProfileCache();
       if (cachedProfile != null) {
@@ -60,13 +61,13 @@ class _AccountPageState extends ConsumerState<AccountPage> {
           });
         }
       }
-      
+
       // Fetch fresh data from API
       final user = await apiService.getCurrentUser();
-      
+
       // Save to cache
       await cacheService.saveUserProfileCache(user.toJson());
-      
+
       if (mounted) {
         setState(() {
           currentUser = user;
@@ -106,12 +107,12 @@ class _AccountPageState extends ConsumerState<AccountPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Profile Card
                   _buildProfileCard(),
 
-                  24.verticalGap,
+                  12.verticalGap,
 
                   // App Settings Section
                   AppText(
@@ -240,22 +241,6 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                   12.verticalGap,
 
                   SettingsTile(
-                    icon: Icons.help_outline,
-                    title: 'help_support'.tr(context),
-                    subtitle: 'get_help'.tr(context),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16.st,
-                      color: Get.disabledColor.o5,
-                    ),
-                    onTap: () {
-                      // TODO: Navigate to help
-                    },
-                  ),
-
-                  12.verticalGap,
-
-                  SettingsTile(
                     icon: Icons.info_outline,
                     title: 'about'.tr(context),
                     subtitle: 'version'.tr(context),
@@ -265,7 +250,12 @@ class _AccountPageState extends ConsumerState<AccountPage> {
                       color: Get.disabledColor.o5,
                     ),
                     onTap: () {
-                      // TODO: Navigate to about
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AboutPage(),
+                        ),
+                      );
                     },
                   ),
 
@@ -308,7 +298,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     if (isLoading) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(24).rt,
+        padding: const EdgeInsets.all(16).rt,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -388,117 +378,108 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     }
 
     final profileImage = currentUser?.profile?.profileImage;
-    final fullName = currentUser?.profile?.fullName ?? currentUser?.email ?? 'user'.tr(context);
+    final fullName =
+        currentUser?.profile?.fullName ??
+        currentUser?.email ??
+        'user'.tr(context);
     final email = currentUser?.email ?? '';
     final phone = currentUser?.profile?.phoneNumber;
     final address = currentUser?.profile?.address;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20).rt,
+      padding: EdgeInsets.all(24.rt),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary,
-            AppColors.primary.withValues(alpha: 0.85),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        color: Get.cardColor,
+        borderRadius: BorderRadius.circular(24).rt,
+        border: Border.all(
+          color: Get.disabledColor.withValues(alpha: 0.1),
+          width: 1,
         ),
-        borderRadius: BorderRadius.circular(20).rt,
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.25),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
-            offset: const Offset(0, 8),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
-          Row(
-            children: [
-              _buildProfileAvatar(profileImage),
-              16.horizontalGap,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+          _buildProfileAvatar(profileImage),
+          10.verticalGap,
+          AppText(
+            fullName,
+            style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          8.verticalGap,
+          AppText(
+            email,
+            style: Get.bodyMedium.px12.copyWith(
+              color: Get.disabledColor.withValues(alpha: 0.7),
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (phone != null || address != null) ...[
+            20.verticalGap,
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16.rt, vertical: 12.rt),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16).rt,
+              ),
+              child: Column(
+                children: [
+                  if (phone != null) ...[
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Expanded(
+                        Icon(
+                          Icons.phone_outlined,
+                          size: 16.st,
+                          color: AppColors.primary,
+                        ),
+                        8.horizontalGap,
+                        AppText(
+                          phone,
+                          style: Get.bodyMedium.px12.w500.copyWith(
+                            color: Get.disabledColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (address != null) 5.verticalGap,
+                  ],
+                  if (address != null)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.location_on_outlined,
+                          size: 16.st,
+                          color: AppColors.primary,
+                        ),
+                        8.horizontalGap,
+                        Flexible(
                           child: AppText(
-                            fullName,
-                            style: Get.bodyLarge.px18.w700.copyWith(
-                              color: AppColors.white,
+                            address,
+                            style: Get.bodyMedium.px12.w500.copyWith(
+                              color: Get.disabledColor,
                             ),
-                            maxLines: 1,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (currentUser != null)
-                          Material(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            shape: const CircleBorder(),
-                            child: InkWell(
-                              onTap: () async {
-                                final updated = await Get.to(
-                                  EditProfilePage(user: currentUser!),
-                                );
-                                if (updated == true) {
-                                  _loadUserProfile();
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(20).rt,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8).rt,
-                                child: Icon(
-                                  Icons.edit_outlined,
-                                  color: AppColors.white,
-                                  size: 18.st,
-                                ),
-                              ),
-                            ),
-                          ),
                       ],
                     ),
-                    6.verticalGap,
-                    AppText(
-                      email,
-                      style: Get.bodyMedium.px13.copyWith(
-                        color: AppColors.white.withValues(alpha: 0.9),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (phone != null || address != null) ...[
-            16.verticalGap,
-            Row(
-              children: [
-                if (phone != null) ...[
-                  Expanded(
-                    child: _buildInfoPill(
-                      icon: Icons.phone_outlined,
-                      label: phone,
-                      muted: false,
-                    ),
-                  ),
-                  if (address != null) 8.horizontalGap,
                 ],
-                if (address != null)
-                  Expanded(
-                    child: _buildInfoPill(
-                      icon: Icons.location_on_outlined,
-                      label: address,
-                      muted: false,
-                    ),
-                  ),
-              ],
+              ),
             ),
           ],
         ],
@@ -507,30 +488,39 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   }
 
   Widget _buildProfileAvatar(String? imagePath) {
-    final size = 72.rt;
+    final size = 150.rt;
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 3),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.2),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
+            color: AppColors.primary.withValues(alpha: 0.15),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
           ),
         ],
       ),
       child: ClipOval(
-        child: imagePath != null
+        child: imagePath != null && imagePath.isNotEmpty
             ? Image.network(
                 Get.imageUrl(imagePath),
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(),
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
-                  return const Center(child: CircularProgressIndicator(color: Colors.white));
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                      strokeWidth: 2,
+                    ),
+                  );
                 },
               )
             : _buildAvatarPlaceholder(),
@@ -540,46 +530,20 @@ class _AccountPageState extends ConsumerState<AccountPage> {
 
   Widget _buildAvatarPlaceholder() {
     return Container(
-      color: AppColors.white.withValues(alpha: 0.15),
-      child: Icon(
-        Icons.person_outline_rounded,
-        color: AppColors.white.withValues(alpha: 0.8),
-        size: 38.st,
-      ),
-    );
-  }
-
-  Widget _buildInfoPill({
-    required IconData icon,
-    required String label,
-    bool muted = false,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8).rt,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(12).rt,
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.15),
+            AppColors.primary.withValues(alpha: 0.08),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            color: AppColors.white,
-            size: 14.st,
-          ),
-          6.horizontalGap,
-          Flexible(
-            child: AppText(
-              label,
-              style: Get.bodySmall.px11.w600.copyWith(
-                color: AppColors.white,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
+      child: Icon(
+        Icons.person_rounded,
+        color: AppColors.primary.withValues(alpha: 0.6),
+        size: 50.st,
       ),
     );
   }
