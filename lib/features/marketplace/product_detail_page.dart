@@ -181,17 +181,19 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   }
 
   Future<void> _submitReview() async {
-    if (_reviewCommentController.text.trim().length < 10) {
+    final comment = _reviewCommentController.text.trim();
+    if (comment.isEmpty) {
       Get.snackbar('review_too_short'.tr(context), color: Colors.red);
       return;
     }
+    final rating = _rating.clamp(1, 5);
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.addReview(
         productId: widget.product.id,
-        rating: _rating,
-        comment: _reviewCommentController.text.trim(),
+        rating: rating,
+        comment: comment,
       );
       _reviewCommentController.clear();
       _rating = 5;

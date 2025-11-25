@@ -16,8 +16,10 @@ import 'package:krishi/features/resources/crop_calendar_page.dart';
 import 'package:krishi/features/resources/emergency_contacts_page.dart';
 import 'package:krishi/features/resources/experts_page.dart';
 import 'package:krishi/features/resources/notices_page.dart';
+import 'package:krishi/features/resources/programs_page.dart';
 import 'package:krishi/features/resources/service_providers_page.dart';
 import 'package:krishi/features/resources/videos_page.dart';
+import 'package:krishi/features/resources/market_prices_page.dart';
 import 'package:krishi/features/seller/seller_profile_page.dart';
 import 'package:krishi/features/soil_testing/soil_testing_page.dart';
 import 'package:krishi/features/components/app_text.dart';
@@ -26,6 +28,8 @@ import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/components/notification_icon.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/models/weather.dart';
+import 'package:krishi/models/resources.dart';
+import 'package:krishi/features/notifications/providers/notifications_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -41,17 +45,24 @@ class _HomePageState extends ConsumerState<HomePage> {
   List<Product> trendingProducts = [];
   int receivedOrdersCount = 0;
   int placedOrdersCount = 0;
+  List<MarketPrice> marketPrices = [];
   bool isLoadingWeather = true;
   bool isLoadingProducts = true;
   bool isLoadingOrders = true;
+  bool isLoadingMarketPrices = true;
   String? weatherError;
   String? productsError;
   String? ordersError;
+  String? marketPricesError;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadData();
+      }
+    });
   }
 
   Future<void> _loadData() async {
@@ -59,6 +70,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       _loadWeather(),
       _loadTrendingProducts(),
       _loadOrdersCounts(),
+      _loadMarketPrices(),
+      ref.read(unreadNotificationsProvider.notifier).refresh(),
     ]);
   }
 
@@ -172,6 +185,34 @@ class _HomePageState extends ConsumerState<HomePage> {
         setState(() {
           productsError = e.toString();
           isLoadingProducts = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMarketPrices() async {
+    setState(() {
+      isLoadingMarketPrices = true;
+      marketPricesError = null;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final response = await apiService.getMarketPrices(
+        page: 1,
+        ordering: '-updated_at',
+      );
+      if (mounted) {
+        setState(() {
+          marketPrices = response.results.take(4).toList();
+          isLoadingMarketPrices = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          marketPricesError = e.toString();
+          isLoadingMarketPrices = false;
         });
       }
     }
@@ -756,7 +797,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             end: Alignment.bottomRight,
           ),
           onTap: () {
-            Get.snackbar('coming_soon'.tr(context));
+            Get.to(const ProgramsPage());
           },
         ),
       ],
@@ -1097,10 +1138,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
             ),
             GestureDetector(
-              onTap: () {
-                // TODO: Navigate to all market prices
-                Get.snackbar('Coming soon!');
-              },
+              onTap: () => Get.to(const MarketPricesPage()),
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -1145,82 +1183,162 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ],
           ),
+          child: isLoadingMarketPrices
+              ? const Center(child: CircularProgressIndicator())
+              : marketPricesError != null
+                  ? _buildMarketPricesError()
+                  : marketPrices.isEmpty
+                      ? _buildMarketPricesEmpty()
+                      : Column(
+                          children: [
+                            for (int i = 0; i < marketPrices.length; i++) ...[
+                              _buildMarketPriceRow(marketPrices[i]),
+                              if (i != marketPrices.length - 1)
+                                Divider(
+                                  color: Get.disabledColor.withValues(alpha: 0.1),
+                                  height: 20,
+                                ),
+                            ],
+                          ],
+                        ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMarketPriceRow(MarketPrice price) {
+    final formattedPrice = _formatMarketPrice(price.price);
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(10).rt,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(12).rt,
+          ),
+          child: Icon(
+            Icons.shopping_cart_rounded,
+            color: AppColors.primary,
+            size: 20.st,
+          ),
+        ),
+        12.horizontalGap,
+        Expanded(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildPriceItem(
-                context,
-                'rice'.tr(context),
-                'NPR 45/kg',
-                Icons.rice_bowl_rounded,
-                Colors.orange,
+              AppText(
+                price.name,
+                style: Get.bodyMedium.px15.w700.copyWith(
+                  color: Get.disabledColor,
+                ),
               ),
-              Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
-              _buildPriceItem(
-                context,
-                'wheat'.tr(context),
-                'NPR 38/kg',
-                Icons.grain_rounded,
-                Colors.amber,
-              ),
-              Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
-              _buildPriceItem(
-                context,
-                'tomato'.tr(context),
-                'NPR 60/kg',
-                Icons.local_pizza_rounded,
-                Colors.red,
-              ),
-              Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
-              _buildPriceItem(
-                context,
-                'potato'.tr(context),
-                'NPR 35/kg',
-                Icons.emoji_food_beverage_rounded,
-                Colors.brown,
+              4.verticalGap,
+              Row(
+                children: [
+                  Icon(
+                    Icons.category_rounded,
+                    size: 12.st,
+                    color: Get.disabledColor.withValues(alpha: 0.7),
+                  ),
+                  4.horizontalGap,
+                  AppText(
+                    price.categoryDisplay.isNotEmpty
+                        ? price.categoryDisplay
+                        : 'market_category_other'.tr(context),
+                    style: Get.bodySmall.px11.w500.copyWith(
+                      color: Get.disabledColor.withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
               ),
             ],
+          ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            AppText(
+              formattedPrice,
+              style: Get.bodyMedium.px15.w800.copyWith(
+                color: AppColors.primary,
+              ),
+            ),
+            2.verticalGap,
+            AppText(
+              '/${price.unit}',
+              style: Get.bodySmall.px11.w500.copyWith(
+                color: Get.disabledColor.withValues(alpha: 0.7),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMarketPricesError() {
+    return Column(
+      children: [
+        AppText(
+          'market_prices_error'.tr(context),
+          style: Get.bodyMedium.copyWith(
+            color: Colors.redAccent,
+            fontWeight: FontWeight.w600,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        12.verticalGap,
+        ElevatedButton(
+          onPressed: _loadMarketPrices,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12).rt,
+            ),
+          ),
+          child: AppText(
+            'retry'.tr(context),
+            style: Get.bodyMedium.copyWith(color: Colors.white),
           ),
         ),
       ],
     );
   }
 
-  // Price Item Widget
-  Widget _buildPriceItem(
-    BuildContext context,
-    String item,
-    String price,
-    IconData icon,
-    Color color,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8).rt,
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8).rt,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10).rt,
-            ),
-            child: Icon(icon, color: color, size: 24.st),
+  Widget _buildMarketPricesEmpty() {
+    return Column(
+      children: [
+        Icon(
+          Icons.bar_chart_rounded,
+          color: Get.disabledColor.withValues(alpha: 0.6),
+          size: 40.st,
+        ),
+        8.verticalGap,
+        AppText(
+          'no_market_prices'.tr(context),
+          style: Get.bodyMedium.px14.w600.copyWith(
+            color: Get.disabledColor,
           ),
-          12.horizontalGap,
-          Expanded(
-            child: AppText(
-              item,
-              style: Get.bodyMedium.px14.w600.copyWith(
-                color: Get.disabledColor,
-              ),
-            ),
+          textAlign: TextAlign.center,
+        ),
+        4.verticalGap,
+        AppText(
+          'market_prices_empty_state_subtitle'.tr(context),
+          style: Get.bodySmall.copyWith(
+            color: Get.disabledColor.withValues(alpha: 0.7),
           ),
-          AppText(
-            price,
-            style: Get.bodyMedium.px14.w700.copyWith(color: AppColors.primary),
-          ),
-        ],
-      ),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
+  }
+
+  String _formatMarketPrice(double price) {
+    if (price == price.roundToDouble()) {
+      return price.toStringAsFixed(0);
+    }
+    return price.toStringAsFixed(2);
   }
 
   // ignore: unused_element

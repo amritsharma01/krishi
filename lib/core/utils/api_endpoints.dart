@@ -69,4 +69,26 @@ final class ApiEndpoints {
   static String faqDetail(int id) => "resources/faqs/$id/";
   static const String userManuals = "resources/user-manuals/";
   static String userManualDetail(int id) => "resources/user-manuals/$id/";
+  static const String programs = "resources/programs/";
+  static String programDetail(int id) => "resources/programs/$id/";
+  static const String marketPrices = "resources/market-prices/";
+  static String marketPriceDetail(int id) => "resources/market-prices/$id/";
+  static const String soilTests = "resources/soil-tests/";
+  static String soilTestDetail(int id) => "resources/soil-tests/$id/";
+  static String orderUpdateContactDetails(int id) =>
+      "orders/$id/update_contact_details/";
+
+  // Notifications
+  static const String notifications = "notifications/";
+  static String notificationDetail(int id) => "notifications/$id/";
+  static const String notificationsUnread = "notifications/unread/";
+  static const String notificationsUnreadCount = "notifications/unread_count/";
+  static const String notificationsMarkAllAsRead =
+      "notifications/mark_all_as_read/";
+  static const String notificationsDeleteAllRead =
+      "notifications/delete_all_read/";
+  static String notificationMarkAsRead(int id) =>
+      "notifications/$id/mark_as_read/";
+  static String notificationDelete(int id) =>
+      "notifications/$id/delete_notification/";
 }

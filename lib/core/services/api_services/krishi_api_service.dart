@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:krishi/core/services/api_services/api_services.dart';
 import 'package:krishi/core/utils/api_endpoints.dart';
+import 'package:krishi/models/app_notification.dart';
 import 'package:krishi/models/article.dart';
 import 'package:krishi/models/cart.dart';
 import 'package:krishi/models/category.dart';
@@ -573,6 +574,27 @@ class KrishiApiService {
     }
   }
 
+  Future<Order> updateOrderContactDetails({
+    required int orderId,
+    required String buyerName,
+    required String buyerAddress,
+    required String buyerPhoneNumber,
+  }) async {
+    try {
+      final response = await apiManager.patch(
+        ApiEndpoints.orderUpdateContactDetails(orderId),
+        data: {
+          'buyer_name': buyerName,
+          'buyer_address': buyerAddress,
+          'buyer_phone_number': buyerPhoneNumber,
+        },
+      );
+      return Order.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   /// Get my purchases (orders where user is the buyer)
   Future<PaginatedResponse<Order>> getMyPurchasesPaginated({
     int page = 1,
@@ -880,6 +902,212 @@ class KrishiApiService {
     try {
       final response = await apiManager.get(ApiEndpoints.userManualDetail(id));
       return UserManual.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ==================== Programs ====================
+
+  Future<PaginatedResponse<Program>> getPrograms({
+    int page = 1,
+    String? search,
+    String? ordering,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{'page': page};
+      final trimmedSearch = search?.trim();
+      final trimmedOrdering = ordering?.trim();
+      if (trimmedSearch != null && trimmedSearch.isNotEmpty) {
+        queryParams['search'] = trimmedSearch;
+      }
+      if (trimmedOrdering != null && trimmedOrdering.isNotEmpty) {
+        queryParams['ordering'] = trimmedOrdering;
+      }
+
+      final response = await apiManager.get(
+        ApiEndpoints.programs,
+        queryParameters: queryParams,
+      );
+      return _parsePaginatedResponse(response.data, Program.fromJson);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<Program> getProgram(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.programDetail(id));
+      return Program.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ==================== Market Prices ====================
+
+  Future<PaginatedResponse<MarketPrice>> getMarketPrices({
+    int page = 1,
+    String? category,
+    String? search,
+    String? ordering,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{'page': page};
+      final trimmedSearch = search?.trim();
+      final trimmedOrdering = ordering?.trim();
+      final trimmedCategory = category?.trim();
+
+      if (trimmedSearch != null && trimmedSearch.isNotEmpty) {
+        queryParams['search'] = trimmedSearch;
+      }
+      if (trimmedOrdering != null && trimmedOrdering.isNotEmpty) {
+        queryParams['ordering'] = trimmedOrdering;
+      }
+      if (trimmedCategory != null && trimmedCategory.isNotEmpty && trimmedCategory != 'all') {
+        queryParams['category'] = trimmedCategory;
+      }
+
+      final response = await apiManager.get(
+        ApiEndpoints.marketPrices,
+        queryParameters: queryParams,
+      );
+      return _parsePaginatedResponse(response.data, MarketPrice.fromJson);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<MarketPrice> getMarketPrice(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.marketPriceDetail(id));
+      return MarketPrice.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ==================== Soil Tests ====================
+
+  Future<PaginatedResponse<SoilTest>> getSoilTests({
+    int page = 1,
+    String? search,
+    String? ordering,
+  }) async {
+    try {
+      final queryParams = <String, dynamic>{'page': page};
+      final trimmedSearch = search?.trim();
+      final trimmedOrdering = ordering?.trim();
+      if (trimmedSearch != null && trimmedSearch.isNotEmpty) {
+        queryParams['search'] = trimmedSearch;
+      }
+      if (trimmedOrdering != null && trimmedOrdering.isNotEmpty) {
+        queryParams['ordering'] = trimmedOrdering;
+      }
+      final response = await apiManager.get(
+        ApiEndpoints.soilTests,
+        queryParameters: queryParams,
+      );
+      return _parsePaginatedResponse(response.data, SoilTest.fromJson);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<SoilTest> getSoilTest(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.soilTestDetail(id));
+      return SoilTest.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // ==================== Notifications ====================
+
+  Future<PaginatedResponse<AppNotification>> getNotifications({
+    int page = 1,
+    bool unreadOnly = false,
+  }) async {
+    try {
+      final response = await apiManager.get(
+        unreadOnly
+            ? ApiEndpoints.notificationsUnread
+            : ApiEndpoints.notifications,
+        queryParameters: {'page': page},
+      );
+      return _parsePaginatedResponse(
+        response.data,
+        (json) => AppNotification.fromJson(json),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<AppNotification> getNotification(int id) async {
+    try {
+      final response =
+          await apiManager.get(ApiEndpoints.notificationDetail(id));
+      return AppNotification.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<int> getUnreadNotificationsCount() async {
+    try {
+      final response =
+          await apiManager.get(ApiEndpoints.notificationsUnreadCount);
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        if (data['count'] is int) return data['count'] as int;
+        if (data['unread_count'] is int) return data['unread_count'] as int;
+        if (data['results'] is List) {
+          return (data['results'] as List).length;
+        }
+      }
+      if (data is int) return data;
+      return 0;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<AppNotification> markNotificationAsRead(int id) async {
+    try {
+      final response = await apiManager.post(
+        ApiEndpoints.notificationMarkAsRead(id),
+        data: {'is_read': true},
+      );
+      return AppNotification.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> markAllNotificationsAsRead() async {
+    try {
+      await apiManager.post(
+        ApiEndpoints.notificationsMarkAllAsRead,
+        data: {'is_read': true},
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteNotification(int id) async {
+    try {
+      await apiManager.delete(ApiEndpoints.notificationDelete(id));
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> deleteAllReadNotifications() async {
+    try {
+      await apiManager.delete(ApiEndpoints.notificationsDeleteAllRead);
     } catch (e) {
       rethrow;
     }

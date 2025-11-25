@@ -117,6 +117,63 @@ class AppTranslations {
       'en': 'Manage notification settings',
       'ne': 'सूचना सेटिङहरू व्यवस्थापन गर्नुहोस्',
     },
+    'no_notifications': {
+      'en': 'No notifications yet',
+      'ne': 'अहिलेसम्म कुनै सूचना छैन',
+    },
+    'no_notifications_subtitle': {
+      'en': 'You are all caught up. Check back later for updates.',
+      'ne': 'तपाईं सबै अपडेटमा हुनुहुन्छ। पछि फेरि जाँच गर्नुहोस्।',
+    },
+    'mark_all_as_read': {
+      'en': 'Mark all as read',
+      'ne': 'सबैलाई पढिएको चिन्ह लगाउनुहोस्',
+    },
+    'delete_read_notifications': {
+      'en': 'Delete read notifications',
+      'ne': 'पढिएका सूचनाहरू हटाउनुहोस्',
+    },
+    'delete_all_notifications': {
+      'en': 'Delete all notifications',
+      'ne': 'सबै सूचनाहरू हटाउनुहोस्',
+    },
+    'delete_all_notifications_warning': {
+      'en': 'This will permanently remove all notifications. Continue?',
+      'ne': 'यसले सबै सूचनाहरू स्थायी रूपमा हटाउँछ। जारी राख्नुहुन्छ?',
+    },
+    'notifications_marked_read': {
+      'en': 'All notifications marked as read',
+      'ne': 'सबै सूचनाहरू पढिएको रूपमा चिन्हित गरियो',
+    },
+    'notification_marked_read': {
+      'en': 'Notification marked as read',
+      'ne': 'सूचना पढिएको रूपमा चिन्हित गरियो',
+    },
+    'notifications_cleared': {
+      'en': 'Read notifications cleared',
+      'ne': 'पढिएका सूचनाहरू हटाइयो',
+    },
+    'notification_deleted': {
+      'en': 'Notification deleted',
+      'ne': 'सूचना हटाइयो',
+    },
+    'failed_to_load_notifications': {
+      'en': 'Failed to load notifications',
+      'ne': 'सूचनाहरू लोड गर्न असफल',
+    },
+    'failed_to_mark_notification': {
+      'en': 'Failed to mark notification as read',
+      'ne': 'सूचना पढिएको चिन्ह लगाउन असफल',
+    },
+    'failed_to_delete_notification': {
+      'en': 'Failed to delete notification',
+      'ne': 'सूचना हटाउन असफल',
+    },
+    'mark_as_read': {
+      'en': 'Mark as read',
+      'ne': 'पढिएको चिन्ह लगाउनुहोस्',
+    },
+    'load_more': {'en': 'Load more', 'ne': 'अझ थप लोड गर्नुहोस्'},
     'help_support': {'en': 'Help & Support', 'ne': 'मद्दत र समर्थन'},
     'get_help': {
       'en': 'Get help with the app',
@@ -227,8 +284,8 @@ class AppTranslations {
       'ne': 'टिप्पणी थप्दा त्रुटि भयो',
     },
     'review_too_short': {
-      'en': 'Review is too short (min 10 characters)',
-      'ne': 'समीक्षा धेरै छोटो छ (कम्तिमा १० अक्षर)',
+      'en': 'Please write a short review before submitting.',
+      'ne': 'पठाउनुअघि कृपया छोटो समीक्षा लेख्नुहोस्।',
     },
     'review_added': {'en': 'Review added', 'ne': 'समीक्षा थपियो'},
     'must_purchase_to_review': {
@@ -661,6 +718,23 @@ class AppTranslations {
       'en': 'Failed to mark order as complete',
       'ne': 'अर्डर पूरा भएको चिन्ह लगाउन असफल',
     },
+    'edit_order': {'en': 'Edit order', 'ne': 'अर्डर सम्पादन गर्नुहोस्'},
+    'update_contact_details': {
+      'en': 'Update contact details',
+      'ne': 'सम्पर्क विवरण अद्यावधिक गर्नुहोस्',
+    },
+    'buyer_name_label': {'en': 'Buyer name', 'ne': 'क्रेताको नाम'},
+    'buyer_address_label': {'en': 'Delivery address', 'ne': 'डेलिभरी ठेगाना'},
+    'buyer_phone_label': {'en': 'Phone number', 'ne': 'फोन नम्बर'},
+    'save_changes': {'en': 'Save changes', 'ne': 'परिवर्तनहरू सुरक्षित गर्नुहोस्'},
+    'contact_update_success': {
+      'en': 'Order contact details updated',
+      'ne': 'अर्डरको सम्पर्क विवरण अद्यावधिक भयो',
+    },
+    'contact_update_failed': {
+      'en': 'Could not update contact details',
+      'ne': 'सम्पर्क विवरण अद्यावधिक गर्न सकिएन',
+    },
 
     // Order Status and Actions
     'order_details': {'en': 'Order Details', 'ne': 'अर्डर विवरण'},
@@ -910,6 +984,36 @@ class AppTranslations {
       'en': 'Agricultural development programs',
       'ne': 'कृषि विकास कार्यक्रमहरू',
     },
+    'programs_intro': {
+      'en':
+          'Discover active government programs and submit your interest via official forms.',
+      'ne':
+          'सक्रिय सरकारी कार्यक्रमहरू खोज्नुहोस् र आधिकारिक फारम मार्फत आफ्नो रुचि पठाउनुहोस्।',
+    },
+    'search_programs': {
+      'en': 'Search programs',
+      'ne': 'कार्यक्रम खोज्नुहोस्',
+    },
+    'no_programs_available': {
+      'en': 'No programs available right now',
+      'ne': 'हाल कुनै कार्यक्रम उपलब्ध छैन',
+    },
+    'programs_empty_state_subtitle': {
+      'en': 'Check back soon for upcoming opportunities.',
+      'ne': 'आउँदै गरेका अवसरहरूका लागि छिट्टै फेरि जाँच्च गर्नुहोस्।',
+    },
+    'failed_to_load_programs': {
+      'en': 'Failed to load programs',
+      'ne': 'कार्यक्रम लोड गर्न असफल',
+    },
+    'apply_now': {
+      'en': 'Apply now',
+      'ne': 'अहिले आवेदन दिनुहोस्',
+    },
+    'failed_to_open_form': {
+      'en': 'Could not open form link',
+      'ne': 'फारम लिङ्क खोल्न सकिएन',
+    },
     'krishi_gyaan': {'en': 'Krishi Gyan', 'ne': 'कृषि ज्ञान'},
     'farming_knowledge_home': {'en': 'Farming Knowledge', 'ne': 'खेती ज्ञान'},
     'videos': {'en': 'Videos', 'ne': 'भिडियोहरू'},
@@ -917,6 +1021,67 @@ class AppTranslations {
     'crop_calendar': {'en': 'Crop Calendar', 'ne': 'बाली पात्रो'},
     'planting_guide': {'en': 'Planting Guide', 'ne': 'रोपाइँ गाइड'},
     'market_prices': {'en': 'Market Prices', 'ne': 'बजार मूल्य'},
+    'market_prices_overview': {
+      'en': 'Daily updates on regional market rates',
+      'ne': 'क्षेत्रीय बजार दरहरूको दैनिक अद्यावधिक',
+    },
+    'market_prices_intro': {
+      'en':
+          'Track the latest buying prices shared by cooperatives and marketplaces.',
+      'ne': 'सहकारी र बजारले साझेदारी गरेका पछिल्ला खरिद मूल्यहरू ट्र्याक गर्नुहोस्।',
+    },
+    'search_market_prices': {
+      'en': 'Search market prices',
+      'ne': 'बजार मूल्य खोज्नुहोस्',
+    },
+    'no_market_prices': {
+      'en': 'No market prices available right now',
+      'ne': 'हाल बजार मूल्य उपलब्ध छैन',
+    },
+    'market_prices_empty_state_subtitle': {
+      'en': 'New price updates will appear here soon.',
+      'ne': 'नयाँ मूल्य अद्यावधिकहरू छिट्टै यहाँ देखिनेछन्।',
+    },
+    'failed_to_load_market_prices': {
+      'en': 'Failed to load market prices',
+      'ne': 'बजार मूल्य लोड गर्न असफल',
+    },
+    'market_prices_error': {
+      'en': 'Unable to load prices. Please try again.',
+      'ne': 'मूल्य लोड गर्न सकिएन। कृपया फेरि प्रयास गर्नुहोस्।',
+    },
+    'market_category_other': {'en': 'Other', 'ne': 'अन्य'},
+    'updated_on': {'en': 'Updated on', 'ne': 'अद्यावधिक मिति'},
+    'soil_testing_centers': {
+      'en': 'Nearby soil testing centers',
+      'ne': 'नजिकैका माटो परीक्षण केन्द्रहरू',
+    },
+    'soil_testing_centers_subtitle': {
+      'en': 'Book a visit or call the municipal lab to schedule testing.',
+      'ne': 'माटो परीक्षणका लागि नगरपालिका प्रयोगशालासँग सम्पर्क वा भेट तय गर्नुहोस्।',
+    },
+    'search_soil_tests': {
+      'en': 'Search by municipality or name',
+      'ne': 'नगरपालिका वा नामबाट खोज्नुहोस्',
+    },
+    'failed_to_load_soil_tests': {
+      'en': 'Failed to load soil test centers',
+      'ne': 'माटो परीक्षण केन्द्रहरू लोड गर्न असफल',
+    },
+    'no_soil_tests': {
+      'en': 'No soil testing centers found',
+      'ne': 'माटो परीक्षण केन्द्र फेला परेन',
+    },
+    'soil_tests_empty_state_subtitle': {
+      'en': 'Try adjusting your search or check back later.',
+      'ne': 'तपाईंको खोज बदल्नुहोस् वा पछि फेरि प्रयास गर्नुहोस्।',
+    },
+    'contact_person': {'en': 'Contact person', 'ne': 'सम्पर्क व्यक्ति'},
+    'not_available': {'en': 'Not available', 'ne': 'उपलब्ध छैन'},
+    'testing_cost': {'en': 'Testing cost', 'ne': 'परीक्षण लागत'},
+    'duration_label': {'en': 'Duration', 'ne': 'अवधि'},
+    'requirements_label': {'en': 'Requirements', 'ne': 'आवश्यक सामग्री'},
+    'call_now': {'en': 'Call now', 'ne': 'अहिल्यै कल गर्नुहोस्'},
     'rice': {'en': 'Rice', 'ne': 'चामल'},
     'wheat': {'en': 'Wheat', 'ne': 'गहुँ'},
     'tomato': {'en': 'Tomato', 'ne': 'गोलभेडा'},

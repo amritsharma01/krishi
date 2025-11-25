@@ -421,3 +421,144 @@ class UserManual {
   }
 }
 
+// 9. Program Model
+class Program {
+  final int id;
+  final String title;
+  final String description;
+  final String googleFormLink;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  Program({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.googleFormLink,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory Program.fromJson(Map<String, dynamic> json) {
+    DateTime _parseDate(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is DateTime) return value;
+      return DateTime.tryParse(value.toString()) ?? DateTime.now();
+    }
+
+    return Program(
+      id: json['id'] as int? ?? 0,
+      title: (json['title'] as String?) ?? '',
+      description: (json['description'] as String?) ?? '',
+      googleFormLink: (json['google_form_link'] as String?) ?? '',
+      createdAt: _parseDate(json['created_at']),
+      updatedAt: _parseDate(json['updated_at']),
+    );
+  }
+}
+
+// 9. Market Price Model
+class MarketPrice {
+  final int id;
+  final String category;
+  final String categoryDisplay;
+  final String name;
+  final double price;
+  final String unit;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  MarketPrice({
+    required this.id,
+    required this.category,
+    required this.categoryDisplay,
+    required this.name,
+    required this.price,
+    required this.unit,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory MarketPrice.fromJson(Map<String, dynamic> json) {
+    double _parsePrice(dynamic value) {
+      if (value == null) return 0;
+      if (value is num) return value.toDouble();
+      return double.tryParse(value.toString()) ?? 0;
+    }
+
+    DateTime _parseDate(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is DateTime) return value;
+      return DateTime.tryParse(value.toString()) ?? DateTime.now();
+    }
+
+    return MarketPrice(
+      id: json['id'] as int? ?? 0,
+      category: (json['category'] as String?) ?? '',
+      categoryDisplay: (json['category_display'] as String?) ?? '',
+      name: (json['name'] as String?) ?? '',
+      price: _parsePrice(json['price']),
+      unit: (json['unit'] as String?) ?? '',
+      createdAt: _parseDate(json['created_at']),
+      updatedAt: _parseDate(json['updated_at']),
+    );
+  }
+}
+
+// 10. Soil Test Center
+class SoilTest {
+  final int id;
+  final String title;
+  final String description;
+  final String municipalityName;
+  final String? contactPerson;
+  final String phoneNumber;
+  final String? email;
+  final String address;
+  final String? cost;
+  final String? duration;
+  final String? requirements;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  SoilTest({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.municipalityName,
+    this.contactPerson,
+    required this.phoneNumber,
+    this.email,
+    required this.address,
+    this.cost,
+    this.duration,
+    this.requirements,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory SoilTest.fromJson(Map<String, dynamic> json) {
+    DateTime _parseDate(dynamic value) {
+      if (value == null) return DateTime.now();
+      if (value is DateTime) return value;
+      return DateTime.tryParse(value.toString()) ?? DateTime.now();
+    }
+
+    return SoilTest(
+      id: json['id'] as int? ?? 0,
+      title: (json['title'] as String?) ?? '',
+      description: (json['description'] as String?) ?? '',
+      municipalityName: (json['municipality_name'] as String?) ?? '',
+      contactPerson: json['contact_person'] as String?,
+      phoneNumber: (json['phone_number'] as String?) ?? '',
+      email: json['email'] as String?,
+      address: (json['address'] as String?) ?? '',
+      cost: json['cost'] as String?,
+      duration: json['duration'] as String?,
+      requirements: json['requirements'] as String?,
+      createdAt: _parseDate(json['created_at']),
+      updatedAt: _parseDate(json['updated_at']),
+    );
+  }
+}
+
