@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -12,6 +14,7 @@ class AuthService extends ChangeNotifier {
   final TokenStorage tokenStorage;
   final KrishiApiService apiService;
   bool _isAuthenticated = false;
+  bool _isInitialized = false;
 
   // Configure Google Sign-In with your OAuth credentials
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -22,12 +25,20 @@ class AuthService extends ChangeNotifier {
         '22500384416-5choujjs47148lfal8k3g2ugs0nic29j.apps.googleusercontent.com',
   );
 
-  AuthService(this.box, this.tokenStorage, this.apiService);
+  AuthService(this.box, this.tokenStorage, this.apiService) {
+    // Defer initialization so the provider can finish building first.
+    Future.microtask(() => init());
+  }
 
   bool get isAuthenticated => _isAuthenticated;
+  bool get isInitialized => _isInitialized;
 
   Future<AuthService> init() async {
-    _isAuthenticated = await box.get(StorageKeys.isLoggedIn) ?? false;
+    if (_isInitialized) return this;
+    final stored = await box.get(StorageKeys.isLoggedIn) ?? false;
+    _isAuthenticated = stored;
+    _isInitialized = true;
+    notifyListeners();
     return this;
   }
 
@@ -176,6 +187,7 @@ class AuthService extends ChangeNotifier {
 
   Future<void> login() async {
     _isAuthenticated = true;
+    _isInitialized = true;
     await box.set(StorageKeys.isLoggedIn, true);
     notifyListeners();
   }
@@ -193,6 +205,7 @@ class AuthService extends ChangeNotifier {
 
     // Clear auth state
     _isAuthenticated = false;
+    _isInitialized = true;
     await box.set(StorageKeys.isLoggedIn, false);
     notifyListeners();
   }

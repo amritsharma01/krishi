@@ -51,6 +51,7 @@ class Core extends ConsumerWidget {
     final mode = ref.watch(themeModeProvider);
     final lang = ref.watch(languageProvider);
     final auth = ref.watch(authServiceProvider);
+    final isReady = auth.isInitialized;
     
     // Create a unique key combining both theme and language for proper rebuilds
     final appKey = '${mode.themeMode.name}_${lang.index}';
@@ -89,7 +90,13 @@ class Core extends ConsumerWidget {
                 DefaultCupertinoLocalizations.delegate,
                 DefaultWidgetsLocalizations.delegate,
               ],
-              home: auth.isAuthenticated ? const MainNavigation() : const LoginPage(),
+              home: !isReady
+                  ? const Scaffold(
+                      body: Center(child: CircularProgressIndicator()),
+                    )
+                  : auth.isAuthenticated
+                      ? const MainNavigation()
+                      : const LoginPage(),
             ),
           ),
         ),
