@@ -7,10 +7,12 @@ import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
+import 'package:krishi/core/services/cache_service.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/form_field.dart';
 import 'package:krishi/models/cart.dart';
+import 'package:krishi/models/user_profile.dart';
 
 class CheckoutPage extends ConsumerStatefulWidget {
   final Cart cart;
@@ -31,6 +33,49 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   final _phoneController = TextEditingController();
   bool _isProcessing = false;
 
+  void _showFieldValidationError(String message) {
+    Get.snackbar(message, color: Colors.red);
+  }
+
+  bool _validateAddressAndPhone() {
+    final context = Get.context;
+    final address = _addressController.text.trim();
+    if (address.isEmpty) {
+      _showFieldValidationError(
+        '${'address'.tr(context)} ${'required_field'.tr(context)}',
+      );
+      return false;
+    }
+    if (address.length < 10) {
+      _showFieldValidationError(
+        'address_min_length'.tr(context),
+      );
+      return false;
+    }
+
+    final phone = _phoneController.text.trim();
+    if (phone.isEmpty) {
+      _showFieldValidationError(
+        '${'phone_number'.tr(context)} ${'required_field'.tr(context)}',
+      );
+      return false;
+    }
+    if (!RegExp(r'^\d{10}$').hasMatch(phone)) {
+      _showFieldValidationError(
+        'phone_length_error'.tr(context),
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _prefillContactInfo();
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -39,15 +84,62 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     super.dispose();
   }
 
+  Future<void> _prefillContactInfo() async {
+    final cacheService = ref.read(cacheServiceProvider);
+    final apiService = ref.read(krishiApiServiceProvider);
+
+    try {
+      final cachedProfile = await cacheService.getUserProfileCache();
+      if (cachedProfile != null) {
+        _applyUserProfile(User.fromJson(cachedProfile));
+      }
+
+      final freshUser = await apiService.getCurrentUser();
+      await cacheService.saveUserProfileCache(freshUser.toJson());
+      _applyUserProfile(freshUser);
+    } catch (_) {
+      // Silently ignore profile failures; form remains editable.
+    }
+  }
+
+  void _applyUserProfile(User user) {
+    if (!mounted) return;
+
+    final profile = user.profile;
+
+    if (_nameController.text.isEmpty) {
+      final fullName = profile?.fullName;
+      final name = fullName?.trim();
+      if (name != null && name.isNotEmpty) {
+        _nameController.text = name;
+      } else if (user.displayName.isNotEmpty) {
+        _nameController.text = user.displayName;
+      }
+    }
+
+    if (_addressController.text.isEmpty) {
+      final address = profile?.address?.trim();
+      if (address != null && address.isNotEmpty) {
+        _addressController.text = address;
+      }
+    }
+
+    if (_phoneController.text.isEmpty) {
+      final phone = profile?.phoneNumber?.trim();
+      if (phone != null && phone.isNotEmpty) {
+        _phoneController.text = phone;
+      }
+    }
+
+  }
+
   Future<void> _processCheckout() async {
     if (!_formKey.currentState!.validate()) {
+      _validateAddressAndPhone();
       return;
     }
 
-    if (_nameController.text.isEmpty ||
-        _addressController.text.isEmpty ||
-        _phoneController.text.isEmpty) {
-      Get.snackbar('fill_all_fields'.tr(Get.context), color: Colors.red);
+    if (!_validateAddressAndPhone()) {
       return;
     }
 

@@ -127,12 +127,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         Get.snackbar('seller_id_unavailable'.tr(context), color: Colors.red);
         return;
       }
-      final publicProfile =
-          await apiService.getSellerPublicProfile(sellerKrId);
+      final publicProfile = await apiService.getSellerPublicProfile(sellerKrId);
       if (!mounted) return;
       if (publicProfile.sellerProducts.isEmpty) {
-        Get.snackbar('seller_no_listings'.tr(context),
-            color: Colors.orange.shade700);
+        Get.snackbar(
+          'seller_no_listings'.tr(context),
+          color: Colors.orange.shade700,
+        );
         return;
       }
       Get.to(
@@ -401,6 +402,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
 
   Widget _sectionCard({required Widget child}) {
     return Container(
+      width: double.infinity,
       margin: const EdgeInsets.symmetric(horizontal: 16).rt,
       padding: const EdgeInsets.all(16).rt,
       decoration: BoxDecoration(
@@ -637,7 +639,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                       ),
                     ),
                     4.verticalGap,
-                   AppText(
+                    AppText(
                       'seller_id_label'.tr(context),
                       style: Get.bodySmall.px11.w600.copyWith(
                         color: Get.disabledColor.withValues(alpha: 0.6),
@@ -646,19 +648,12 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                     4.verticalGap,
                     AppText(
                       sellerKrId,
-                     style: Get.bodyMedium.px15.w700.copyWith(
-                       color: Get.disabledColor,
-                     ),
-                   ),
-                      4.verticalGap,
-                    AppText(
-                      'seller_contact_hidden'.tr(context),
-                      style: Get.bodySmall.px12.w500.copyWith(
-                            color: Get.disabledColor.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        ],
+                      style: Get.bodyMedium.px15.w700.copyWith(
+                        color: Get.disabledColor,
                       ),
+                    ),
+                  ],
+                ),
               ),
               _isFetchingSellerListings
                   ? SizedBox(
@@ -667,13 +662,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         color: AppColors.primary,
-                ),
+                      ),
                     )
                   : Icon(
-                Icons.arrow_forward_ios,
-                size: 16.st,
-                color: Get.disabledColor.withValues(alpha: 0.3),
-              ),
+                      Icons.arrow_forward_ios,
+                      size: 16.st,
+                      color: Get.disabledColor.withValues(alpha: 0.3),
+                    ),
             ],
           ),
         ),
@@ -924,14 +919,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                    AppText(
-                      comment.userName?.trim().isNotEmpty == true
-                          ? comment.userName!
-                          : comment.userEmail,
-                      style: Get.bodyMedium.px13.w600.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
+                AppText(
+                  comment.userName?.trim().isNotEmpty == true
+                      ? comment.userName!
+                      : comment.userEmail,
+                  style: Get.bodyMedium.px13.w600.copyWith(
+                    color: Get.disabledColor,
+                  ),
+                ),
                 4.verticalGap,
                 AppText(
                   comment.text,

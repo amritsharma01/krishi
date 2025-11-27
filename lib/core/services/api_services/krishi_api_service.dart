@@ -26,6 +26,12 @@ class KrishiApiService {
     dynamic data,
     T Function(Map<String, dynamic>) mapper,
   ) {
+    if (data == null) {
+      return <T>[];
+    }
+    if (data is String && data.trim().isEmpty) {
+      return <T>[];
+    }
     if (data is List) {
       return data.map((json) => mapper(json as Map<String, dynamic>)).toList();
     }
@@ -36,6 +42,13 @@ class KrishiApiService {
             .map((json) => mapper(json as Map<String, dynamic>))
             .toList();
       }
+      final count = data['count'];
+      if (results == null && count is int && count == 0) {
+        return <T>[];
+      }
+      if (data.isEmpty) {
+        return <T>[];
+      }
     }
     throw const FormatException('Unexpected list response format');
   }
@@ -44,8 +57,36 @@ class KrishiApiService {
     dynamic data,
     T Function(Map<String, dynamic>) mapper,
   ) {
-    if (data is Map<String, dynamic> && data.containsKey('results')) {
-      return PaginatedResponse.fromJson(data, mapper);
+    if (data == null ||
+        (data is String && data.trim().isEmpty) ||
+        (data is Map<String, dynamic> && data.isEmpty)) {
+      return PaginatedResponse(
+        count: 0,
+        next: null,
+        previous: null,
+        results: <T>[],
+      );
+    }
+    if (data is Map<String, dynamic>) {
+      if (data.containsKey('results')) {
+        final results = data['results'];
+        if (results is List) {
+          return PaginatedResponse.fromJson(data, mapper);
+        }
+        final count = data['count'];
+        final hasNoResults =
+            results == null ||
+            (results is List && results.isEmpty) ||
+            (results is String && results.trim().isEmpty);
+        if (count is int && count == 0 && hasNoResults) {
+          return PaginatedResponse(
+            count: 0,
+            next: data['next'] as String?,
+            previous: data['previous'] as String?,
+            results: <T>[],
+          );
+        }
+      }
     }
     if (data is List) {
       final results = data

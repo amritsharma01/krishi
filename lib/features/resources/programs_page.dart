@@ -93,7 +93,9 @@ class _ProgramsPageState extends ConsumerState<ProgramsPage> {
         _isInitialLoading = false;
         _isLoadingMore = false;
       });
-      Get.snackbar('failed_to_load_programs'.tr(context));
+      if (e is! FormatException) {
+        Get.snackbar('failed_to_load_programs'.tr(context));
+      }
     }
   }
 

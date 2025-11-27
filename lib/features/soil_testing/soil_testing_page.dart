@@ -87,7 +87,9 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
         _isInitialLoading = false;
         _isLoadingMore = false;
       });
-      Get.snackbar('failed_to_load_soil_tests'.tr(context));
+      if (e is! FormatException) {
+        Get.snackbar('failed_to_load_soil_tests'.tr(context));
+      }
     }
   }
 
@@ -461,6 +463,7 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
     );
   }
 
+  // ignore: unused_element
   Widget _buildFeatureCard({
     required IconData icon,
     required String title,

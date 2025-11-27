@@ -75,9 +75,10 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
       setState(() {
         _isLoading = false;
       });
-      if (mounted) {
-        Get.snackbar('Failed to load notices: $e');
+      if (!mounted || e is FormatException) {
+        return;
       }
+      Get.snackbar('Failed to load notices: $e');
     }
   }
 

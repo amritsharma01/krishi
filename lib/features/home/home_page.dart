@@ -760,42 +760,30 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         12.verticalGap,
         _buildMainServiceCard(
-          title: 'soil_testing',
-          description: 'test_soil_quality',
+          titleKey: 'soil_testing',
+          descriptionKey: 'test_soil_quality',
           icon: Icons.science_rounded,
-          gradient: const LinearGradient(
-            colors: [Color(0xFF5E35B1), Color(0xFF7E57C2)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          accentColor: const Color(0xFF5E35B1),
           onTap: () {
             Get.to(const SoilTestingPage());
           },
         ),
         12.verticalGap,
         _buildMainServiceCard(
-          title: 'notices'.tr(context),
-          description: 'important_announcements'.tr(context),
+          titleKey: 'notices',
+          descriptionKey: 'important_announcements',
           icon: Icons.notifications_active_rounded,
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFF6F00), Color(0xFFFF8F00)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          accentColor: const Color(0xFFFF8F00),
           onTap: () {
             Get.to(const NoticesPage());
           },
         ),
         12.verticalGap,
         _buildMainServiceCard(
-          title: 'programs'.tr(context),
-          description: 'agricultural_development_programs'.tr(context),
+          titleKey: 'programs',
+          descriptionKey: 'agricultural_development_programs',
           icon: Icons.agriculture_rounded,
-          gradient: const LinearGradient(
-            colors: [Color(0xFF388E3C), Color(0xFF66BB6A)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          accentColor: const Color(0xFF2E7D32),
           onTap: () {
             Get.to(const ProgramsPage());
           },
@@ -864,65 +852,62 @@ class _HomePageState extends ConsumerState<HomePage> {
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
         12.verticalGap,
-        GridView.count(
-          crossAxisCount: 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.0,
+        Column(
           children: [
-            _buildKnowledgeCard(
-              title: 'krishi_gyaan'.tr(context),
-              subtitle: 'farming_knowledge_home'.tr(context),
-              icon: Icons.local_library_rounded,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6A1B9A), Color(0xFF9C27B0)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              onTap: () {
-                Get.to(ArticlesPage());
-              },
+            Row(
+              children: [
+                Expanded(
+                  child: _buildKnowledgeCard(
+                    title: 'krishi_gyaan'.tr(context),
+                    subtitle: 'farming_knowledge_home'.tr(context),
+                    icon: Icons.local_library_rounded,
+                    accentColor: const Color(0xFF6A1B9A),
+                    onTap: () {
+                      Get.to(ArticlesPage());
+                    },
+                  ),
+                ),
+                12.horizontalGap,
+                Expanded(
+                  child: _buildKnowledgeCard(
+                    title: 'news_information'.tr(context),
+                    subtitle: 'latest_updates'.tr(context),
+                    icon: Icons.article_rounded,
+                    accentColor: const Color(0xFFD32F2F),
+                    onTap: () {
+                      Get.to(const NewsPage());
+                    },
+                  ),
+                ),
+              ],
             ),
-            _buildKnowledgeCard(
-              title: 'news_information'.tr(context),
-              subtitle: 'latest_updates'.tr(context),
-              icon: Icons.article_rounded,
-              gradient: const LinearGradient(
-                colors: [Color(0xFFD32F2F), Color(0xFFE57373)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              onTap: () {
-                Get.to(const NewsPage());
-              },
-            ),
-            _buildKnowledgeCard(
-              title: 'videos'.tr(context),
-              subtitle: 'watch_learn'.tr(context),
-              icon: Icons.video_library_rounded,
-              gradient: const LinearGradient(
-                colors: [Color(0xFFE65100), Color(0xFFFF6F00)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              onTap: () {
-                Get.to(const VideosPage());
-              },
-            ),
-            _buildKnowledgeCard(
-              title: 'crop_calendar'.tr(context),
-              subtitle: 'planting_guide'.tr(context),
-              icon: Icons.calendar_month_rounded,
-              gradient: const LinearGradient(
-                colors: [Color(0xFF558B2F), Color(0xFF8BC34A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              onTap: () {
-                Get.to(const CropCalendarPage());
-              },
+            12.verticalGap,
+            Row(
+              children: [
+                Expanded(
+                  child: _buildKnowledgeCard(
+                    title: 'videos'.tr(context),
+                    subtitle: 'watch_learn'.tr(context),
+                    icon: Icons.video_library_rounded,
+                    accentColor: const Color(0xFFE65100),
+                    onTap: () {
+                      Get.to(const VideosPage());
+                    },
+                  ),
+                ),
+                12.horizontalGap,
+                Expanded(
+                  child: _buildKnowledgeCard(
+                    title: 'crop_calendar'.tr(context),
+                    subtitle: 'planting_guide'.tr(context),
+                    icon: Icons.calendar_month_rounded,
+                    accentColor: const Color(0xFF558B2F),
+                    onTap: () {
+                      Get.to(const CropCalendarPage());
+                    },
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -932,36 +917,44 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   // Main Service Card with description
   Widget _buildMainServiceCard({
-    required String title,
-    required String description,
+    required String titleKey,
+    required String descriptionKey,
     required IconData icon,
-    required Gradient gradient,
+    required Color accentColor,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(10).rt,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18).rt,
         decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(16).rt,
+          color: Get.cardColor,
+          borderRadius: BorderRadius.circular(18).rt,
+          border: Border.all(
+            color: accentColor.withValues(alpha: 0.15),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+            BoxShadow(
+              color: accentColor.withValues(alpha: 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(14).rt,
+              padding: const EdgeInsets.all(12).rt,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.25),
-                borderRadius: BorderRadius.circular(14).rt,
+                shape: BoxShape.circle,
+                color: accentColor.withValues(alpha: 0.12),
               ),
-              child: Icon(icon, color: Colors.white, size: 32.st),
+              child: Icon(icon, color: accentColor, size: 28.st),
             ),
             16.horizontalGap,
             Expanded(
@@ -969,16 +962,16 @@ class _HomePageState extends ConsumerState<HomePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
-                    title.tr(context),
-                    style: Get.bodyLarge.px16.w700.copyWith(
-                      color: Colors.white,
+                    titleKey.tr(context),
+                    style: Get.bodyLarge.px15.w700.copyWith(
+                      color: Get.disabledColor,
                     ),
                   ),
                   4.verticalGap,
                   AppText(
-                    description.tr(context),
+                    descriptionKey.tr(context),
                     style: Get.bodySmall.px12.w500.copyWith(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: Get.disabledColor.withValues(alpha: 0.65),
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -988,8 +981,8 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
             Icon(
               Icons.arrow_forward_ios_rounded,
-              color: Colors.white,
-              size: 18.st,
+              color: accentColor,
+              size: 16.st,
             ),
           ],
         ),
@@ -1050,76 +1043,73 @@ class _HomePageState extends ConsumerState<HomePage> {
     required String title,
     required String subtitle,
     required IconData icon,
-    required Gradient gradient,
+    required Color accentColor,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(16).rt,
+          color: Get.cardColor,
+          borderRadius: BorderRadius.circular(18).rt,
+          border: Border.all(color: accentColor.withValues(alpha: 0.15)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 10,
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: accentColor.withValues(alpha: 0.08),
+              blurRadius: 18,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Stack(
-          children: [
-            // Background pattern
-            Positioned(
-              right: -20,
-              top: -20,
-              child: Icon(
-                icon,
-                size: 100.st,
-                color: Colors.white.withValues(alpha: 0.1),
+        child: Padding(
+          padding: const EdgeInsets.all(16).rt,
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12).rt,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: accentColor.withValues(alpha: 0.12),
+                ),
+                child: Icon(icon, color: accentColor, size: 26.st),
               ),
-            ),
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(16).rt,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12).rt,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(12).rt,
+              14.horizontalGap,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      title,
+                      style: Get.bodyLarge.px15.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    child: Icon(icon, color: Colors.white, size: 32.st),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        title,
-                        style: Get.bodyMedium.px14.w700.copyWith(
-                          color: Colors.white,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    2.verticalGap,
+                    AppText(
+                      subtitle,
+                      style: Get.bodySmall.px12.w500.copyWith(
+                        color: Get.disabledColor.withValues(alpha: 0.65),
                       ),
-                      2.verticalGap,
-                      AppText(
-                        subtitle,
-                        style: Get.bodySmall.px11.w500.copyWith(
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: accentColor,
+                size: 16.st,
+              ),
+            ],
+          ),
         ),
       ),
     );

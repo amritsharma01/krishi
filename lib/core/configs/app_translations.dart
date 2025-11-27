@@ -676,6 +676,10 @@ class AppTranslations {
       'en': 'Phone number must be at least 10 digits',
       'ne': 'फोन नम्बर कम्तीमा १० अङ्कको हुनुपर्छ',
     },
+    'phone_length_error': {
+      'en': 'Phone number must be exactly 10 digits.',
+      'ne': 'फोन नम्बर ठ्याक्कै १० अंकको हुनुपर्छ।',
+    },
     'address_min_length': {
       'en': 'Address must be at least 10 characters',
       'ne': 'ठेगाना कम्तीमा १० अक्षरको हुनुपर्छ',
