@@ -35,6 +35,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   bool isInCart = false;
   bool isAddingToCart = false;
   bool _isFetchingSellerListings = false;
+  bool _isSubmittingComment = false;
+  int _feedbackTabIndex = 0;
 
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _reviewCommentController =
@@ -205,19 +207,23 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   }
 
   Future<void> _submitComment() async {
-    if (_commentController.text.trim().isEmpty) return;
+    final text = _commentController.text.trim();
+    if (text.isEmpty || _isSubmittingComment) return;
+
+    setState(() => _isSubmittingComment = true);
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      await apiService.addComment(
-        widget.product.id,
-        _commentController.text.trim(),
-      );
+      await apiService.addComment(widget.product.id, text);
       _commentController.clear();
-      _loadComments();
+      await _loadComments();
       Get.snackbar('comment_added'.tr(context), color: Colors.green);
     } catch (e) {
       Get.snackbar('error_adding_comment'.tr(context), color: Colors.red);
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmittingComment = false);
+      }
     }
   }
 
@@ -255,30 +261,166 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
-      body: SafeArea(
-        top: false,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            _buildAppBar(),
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  16.verticalGap,
-                  _buildProductInfo(),
-                  16.verticalGap,
-                  _buildSellerInfo(),
-                  16.verticalGap,
-                  _buildDescription(),
-                  20.verticalGap,
-                  _buildReviewsSection(),
-                  20.verticalGap,
-                  _buildCommentsSection(),
-                  24.verticalGap,
-                  _buildAddToCartButton(),
-                  40.verticalGap,
-                ],
+      appBar: AppBar(
+        backgroundColor: Get.scaffoldBackgroundColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Get.disabledColor,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: AppText(
+          widget.product.name,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+        ),
+        centerTitle: false,
+      ),
+      body: ListView(
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.only(bottom: 160.ht),
+        children: [
+          8.verticalGap,
+          _buildHeroSection(),
+          20.verticalGap,
+          _buildProductInfo(),
+          16.verticalGap,
+          _buildSellerInfo(),
+          16.verticalGap,
+          _buildDescription(),
+          20.verticalGap,
+          _buildFeedbackSection(),
+          32.verticalGap,
+        ],
+      ),
+      bottomNavigationBar: _buildAddToCartButton(),
+    );
+  }
+
+  Widget _buildAddToCartButton() {
+    return SafeArea(
+      top: false,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(16.rt, 12.ht, 16.rt, 16.ht),
+        decoration: BoxDecoration(
+          color: Get.cardColor,
+          borderRadius: BorderRadius.vertical(
+            top: const Radius.circular(20),
+          ).rt,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 18,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Add to Cart Button
+            Expanded(
+              child: ElevatedButton(
+                onPressed: isAddingToCart ? null : _addToCart,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isInCart
+                      ? Colors.green.shade500
+                      : AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 16.rt),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12).rt,
+                  ),
+                  elevation: isInCart ? 2 : 3,
+                  shadowColor: (isInCart ? Colors.green : AppColors.primary)
+                      .withValues(alpha: 0.3),
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: isAddingToCart
+                      ? SizedBox(
+                          key: const ValueKey('loading'),
+                          height: 20.st,
+                          width: 20.st,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : isInCart
+                      ? Row(
+                          key: const ValueKey('added'),
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.check_circle, size: 20.st),
+                            8.horizontalGap,
+                            AppText(
+                              'added_to_cart'.tr(context),
+                              style: Get.bodyMedium.px15.w600.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          key: const ValueKey('add'),
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.shopping_cart, size: 20.st),
+                            8.horizontalGap,
+                            AppText(
+                              'add_to_cart'.tr(context),
+                              style: Get.bodyMedium.px15.w600.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+            12.horizontalGap,
+            // Checkout Button
+            Expanded(
+              child: ElevatedButton(
+                onPressed: isAddingToCart ? null : _checkoutDirectly,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.9),
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 16.rt),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12).rt,
+                  ),
+                  elevation: 3,
+                  shadowColor: AppColors.primary.withValues(alpha: 0.3),
+                ),
+                child: isAddingToCart
+                    ? SizedBox(
+                        height: 20.st,
+                        width: 20.st,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.payment, size: 20.st),
+                          8.horizontalGap,
+                          AppText(
+                            'checkout'.tr(context),
+                            style: Get.bodyMedium.px15.w600.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
           ],
@@ -287,115 +429,116 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     );
   }
 
-  Widget _buildAddToCartButton() {
+  Widget _buildHeroSection() {
+    final imageUrl = widget.product.image != null
+        ? Get.imageUrl(widget.product.image)
+        : '';
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.rt),
-      child: Row(
-        children: [
-          // Add to Cart Button
-          Expanded(
-            child: ElevatedButton(
-              onPressed: isAddingToCart ? null : _addToCart,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isInCart
-                    ? Colors.green.shade500
-                    : AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16.rt),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12).rt,
-                ),
-                elevation: isInCart ? 2 : 3,
-                shadowColor: (isInCart ? Colors.green : AppColors.primary)
-                    .withValues(alpha: 0.3),
+      child: Hero(
+        tag: 'product-image-${widget.product.id}',
+        child: Container(
+          height: 280.ht,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(26).rt,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
               ),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: isAddingToCart
-                    ? SizedBox(
-                        key: const ValueKey('loading'),
-                        height: 20.st,
-                        width: 20.st,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
-                        ),
-                      )
-                    : isInCart
-                    ? Row(
-                        key: const ValueKey('added'),
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.check_circle, size: 20.st),
-                          8.horizontalGap,
-                          AppText(
-                            'added_to_cart'.tr(context),
-                            style: Get.bodyMedium.px15.w600.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      )
-                    : Row(
-                        key: const ValueKey('add'),
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.shopping_cart, size: 20.st),
-                          8.horizontalGap,
-                          AppText(
-                            'add_to_cart'.tr(context),
-                            style: Get.bodyMedium.px15.w600.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
+            ],
           ),
-          12.horizontalGap,
-          // Checkout Button
-          Expanded(
-            child: ElevatedButton(
-              onPressed: isAddingToCart ? null : _checkoutDirectly,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.9),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16.rt),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12).rt,
-                ),
-                elevation: 3,
-                shadowColor: AppColors.primary.withValues(alpha: 0.3),
-              ),
-              child: isAddingToCart
-                  ? SizedBox(
-                      height: 20.st,
-                      width: 20.st,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2.5,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(26).rt,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                if (imageUrl.isNotEmpty)
+                  Image.network(
+                    imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        _buildHeroFallback(),
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return _buildHeroShimmer();
+                    },
+                  )
+                else
+                  _buildHeroFallback(),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.1),
+                          Colors.black.withValues(alpha: 0.45),
+                        ],
                       ),
-                    )
-                  : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.payment, size: 20.st),
-                        8.horizontalGap,
-                        AppText(
-                          'checkout'.tr(context),
-                          style: Get.bodyMedium.px15.w600.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
                     ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 18.rt,
+                  left: 18.rt,
+                  right: 18.rt,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _heroMetaPill(widget.product.categoryName),
+                      _heroMetaPill(widget.product.unitName),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroFallback() {
+    return Container(
+      color: AppColors.primary.withValues(alpha: 0.1),
+      child: Center(
+        child: Icon(
+          Icons.image_not_supported_outlined,
+          color: AppColors.primary.withValues(alpha: 0.3),
+          size: 48.st,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroShimmer() {
+    return Container(
+      color: AppColors.primary.withValues(alpha: 0.05),
+      child: Center(
+        child: SizedBox(
+          width: 28.st,
+          height: 28.st,
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      ),
+    );
+  }
+
+  Widget _heroMetaPill(String text) {
+    if (text.trim().isEmpty) return const SizedBox.shrink();
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.wt, vertical: 6.ht),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(30).rt,
+      ),
+      child: AppText(
+        text,
+        style: Get.bodySmall.px11.w600.copyWith(color: Colors.white),
       ),
     );
   }
@@ -437,110 +580,6 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: 300.rt,
-      pinned: true,
-      stretch: true,
-      backgroundColor: Get.scaffoldBackgroundColor,
-      elevation: 0,
-      leadingWidth: 72.rt,
-      leading: Padding(
-        padding: EdgeInsets.only(left: 12.rt, top: 10.rt, bottom: 10.rt),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.35),
-            borderRadius: BorderRadius.circular(14).rt,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: Colors.white,
-              size: 18.st,
-            ),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ),
-      ),
-      flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [
-          StretchMode.zoomBackground,
-          StretchMode.blurBackground,
-        ],
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            widget.product.image != null
-                ? Image.network(
-                    Get.imageUrl(widget.product.image),
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        child: Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            size: 80.st,
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                          ),
-                        ),
-                      );
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      );
-                    },
-                  )
-                : Container(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    child: Center(
-                      child: Icon(
-                        Icons.image_not_supported,
-                        size: 80.st,
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                      ),
-                    ),
-                  ),
-            // Gradient overlay at bottom
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 100.rt,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Get.scaffoldBackgroundColor.withValues(alpha: 0.7),
-                      Get.scaffoldBackgroundColor,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -698,7 +737,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     );
   }
 
-  Widget _buildReviewsSection() {
+  Widget _buildFeedbackSection() {
     return _sectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -725,32 +764,192 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
             ],
           ),
           12.verticalGap,
-          if (isLoadingReviews)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16).rt,
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
-            )
-          else if (reviewsError)
-            TextButton(
-              onPressed: _loadReviews,
-              child: AppText(
-                'error_loading_reviews'.tr(context),
-                style: Get.bodySmall.px12.w600.copyWith(
-                  color: AppColors.primary,
+          _buildFeedbackTabs(),
+          16.verticalGap,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: _feedbackTabIndex == 0
+                ? KeyedSubtree(
+                    key: const ValueKey('reviews'),
+                    child: _buildReviewsPanel(),
+                  )
+                : KeyedSubtree(
+                    key: const ValueKey('comments'),
+                    child: _buildCommentsPanel(),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFeedbackTabs() {
+    final tabs = ['reviews'.tr(context), 'comments'.tr(context)];
+    return Container(
+      padding: const EdgeInsets.all(4).rt,
+      decoration: BoxDecoration(
+        color: Get.disabledColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12).rt,
+      ),
+      child: Row(
+        children: List.generate(tabs.length, (index) {
+          final isActive = _feedbackTabIndex == index;
+          return Expanded(
+            child: GestureDetector(
+              onTap: () {
+                if (_feedbackTabIndex == index) return;
+                setState(() => _feedbackTabIndex = index);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(vertical: 10.ht),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? AppColors.primary.withValues(alpha: 0.15)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10).rt,
+                ),
+                child: Center(
+                  child: AppText(
+                    tabs[index],
+                    style: Get.bodySmall.px13.w700.copyWith(
+                      color: isActive ? AppColors.primary : Get.disabledColor,
+                    ),
+                  ),
                 ),
               ),
-            )
-          else if (reviews.isEmpty)
-            AppText(
-              'no_reviews_yet'.tr(context),
-              style: Get.bodySmall.px13.copyWith(
-                color: Get.disabledColor.withValues(alpha: 0.7),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildReviewsPanel() {
+    if (isLoadingReviews) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16).rt,
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
+    if (reviewsError) {
+      return TextButton(
+        onPressed: _loadReviews,
+        child: AppText(
+          'error_loading_reviews'.tr(context),
+          style: Get.bodySmall.px12.w600.copyWith(color: AppColors.primary),
+        ),
+      );
+    }
+
+    if (reviews.isEmpty) {
+      return AppText(
+        'no_reviews_yet'.tr(context),
+        style: Get.bodySmall.px13.copyWith(
+          color: Get.disabledColor.withValues(alpha: 0.7),
+        ),
+      );
+    }
+
+    return Column(children: reviews.map(_buildReviewCard).toList());
+  }
+
+  Widget _buildCommentsPanel() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildCommentComposer(),
+        16.verticalGap,
+        if (isLoadingComments)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(12).rt,
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          )
+        else if (commentsError)
+          TextButton(
+            onPressed: _loadComments,
+            child: AppText(
+              'error_loading_comments'.tr(context),
+              style: Get.bodySmall.px12.w600.copyWith(color: AppColors.primary),
+            ),
+          )
+        else if (comments.isEmpty)
+          AppText(
+            'no_comments_yet'.tr(context),
+            style: Get.bodySmall.px13.copyWith(
+              color: Get.disabledColor.withValues(alpha: 0.7),
+            ),
+          )
+        else
+          ...comments.map(_buildCommentCard),
+      ],
+    );
+  }
+
+  Widget _buildCommentComposer() {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.08)),
+        borderRadius: BorderRadius.circular(14).rt,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8).rt,
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _commentController,
+              decoration: InputDecoration(
+                hintText: 'add_comment'.tr(context),
+                border: InputBorder.none,
               ),
-            )
-          else
-            ...reviews.map(_buildReviewCard),
+              minLines: 1,
+              maxLines: 3,
+            ),
+          ),
+          12.horizontalGap,
+          ElevatedButton(
+            onPressed: _isSubmittingComment ? null : _submitComment,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10).rt,
+              ),
+            ),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: _isSubmittingComment
+                  ? SizedBox(
+                      key: const ValueKey('comment-loading'),
+                      width: 18.st,
+                      height: 18.st,
+                      child: const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  : Row(
+                      key: const ValueKey('comment-action'),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.send_rounded, size: 16.st),
+                        6.horizontalGap,
+                        AppText(
+                          'add_comment'.tr(context),
+                          style: Get.bodySmall.px12.w600.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
         ],
       ),
     );
@@ -816,78 +1015,6 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
               color: Get.disabledColor.withValues(alpha: 0.8),
               height: 1.5,
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCommentsSection() {
-    return _sectionCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText(
-            'comments'.tr(context),
-            style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
-          ),
-          12.verticalGap,
-          _buildCommentInput(),
-          16.verticalGap,
-          if (isLoadingComments)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.all(12).rt,
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
-            )
-          else if (commentsError)
-            TextButton(
-              onPressed: _loadComments,
-              child: AppText(
-                'error_loading_comments'.tr(context),
-                style: Get.bodySmall.px12.w600.copyWith(
-                  color: AppColors.primary,
-                ),
-              ),
-            )
-          else if (comments.isEmpty)
-            AppText(
-              'no_comments_yet'.tr(context),
-              style: Get.bodySmall.px13.copyWith(
-                color: Get.disabledColor.withValues(alpha: 0.7),
-              ),
-            )
-          else
-            ...comments.map(_buildCommentCard),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCommentInput() {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.08)),
-        borderRadius: BorderRadius.circular(12).rt,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8).rt,
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _commentController,
-              decoration: InputDecoration(
-                hintText: 'add_comment'.tr(context),
-                border: InputBorder.none,
-              ),
-              minLines: 1,
-              maxLines: 3,
-            ),
-          ),
-          IconButton(
-            onPressed: _submitComment,
-            icon: Icon(Icons.send_rounded, color: AppColors.primary),
           ),
         ],
       ),

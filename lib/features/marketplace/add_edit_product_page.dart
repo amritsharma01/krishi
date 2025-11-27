@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
@@ -15,6 +17,7 @@ import 'package:krishi/models/unit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AddEditProductPage extends ConsumerStatefulWidget {
   final Product? product; // null for add, existing product for edit
@@ -158,8 +161,9 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
       );
 
       if (pickedFile != null) {
+        final compressedFile = await _compressImage(File(pickedFile.path));
         setState(() {
-          _selectedImage = File(pickedFile.path);
+          _selectedImage = compressedFile;
         });
       }
     } catch (e) {
@@ -388,6 +392,45 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
           );
         }
       }
+    }
+  }
+
+  Future<File> _compressImage(File file) async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      final targetPath =
+          '${tempDir.path}/krishi_product_${DateTime.now().millisecondsSinceEpoch}.jpg';
+
+      int quality = 80;
+      File? compressedFile;
+      while (quality >= 45) {
+        final compressed = await FlutterImageCompress.compressAndGetFile(
+          file.absolute.path,
+          targetPath,
+          quality: quality,
+          minWidth: 256,
+          minHeight: 256,
+          format: CompressFormat.jpeg,
+        );
+
+        if (compressed == null) {
+          break;
+        }
+
+        compressedFile = File(compressed.path);
+        final sizeInKb = compressedFile.lengthSync() / 1024;
+        if (sizeInKb <= 400 || quality <= 50) {
+          break;
+        }
+        quality -= 10;
+      }
+
+      return compressedFile ?? file;
+    } catch (e, stackTrace) {
+      if (kDebugMode) {
+        debugPrint('Image compression failed: $e\n$stackTrace');
+      }
+      return file;
     }
   }
 
@@ -716,7 +759,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               AppText(
-                                    'base_price'.tr(context),
+                                'base_price'.tr(context),
                                 style: Get.bodyMedium.px15.w700.copyWith(
                                   color: Get.disabledColor,
                                 ),
@@ -725,7 +768,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                               TextFormField(
                                 controller: _priceController,
                                 decoration: InputDecoration(
-                                      hintText: 'enter_base_price'.tr(context),
+                                  hintText: 'enter_base_price'.tr(context),
                                   prefixText: 'Rs. ',
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12).rt,
@@ -740,15 +783,6 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                   }
                                   return null;
                                 },
-                              ),
-                                  6.verticalGap,
-                                  AppText(
-                                    'base_price_hint'.tr(context),
-                                    style: Get.bodySmall.copyWith(
-                                      color: Get.disabledColor.withValues(
-                                        alpha: 0.7,
-                                      ),
-                                    ),
                               ),
                             ],
                           ),
@@ -870,8 +904,9 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                     AppText(
                                       'available_for_sale_hint'.tr(context),
                                       style: Get.bodySmall.copyWith(
-                                        color: Get.disabledColor
-                                            .withValues(alpha: 0.7),
+                                        color: Get.disabledColor.withValues(
+                                          alpha: 0.7,
+                                        ),
                                       ),
                                     ),
                                   ],

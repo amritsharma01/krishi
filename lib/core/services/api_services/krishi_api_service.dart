@@ -806,6 +806,16 @@ class KrishiApiService {
     }
   }
 
+  /// Get counts of sales and purchases without fetching full lists
+  Future<OrdersCounts> getOrdersCounts() async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.ordersCounts);
+      return OrdersCounts.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // ==================== Resources ====================
 
   /// Get all notices

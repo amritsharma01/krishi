@@ -146,3 +146,28 @@ class CategorySales {
   double get revenueAsDouble => double.tryParse(revenue) ?? 0.0;
 }
 
+/// Count of orders as buyer and seller
+class OrdersCounts {
+  final int salesCount;
+  final int purchasesCount;
+
+  const OrdersCounts({
+    required this.salesCount,
+    required this.purchasesCount,
+  });
+
+  factory OrdersCounts.fromJson(Map<String, dynamic> json) {
+    return OrdersCounts(
+      salesCount: json['sales_count'] as int? ?? 0,
+      purchasesCount: json['purchases_count'] as int? ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'sales_count': salesCount,
+      'purchases_count': purchasesCount,
+    };
+  }
+}
+

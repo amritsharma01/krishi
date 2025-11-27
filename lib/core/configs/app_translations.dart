@@ -169,10 +169,7 @@ class AppTranslations {
       'en': 'Failed to delete notification',
       'ne': 'सूचना हटाउन असफल',
     },
-    'mark_as_read': {
-      'en': 'Mark as read',
-      'ne': 'पढिएको चिन्ह लगाउनुहोस्',
-    },
+    'mark_as_read': {'en': 'Mark as read', 'ne': 'पढिएको चिन्ह लगाउनुहोस्'},
     'load_more': {'en': 'Load more', 'ne': 'अझ थप लोड गर्नुहोस्'},
     'help_support': {'en': 'Help & Support', 'ne': 'मद्दत र समर्थन'},
     'get_help': {
@@ -339,11 +336,8 @@ class AppTranslations {
       'ne': 'वा इमोजी छान्नुहोस्',
     },
     'contact_address': {'en': 'Pickup address', 'ne': 'पिकअप ठेगाना'},
-    'base_price': {'en': 'Base price', 'ne': 'आधार मूल्य'},
-    'enter_base_price': {
-      'en': 'Enter base price',
-      'ne': 'आधार मूल्य प्रविष्ट गर्नुहोस्',
-    },
+    'base_price': {'en': 'Price', 'ne': 'मूल्य'},
+    'enter_base_price': {'en': 'Enter price', 'ne': 'मूल्य प्रविष्ट गर्नुहोस्'},
     'base_price_hint': {
       'en': 'Commission is added on top of this amount before buyers pay.',
       'ne': 'खरीददारले तिर्नु अघि यस रकममा कमिसन थपिन्छ।',
@@ -731,10 +725,7 @@ class AppTranslations {
       'en': 'Seller listings',
       'ne': 'विक्रेता सूचीहरू',
     },
-    'buyer_public_listings': {
-      'en': 'Buyer listings',
-      'ne': 'क्रेताको सूचीहरू',
-    },
+    'buyer_public_listings': {'en': 'Buyer listings', 'ne': 'क्रेताको सूचीहरू'},
     'seller_no_listings': {
       'en': 'This seller has no other listings yet.',
       'ne': 'यस विक्रेताको अहिले अन्य सूचीहरू छैनन्।',
@@ -777,7 +768,10 @@ class AppTranslations {
     'buyer_name_label': {'en': 'Buyer name', 'ne': 'क्रेताको नाम'},
     'buyer_address_label': {'en': 'Delivery address', 'ne': 'डेलिभरी ठेगाना'},
     'buyer_phone_label': {'en': 'Phone number', 'ne': 'फोन नम्बर'},
-    'save_changes': {'en': 'Save changes', 'ne': 'परिवर्तनहरू सुरक्षित गर्नुहोस्'},
+    'save_changes': {
+      'en': 'Save changes',
+      'ne': 'परिवर्तनहरू सुरक्षित गर्नुहोस्',
+    },
     'contact_update_success': {
       'en': 'Order contact details updated',
       'ne': 'अर्डरको सम्पर्क विवरण अद्यावधिक भयो',
@@ -1041,10 +1035,7 @@ class AppTranslations {
       'ne':
           'सक्रिय सरकारी कार्यक्रमहरू खोज्नुहोस् र आधिकारिक फारम मार्फत आफ्नो रुचि पठाउनुहोस्।',
     },
-    'search_programs': {
-      'en': 'Search programs',
-      'ne': 'कार्यक्रम खोज्नुहोस्',
-    },
+    'search_programs': {'en': 'Search programs', 'ne': 'कार्यक्रम खोज्नुहोस्'},
     'no_programs_available': {
       'en': 'No programs available right now',
       'ne': 'हाल कुनै कार्यक्रम उपलब्ध छैन',
@@ -1057,10 +1048,7 @@ class AppTranslations {
       'en': 'Failed to load programs',
       'ne': 'कार्यक्रम लोड गर्न असफल',
     },
-    'apply_now': {
-      'en': 'Apply now',
-      'ne': 'अहिले आवेदन दिनुहोस्',
-    },
+    'apply_now': {'en': 'Apply now', 'ne': 'अहिले आवेदन दिनुहोस्'},
     'failed_to_open_form': {
       'en': 'Could not open form link',
       'ne': 'फारम लिङ्क खोल्न सकिएन',
@@ -1079,7 +1067,8 @@ class AppTranslations {
     'market_prices_intro': {
       'en':
           'Track the latest buying prices shared by cooperatives and marketplaces.',
-      'ne': 'सहकारी र बजारले साझेदारी गरेका पछिल्ला खरिद मूल्यहरू ट्र्याक गर्नुहोस्।',
+      'ne':
+          'सहकारी र बजारले साझेदारी गरेका पछिल्ला खरिद मूल्यहरू ट्र्याक गर्नुहोस्।',
     },
     'search_market_prices': {
       'en': 'Search market prices',
@@ -1109,7 +1098,8 @@ class AppTranslations {
     },
     'soil_testing_centers_subtitle': {
       'en': 'Book a visit or call the municipal lab to schedule testing.',
-      'ne': 'माटो परीक्षणका लागि नगरपालिका प्रयोगशालासँग सम्पर्क वा भेट तय गर्नुहोस्।',
+      'ne':
+          'माटो परीक्षणका लागि नगरपालिका प्रयोगशालासँग सम्पर्क वा भेट तय गर्नुहोस्।',
     },
     'search_soil_tests': {
       'en': 'Search by municipality or name',

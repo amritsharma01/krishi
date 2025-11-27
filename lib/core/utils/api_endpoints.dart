@@ -50,6 +50,7 @@ final class ApiEndpoints {
   static String markOrderInTransit(int id) => "orders/$id/mark_in_transit/";
   static const String myPurchases = "orders/my_purchases/";
   static const String mySales = "orders/my_sales/";
+  static const String ordersCounts = "orders/counts/";
   static const String purchasesSummary = "orders/purchases_summary/";
   static const String salesSummary = "orders/sales_summary/";
 

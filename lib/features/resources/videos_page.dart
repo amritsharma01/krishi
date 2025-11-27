@@ -368,16 +368,19 @@ class _VideosPageState extends ConsumerState<VideosPage> {
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _openVideo(context, video.youtubeUrl),
-          borderRadius: BorderRadius.circular(20).rt,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Thumbnail
-              Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Thumbnail tap target
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _openVideo(context, video.youtubeUrl),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20.rt),
+                topRight: Radius.circular(20.rt),
+              ),
+              child: Stack(
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.only(
@@ -476,75 +479,90 @@ class _VideosPageState extends ConsumerState<VideosPage> {
                   ),
                 ],
               ),
+            ),
+          ),
 
-              // Content
-              Padding(
-                padding: EdgeInsets.all(18.rt),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          // Content
+          Padding(
+            padding: EdgeInsets.all(18.rt),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Category badge
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 10.wt,
+                    vertical: 5.ht,
+                  ),
+                  decoration: BoxDecoration(
+                    color: categoryColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8).rt,
+                  ),
+                  child: AppText(
+                    video.categoryDisplay,
+                    style: Get.bodySmall.px12.w600.copyWith(
+                      color: categoryColor,
+                    ),
+                  ),
+                ),
+                14.verticalGap,
+                // Title
+                AppText(
+                  video.title,
+                  style: Get.bodyLarge.px16.w700.copyWith(
+                    color: Get.disabledColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                10.verticalGap,
+                // Description
+                AppText(
+                  video.description,
+                  style: Get.bodyMedium.px13.copyWith(
+                    color: Get.disabledColor.withValues(alpha: 0.7),
+                    height: 1.5,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                12.verticalGap,
+                // Views
+                Row(
                   children: [
-                    // Category badge
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10.wt,
-                        vertical: 5.ht,
+                    Icon(
+                      Icons.visibility_outlined,
+                      size: 14.st,
+                      color: Get.disabledColor.withValues(alpha: 0.5),
+                    ),
+                    6.horizontalGap,
+                    AppText(
+                      '${video.viewsCount} ${'views'.tr(context)}',
+                      style: Get.bodySmall.px12.copyWith(
+                        color: Get.disabledColor.withValues(alpha: 0.6),
                       ),
-                      decoration: BoxDecoration(
-                        color: categoryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8).rt,
+                    ),
+                    const Spacer(),
+                    TextButton.icon(
+                      onPressed: () => _openVideo(context, video.youtubeUrl),
+                      icon: Icon(
+                        Icons.play_circle_fill_rounded,
+                        color: Colors.red.shade600,
+                        size: 18.st,
                       ),
-                      child: AppText(
-                        video.categoryDisplay,
+                      label: AppText(
+                        'watch_video'.tr(context),
                         style: Get.bodySmall.px12.w600.copyWith(
-                          color: categoryColor,
+                          color: Colors.red.shade600,
                         ),
                       ),
-                    ),
-                    14.verticalGap,
-                    // Title
-                    AppText(
-                      video.title,
-                      style: Get.bodyLarge.px16.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    10.verticalGap,
-                    // Description
-                    AppText(
-                      video.description,
-                      style: Get.bodyMedium.px13.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.7),
-                        height: 1.5,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    12.verticalGap,
-                    // Views
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.visibility_outlined,
-                          size: 14.st,
-                          color: Get.disabledColor.withValues(alpha: 0.5),
-                        ),
-                        6.horizontalGap,
-                        AppText(
-                          '${video.viewsCount} ${'views'.tr(context)}',
-                          style: Get.bodySmall.px12.copyWith(
-                            color: Get.disabledColor.withValues(alpha: 0.6),
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

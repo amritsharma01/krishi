@@ -6,8 +6,6 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
-import 'package:krishi/core/services/cache_service.dart';
-import 'package:krishi/models/order.dart';
 import 'package:krishi/features/knowledge/articles_page.dart';
 import 'package:krishi/features/knowledge/news_page.dart';
 import 'package:krishi/features/marketplace/product_detail_page.dart';
@@ -27,7 +25,6 @@ import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/components/notification_icon.dart';
 import 'package:krishi/models/product.dart';
-import 'package:krishi/models/weather.dart';
 import 'package:krishi/models/resources.dart';
 import 'package:krishi/features/notifications/providers/notifications_providers.dart';
 import 'package:flutter/material.dart';
@@ -41,16 +38,13 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  Weather? weather;
   List<Product> trendingProducts = [];
   int receivedOrdersCount = 0;
   int placedOrdersCount = 0;
   List<MarketPrice> marketPrices = [];
-  bool isLoadingWeather = true;
   bool isLoadingProducts = true;
   bool isLoadingOrders = true;
   bool isLoadingMarketPrices = true;
-  String? weatherError;
   String? productsError;
   String? ordersError;
   String? marketPricesError;
@@ -67,7 +61,6 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Future<void> _loadData() async {
     await Future.wait([
-      _loadWeather(),
       _loadTrendingProducts(),
       _loadOrdersCounts(),
       _loadMarketPrices(),
@@ -82,48 +75,13 @@ class _HomePageState extends ConsumerState<HomePage> {
     });
 
     try {
-      final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
-
-      // Try to load from cache first
-      final cachedSales = await cacheService.getMySalesCache();
-      final cachedPurchases = await cacheService.getMyPurchasesCache();
-
-      if (cachedSales != null && cachedPurchases != null) {
-        final receivedOrders = cachedSales
-            .map((json) => Order.fromJson(json))
-            .toList();
-        final placedOrders = cachedPurchases
-            .map((json) => Order.fromJson(json))
-            .toList();
-
-        if (mounted) {
-          setState(() {
-            receivedOrdersCount = receivedOrders.length;
-            placedOrdersCount = placedOrders.length;
-            isLoadingOrders = false;
-          });
-        }
-      }
-
-      // Fetch fresh data from API
-      final receivedOrders = await apiService.getMySales();
-      final placedOrders = await apiService.getMyPurchases();
-
-      // Save to cache
-      await Future.wait([
-        cacheService.saveMySalesCache(
-          receivedOrders.map((o) => o.toJson()).toList(),
-        ),
-        cacheService.saveMyPurchasesCache(
-          placedOrders.map((o) => o.toJson()).toList(),
-        ),
-      ]);
+      final counts = await apiService.getOrdersCounts();
 
       if (mounted) {
         setState(() {
-          receivedOrdersCount = receivedOrders.length;
-          placedOrdersCount = placedOrders.length;
+          receivedOrdersCount = counts.salesCount;
+          placedOrdersCount = counts.purchasesCount;
           isLoadingOrders = false;
         });
       }
@@ -132,31 +90,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         setState(() {
           ordersError = e.toString();
           isLoadingOrders = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadWeather() async {
-    setState(() {
-      isLoadingWeather = true;
-      weatherError = null;
-    });
-
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final weatherData = await apiService.getCurrentWeather();
-      if (mounted) {
-        setState(() {
-          weather = weatherData;
-          isLoadingWeather = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          weatherError = e.toString();
-          isLoadingWeather = false;
         });
       }
     }
@@ -223,16 +156,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (hour < 12) return 'good_morning';
     if (hour < 17) return 'good_afternoon';
     return 'good_evening';
-  }
-
-  IconData _getWeatherIcon() {
-    if (weather == null) return Icons.wb_sunny_rounded;
-    final condition = weather!.condition.toLowerCase();
-    if (condition.contains('clear')) return Icons.wb_sunny_rounded;
-    if (condition.contains('cloud')) return Icons.wb_cloudy_rounded;
-    if (condition.contains('rain')) return Icons.umbrella_rounded;
-    if (condition.contains('snow')) return Icons.ac_unit_rounded;
-    return Icons.wb_sunny_rounded;
   }
 
   @override
@@ -380,131 +303,76 @@ class _HomePageState extends ConsumerState<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                AppText(
+                  _getGreeting().tr(context),
+                  style: Get.bodyMedium.px15.w500.copyWith(
+                    color: AppColors.white.withValues(alpha: 0.95),
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                6.verticalGap,
+                AppText(
+                  'welcome_user'.tr(context),
+                  style: Get.bodyLarge.px28.w800.copyWith(
+                    color: AppColors.white,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                12.verticalGap,
+                AppText(
+                  'app_tagline'.tr(context),
+                  style: Get.bodyMedium.px14.w500.copyWith(
+                    color: AppColors.white.withValues(alpha: 0.9),
+                    height: 1.4,
+                  ),
+                ),
+                20.verticalGap,
+                Wrap(
+                  spacing: 12.wt,
+                  runSpacing: 10.ht,
                   children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppText(
-                            _getGreeting().tr(context),
-                            style: Get.bodyMedium.px15.w500.copyWith(
-                              color: AppColors.white.withValues(alpha: 0.95),
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          6.verticalGap,
-                          AppText(
-                            'welcome_user'.tr(context),
-                            style: Get.bodyLarge.px28.w800.copyWith(
-                              color: AppColors.white,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
+                    _welcomeHighlightChip(
+                      icon: Icons.storefront_rounded,
+                      label: 'marketplace'.tr(context),
                     ),
-                    // Weather Icon
-                    Container(
-                      padding: const EdgeInsets.all(14).rt,
-                      decoration: BoxDecoration(
-                        color: AppColors.white.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(16).rt,
-                        border: Border.all(
-                          color: AppColors.white.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: isLoadingWeather
-                          ? SizedBox(
-                              width: 36.st,
-                              height: 36.st,
-                              child: CircularProgressIndicator(
-                                color: AppColors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Icon(
-                              _getWeatherIcon(),
-                              color: AppColors.white,
-                              size: 30.st,
-                            ),
+                    _welcomeHighlightChip(
+                      icon: Icons.science_rounded,
+                      label: 'soil_testing'.tr(context),
                     ),
                   ],
                 ),
-                18.verticalGap,
-                // Location and Weather Info
-                Container(
-                  padding: const EdgeInsets.all(14).rt,
-                  decoration: BoxDecoration(
-                    color: AppColors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(14).rt,
-                    border: Border.all(
-                      color: AppColors.white.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: isLoadingWeather
-                      ? Center(
-                          child: AppText(
-                            'loading_weather'.tr(context),
-                            style: Get.bodyMedium.px14.w600.copyWith(
-                              color: AppColors.white,
-                            ),
-                          ),
-                        )
-                      : weatherError != null
-                      ? Center(
-                          child: AppText(
-                            'weather_error'.tr(context),
-                            style: Get.bodyMedium.px14.w600.copyWith(
-                              color: AppColors.white,
-                            ),
-                          ),
-                        )
-                      : Row(
-                          children: [
-                            Icon(
-                              Icons.location_on_rounded,
-                              color: AppColors.white,
-                              size: 20.st,
-                            ),
-                            8.horizontalGap,
-                            Expanded(
-                              child: AppText(
-                                weather?.location ?? 'unknown'.tr(context),
-                                style: Get.bodyMedium.px14.w600.copyWith(
-                                  color: AppColors.white,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              height: 24.rt,
-                              width: 1.5,
-                              color: AppColors.white.withValues(alpha: 0.4),
-                              margin: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ).rt,
-                            ),
-                            Icon(
-                              Icons.thermostat_rounded,
-                              color: AppColors.white,
-                              size: 20.st,
-                            ),
-                            6.horizontalGap,
-                            AppText(
-                              '${weather?.temperatureC.toStringAsFixed(1) ?? '--'}°C',
-                              style: Get.bodyMedium.px14.w700.copyWith(
-                                color: AppColors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _welcomeHighlightChip({
+    required IconData icon,
+    required String label,
+  }) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 14.wt, vertical: 10.ht),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(32).rt,
+        border: Border.all(
+          color: AppColors.white.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.white, size: 16.st),
+          8.horizontalGap,
+          AppText(
+            label,
+            style: Get.bodySmall.px12.w600.copyWith(
+              color: AppColors.white,
+              letterSpacing: 0.3,
             ),
           ),
         ],

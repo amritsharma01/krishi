@@ -25,6 +25,7 @@ class _CartPageState extends ConsumerState<CartPage> {
   Cart? cart;
   bool isLoading = true;
   String? error;
+  final Set<int> _updatingItemIds = {};
 
   @override
   void initState() {
@@ -32,11 +33,13 @@ class _CartPageState extends ConsumerState<CartPage> {
     _loadCart();
   }
 
-  Future<void> _loadCart() async {
-    setState(() {
-      isLoading = true;
-      error = null;
-    });
+  Future<void> _loadCart({bool silently = false}) async {
+    if (!silently) {
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
+    }
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
@@ -44,31 +47,87 @@ class _CartPageState extends ConsumerState<CartPage> {
       if (mounted) {
         setState(() {
           cart = cartData;
-          isLoading = false;
+          error = null;
+          if (!silently) {
+            isLoading = false;
+          }
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           error = e.toString();
-          isLoading = false;
+          if (!silently) {
+            isLoading = false;
+          }
         });
       }
     }
   }
 
+  CartItem _copyCartItemWithQuantity(CartItem source, int quantity) {
+    final subtotal =
+        (source.unitPriceAsDouble * quantity).toStringAsFixed(2);
+    return CartItem(
+      id: source.id,
+      product: source.product,
+      productDetails: source.productDetails,
+      quantity: quantity,
+      unitPrice: source.unitPrice,
+      subtotal: subtotal,
+      createdAt: source.createdAt,
+      updatedAt: DateTime.now(),
+    );
+  }
+
+  Cart _copyCartWithItems(List<CartItem> items) {
+    final total = items.fold<double>(
+      0,
+      (sum, current) => sum + current.subtotalAsDouble,
+    );
+
+    return Cart(
+      id: cart!.id,
+      user: cart!.user,
+      items: items,
+      totalAmount: total.toStringAsFixed(2),
+      createdAt: cart!.createdAt,
+      updatedAt: DateTime.now(),
+    );
+  }
+
   Future<void> _updateQuantity(CartItem item, int newQuantity) async {
-    if (newQuantity <= 0) return;
+    if (newQuantity <= 0 || _updatingItemIds.contains(item.id)) return;
+    if (cart == null) return;
+
+    final updatedItems = cart!.items.map((cartItem) {
+      if (cartItem.id == item.id) {
+        return _copyCartItemWithQuantity(cartItem, newQuantity);
+      }
+      return cartItem;
+    }).toList();
+
+    setState(() {
+      _updatingItemIds.add(item.id);
+      cart = _copyCartWithItems(updatedItems);
+    });
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.updateCartItem(itemId: item.id, quantity: newQuantity);
-      _loadCart();
+      await _loadCart(silently: true);
     } catch (e) {
       Get.snackbar(
         'error_updating_quantity'.tr(Get.context),
         color: Colors.red,
       );
+      await _loadCart(silently: true);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _updatingItemIds.remove(item.id);
+        });
+      }
     }
   }
 
@@ -136,7 +195,7 @@ class _CartPageState extends ConsumerState<CartPage> {
     }
 
     return RefreshIndicator(
-      onRefresh: _loadCart,
+      onRefresh: () => _loadCart(silently: true),
       child: ListView.builder(
         padding: const EdgeInsets.all(16).rt,
         itemCount: cart!.items.length,
@@ -150,6 +209,7 @@ class _CartPageState extends ConsumerState<CartPage> {
   Widget _buildCartItem(CartItem item) {
     final product = item.productDetails;
     if (product == null) return const SizedBox.shrink();
+    final isUpdating = _updatingItemIds.contains(item.id);
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.rt),
@@ -269,40 +329,59 @@ class _CartPageState extends ConsumerState<CartPage> {
                 Row(
                   children: [
                     GestureDetector(
-                      onTap: () => _updateQuantity(item, item.quantity - 1),
-                      child: Container(
-                        padding: const EdgeInsets.all(6).rt,
-                        decoration: BoxDecoration(
-                          color: Get.disabledColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6).rt,
-                        ),
-                        child: Icon(
-                          Icons.remove,
-                          size: 16.st,
-                          color: Get.disabledColor,
+                      onTap: isUpdating
+                          ? null
+                          : () => _updateQuantity(item, item.quantity - 1),
+                      child: Opacity(
+                        opacity: isUpdating ? 0.5 : 1,
+                        child: Container(
+                          padding: const EdgeInsets.all(6).rt,
+                          decoration: BoxDecoration(
+                            color: Get.disabledColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6).rt,
+                          ),
+                          child: Icon(
+                            Icons.remove,
+                            size: 16.st,
+                            color: Get.disabledColor,
+                          ),
                         ),
                       ),
                     ),
                     16.horizontalGap,
-                    AppText(
-                      '${item.quantity}',
-                      style: Get.bodyMedium.px14.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
+                    isUpdating
+                        ? SizedBox(
+                            width: 18.st,
+                            height: 18.st,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.primary,
+                            ),
+                          )
+                        : AppText(
+                            '${item.quantity}',
+                            style: Get.bodyMedium.px14.w700.copyWith(
+                              color: Get.disabledColor,
+                            ),
+                          ),
                     16.horizontalGap,
                     GestureDetector(
-                      onTap: () => _updateQuantity(item, item.quantity + 1),
-                      child: Container(
-                        padding: const EdgeInsets.all(6).rt,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6).rt,
-                        ),
-                        child: Icon(
-                          Icons.add,
-                          size: 16.st,
-                          color: AppColors.primary,
+                      onTap: isUpdating
+                          ? null
+                          : () => _updateQuantity(item, item.quantity + 1),
+                      child: Opacity(
+                        opacity: isUpdating ? 0.5 : 1,
+                        child: Container(
+                          padding: const EdgeInsets.all(6).rt,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6).rt,
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            size: 16.st,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
                     ),
