@@ -50,7 +50,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   bool _sellHasMore = true;
   bool _isLoadingMoreUserListings = false;
   int? _currentUserId;
+  String? _currentSellerKrId;
   int? _selectedCategoryId;
+  String _sellStatusFilter = 'all';
 
   @override
   void initState() {
@@ -198,7 +200,10 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     try {
       final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
-      _currentUserId ??= (await apiService.getCurrentUser()).id;
+      final currentUser = await apiService.getCurrentUser();
+      _currentUserId ??= currentUser.id;
+      _currentSellerKrId ??=
+          currentUser.profile?.krUserId ?? currentUser.id.toString();
 
       // Try to load from cache first
       final cachedProducts = await cacheService.getSellProductsCache();
@@ -217,7 +222,8 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       // Fetch fresh data from API
       final response = await apiService.getProducts(
         page: _sellCurrentPage,
-        sellerId: _currentUserId,
+        sellerId: _currentSellerKrId ?? _currentUserId?.toString(),
+        approvalStatus: _sellStatusFilter == 'all' ? null : _sellStatusFilter,
       );
 
       // Save to cache
@@ -245,7 +251,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
 
   Future<void> _loadMoreUserListings() async {
     if (_isLoadingMoreUserListings || !_sellHasMore) return;
-    if (_currentUserId == null) {
+    if (_currentSellerKrId == null && _currentUserId == null) {
       await _loadUserListings();
       return;
     }
@@ -258,7 +264,8 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       final apiService = ref.read(krishiApiServiceProvider);
       final response = await apiService.getProducts(
         page: _sellCurrentPage,
-        sellerId: _currentUserId,
+        sellerId: _currentSellerKrId ?? _currentUserId?.toString(),
+        approvalStatus: _sellStatusFilter == 'all' ? null : _sellStatusFilter,
       );
       if (mounted) {
         setState(() {
@@ -308,6 +315,14 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       _selectedCategoryId = categoryId;
     });
     _loadBuyProducts();
+  }
+
+  void _onSellStatusChanged(String status) {
+    if (_sellStatusFilter == status) return;
+    setState(() {
+      _sellStatusFilter = status;
+    });
+    _loadUserListings();
   }
 
   @override
@@ -466,7 +481,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                   color: Get.disabledColor.withValues(alpha: 0.5),
                 ),
                 fillColor: Get.cardColor,
-                radius: 8,
+                radius: 20,
                 onChanged: (_) => setState(() {}),
                 onSubmitted: (_) => _loadBuyProducts(),
                 onClear: () {
@@ -580,13 +595,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 ),
               ),
               12.verticalGap,
+
               // Your Listings
-              AppText(
-                'your_listings'.tr(context),
-                style: Get.bodyLarge.px18.w700.copyWith(
-                  color: Get.disabledColor,
-                ),
-              ),
+              _buildSellStatusFilters(),
               12.verticalGap,
               // Listings
               if (isLoadingUserListings)
@@ -773,6 +784,63 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     );
   }
 
+  Widget _buildSellStatusFilters() {
+    final filters = [
+      {'key': 'all', 'label': 'all_statuses'.tr(context)},
+      {'key': 'approved', 'label': 'approved'.tr(context)},
+      {'key': 'pending', 'label': 'pending'.tr(context)},
+      {'key': 'rejected', 'label': 'rejected'.tr(context)},
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: filters.map((filter) {
+          final isSelected = _sellStatusFilter == filter['key'];
+          return Padding(
+            padding: EdgeInsets.only(right: 8.rt),
+            child: GestureDetector(
+              onTap: () => _onSellStatusChanged(filter['key']!),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 14.rt,
+                  vertical: 8.rt,
+                ),
+                decoration: BoxDecoration(
+                  gradient: isSelected
+                      ? LinearGradient(
+                          colors: [
+                            AppColors.primary,
+                            AppColors.primary.withValues(alpha: 0.85),
+                          ],
+                        )
+                      : null,
+                  color: isSelected
+                      ? null
+                      : Get.disabledColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(24).rt,
+                  border: Border.all(
+                    color: isSelected
+                        ? Colors.transparent
+                        : Get.disabledColor.withValues(alpha: 0.2),
+                  ),
+                ),
+                child: AppText(
+                  filter['label']!,
+                  style: Get.bodySmall.w600.copyWith(
+                    fontSize: 12.sp,
+                    color: isSelected ? Colors.white : Get.disabledColor,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildCategoryFilters(bool isNepali) {
     return Container(
       width: double.infinity,
@@ -898,6 +966,38 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String? status) {
+    final normalized = (status ?? 'pending').toLowerCase();
+    MaterialColor baseColor;
+    String labelKey;
+
+    switch (normalized) {
+      case 'approved':
+        baseColor = Colors.green;
+        labelKey = 'approved';
+        break;
+      case 'rejected':
+        baseColor = Colors.red;
+        labelKey = 'rejected';
+        break;
+      default:
+        baseColor = Colors.orange;
+        labelKey = 'pending';
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10.rt, vertical: 4.rt),
+      decoration: BoxDecoration(
+        color: baseColor.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20).rt,
+      ),
+      child: AppText(
+        labelKey.tr(context),
+        style: Get.bodySmall.w700.copyWith(color: baseColor.shade700),
       ),
     );
   }
@@ -1101,19 +1201,56 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  listing.name,
-                  style: Get.bodyMedium.px15.w700.copyWith(
-                    color: Get.disabledColor,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        listing.name,
+                        style: Get.bodyMedium.px15.w700.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                6.verticalGap,
+
                 AppText(
+                  maxLines: 2,
                   'Rs. ${listing.price}/${listing.localizedUnitName(isNepali)}',
-                  style: Get.bodyMedium.px14.w700.copyWith(
+                  style: Get.bodyMedium.px12.w700.copyWith(
                     color: AppColors.primary,
                   ),
                 ),
+                if (listing.rejectionReason?.isNotEmpty ?? false) ...[
+                  8.verticalGap,
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10).rt,
+                    decoration: BoxDecoration(
+                      color: Colors.red.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(10).rt,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppText(
+                          'rejection_reason'.tr(context),
+                          style: Get.bodySmall.w700.copyWith(
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                        4.verticalGap,
+                        AppText(
+                          listing.rejectionReason!,
+                          style: Get.bodySmall.copyWith(
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

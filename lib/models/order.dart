@@ -2,8 +2,10 @@ class Order {
   final int id;
   final int buyer;
   final String buyerEmail;
+  final String? buyerKrId;
   final int seller;
   final String sellerEmail;
+  final String? sellerKrId;
   final String? sellerPhoneNumber;
   final int product;
   final String productName;
@@ -16,6 +18,9 @@ class Order {
   final String buyerPhoneNumber;
   final String status;
   final String? statusDisplay;
+  final String? cancelledBy;
+  final String? cancelledByDisplay;
+  final DateTime? cancelledAt;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -23,8 +28,10 @@ class Order {
     required this.id,
     required this.buyer,
     required this.buyerEmail,
+    this.buyerKrId,
     required this.seller,
     required this.sellerEmail,
+    this.sellerKrId,
     this.sellerPhoneNumber,
     required this.product,
     required this.productName,
@@ -37,6 +44,9 @@ class Order {
     required this.buyerPhoneNumber,
     required this.status,
     this.statusDisplay,
+    this.cancelledBy,
+    this.cancelledByDisplay,
+    this.cancelledAt,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -44,24 +54,33 @@ class Order {
   factory Order.fromJson(Map<String, dynamic> json) {
     return Order(
       id: json['id'] as int,
-      buyer: json['buyer'] as int,
-      buyerEmail: json['buyer_email'] as String,
-      seller: json['seller'] as int,
-      sellerEmail: json['seller_email'] as String,
+      buyer: json['buyer'] as int? ?? 0,
+      buyerEmail: (json['buyer_email'] as String?) ?? '',
+      buyerKrId: json['buyer_id'] as String?,
+      seller: json['seller'] as int? ?? 0,
+      sellerEmail: (json['seller_email'] as String?) ?? '',
+      sellerKrId: json['seller_id'] as String?,
       sellerPhoneNumber: json['seller_phone_number'] as String?,
       product: json['product'] as int,
-      productName: json['product_name'] as String,
+      productName: (json['product_name'] as String?) ?? '',
       productDetails: json['product_details'] != null
-          ? OrderProductDetails.fromJson(json['product_details'] as Map<String, dynamic>)
+          ? OrderProductDetails.fromJson(
+              json['product_details'] as Map<String, dynamic>,
+            )
           : null,
-      quantity: json['quantity'] as int,
-      unitPrice: json['unit_price'].toString(),
-      totalAmount: json['total_amount'].toString(),
-      buyerName: json['buyer_name'] as String,
-      buyerAddress: json['buyer_address'] as String,
-      buyerPhoneNumber: json['buyer_phone_number'] as String,
-      status: json['status'] as String,
+      quantity: json['quantity'] as int? ?? 0,
+      unitPrice: json['unit_price']?.toString() ?? '0',
+      totalAmount: json['total_amount']?.toString() ?? '0',
+      buyerName: (json['buyer_name'] as String?) ?? '',
+      buyerAddress: (json['buyer_address'] as String?) ?? '',
+      buyerPhoneNumber: (json['buyer_phone_number'] as String?) ?? '',
+      status: (json['status'] as String?) ?? '',
       statusDisplay: json['status_display'] as String?,
+      cancelledBy: json['cancelled_by'] as String?,
+      cancelledByDisplay: json['cancelled_by_display'] as String?,
+      cancelledAt: json['cancelled_at'] != null
+          ? DateTime.parse(json['cancelled_at'] as String)
+          : null,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
@@ -72,8 +91,10 @@ class Order {
       'id': id,
       'buyer': buyer,
       'buyer_email': buyerEmail,
+      'buyer_id': buyerKrId,
       'seller': seller,
       'seller_email': sellerEmail,
+      'seller_id': sellerKrId,
       'seller_phone_number': sellerPhoneNumber,
       'product': product,
       'product_name': productName,
@@ -86,6 +107,9 @@ class Order {
       'buyer_phone_number': buyerPhoneNumber,
       'status': status,
       'status_display': statusDisplay,
+      'cancelled_by': cancelledBy,
+      'cancelled_by_display': cancelledByDisplay,
+      'cancelled_at': cancelledAt?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -157,4 +181,3 @@ class OrderProductDetails {
 
   double get priceAsDouble => double.tryParse(price) ?? 0.0;
 }
-

@@ -21,6 +21,7 @@ class NotificationsPage extends ConsumerStatefulWidget {
 
 class _NotificationsPageState extends ConsumerState<NotificationsPage> {
   final List<AppNotification> _notifications = [];
+  final Set<int> _pendingSwipeDeletes = {};
   bool _initialLoading = true;
   bool _loadingMore = false;
   bool _hasMore = true;
@@ -108,7 +109,12 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
     }
   }
 
-  Future<bool> _deleteNotification(AppNotification notification) async {
+  Future<bool> _deleteNotification(
+    AppNotification notification, {
+    bool alreadyRemoved = false,
+    int? fallbackIndex,
+    bool showFeedback = true,
+  }) async {
     final wasUnread = !notification.isRead;
     final unreadNotifier = ref.read(unreadNotificationsProvider.notifier);
 
@@ -118,13 +124,17 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
           .deleteNotification(notification.id);
 
       if (!mounted) return true;
-      setState(() {
-        _notifications.removeWhere((n) => n.id == notification.id);
-      });
+      if (!alreadyRemoved) {
+        setState(() {
+          _notifications.removeWhere((n) => n.id == notification.id);
+        });
+      }
       if (wasUnread) {
         unreadNotifier.decrement();
       }
-      Get.snackbar('notification_deleted'.tr(context));
+      if (showFeedback) {
+        Get.snackbar('notification_deleted'.tr(context));
+      }
       return true;
     } on DioException catch (_) {
       final refreshed = await _refreshAfterDeletionFallback(notification.id);
@@ -132,8 +142,16 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
         if (wasUnread) {
           unreadNotifier.decrement();
         }
-        Get.snackbar('notification_deleted'.tr(context));
+        if (showFeedback) {
+          Get.snackbar('notification_deleted'.tr(context));
+        }
         return true;
+      }
+      if (alreadyRemoved && fallbackIndex != null && mounted) {
+        setState(() {
+          final safeIndex = fallbackIndex.clamp(0, _notifications.length);
+          _notifications.insert(safeIndex, notification);
+        });
       }
       if (mounted) {
         Get.snackbar('failed_to_delete_notification'.tr(context));
@@ -145,8 +163,16 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
         if (wasUnread) {
           unreadNotifier.decrement();
         }
-        Get.snackbar('notification_deleted'.tr(context));
+        if (showFeedback) {
+          Get.snackbar('notification_deleted'.tr(context));
+        }
         return true;
+      }
+      if (alreadyRemoved && fallbackIndex != null && mounted) {
+        setState(() {
+          final safeIndex = fallbackIndex.clamp(0, _notifications.length);
+          _notifications.insert(safeIndex, notification);
+        });
       }
       if (mounted) {
         Get.snackbar('failed_to_delete_notification'.tr(context));
@@ -350,20 +376,8 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
           return Dismissible(
             key: ValueKey(notification.id),
             direction: DismissDirection.endToStart,
-            background: Container(
-              margin: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 8.ht),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(20).rt,
-              ),
-              alignment: Alignment.centerRight,
-              padding: EdgeInsets.symmetric(horizontal: 24.wt),
-              child: Icon(
-                Icons.delete_outline_rounded,
-                color: Colors.red.shade400,
-              ),
-            ),
-            confirmDismiss: (_) => _deleteNotification(notification),
+            background: _buildSwipeBackground(),
+            onDismissed: (_) => _handleSwipeDelete(notification, index),
             child: _buildNotificationCard(notification),
           );
         },
@@ -484,6 +498,62 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
         ),
       ),
     );
+  }
+
+  Widget _buildSwipeBackground() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 8.ht),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.red.withValues(alpha: 0.9),
+            Colors.red.withValues(alpha: 0.6),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(20).rt,
+      ),
+      alignment: Alignment.centerRight,
+      padding: EdgeInsets.symmetric(horizontal: 24.wt),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.delete_outline_rounded, color: Colors.white),
+          6.horizontalGap,
+          AppText(
+            'delete'.tr(context),
+            style: Get.bodySmall.px12.w600.copyWith(color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleSwipeDelete(AppNotification notification, int index) {
+    if (!mounted || _pendingSwipeDeletes.contains(notification.id)) return;
+    final removedNotification = notification;
+    final removedIndex = index.clamp(0, _notifications.length - 1);
+
+    setState(() {
+      _pendingSwipeDeletes.add(notification.id);
+      _notifications.removeAt(index);
+    });
+
+    _deleteNotification(
+      removedNotification,
+      alreadyRemoved: true,
+      fallbackIndex: removedIndex,
+      showFeedback: false,
+    ).then((success) {
+      if (!mounted) return;
+      setState(() {
+        _pendingSwipeDeletes.remove(notification.id);
+      });
+      if (success) {
+        Get.snackbar('notification_deleted'.tr(context));
+      }
+    });
   }
 
   Widget _buildEmptyState() {

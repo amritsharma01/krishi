@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:krishi/core/services/api_services/api_services.dart';
 import 'package:krishi/core/utils/api_endpoints.dart';
 import 'package:krishi/models/app_notification.dart';
@@ -96,6 +97,18 @@ class KrishiApiService {
     try {
       final response = await apiManager.get(ApiEndpoints.userProfile(userId));
       return User.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get public seller profile via KR user id
+  Future<UserPublicProfile> getSellerPublicProfile(String krUserId) async {
+    try {
+      final response = await apiManager.get(
+        ApiEndpoints.userProfilePublic(krUserId),
+      );
+      return UserPublicProfile.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
@@ -258,16 +271,49 @@ class KrishiApiService {
   Future<PaginatedResponse<Product>> getProducts({
     int page = 1,
     int? category,
+    String? categoryName,
     String? search,
-    int? sellerId,
+    String? sellerId,
     String? sellerEmail,
+    String? minPrice,
+    String? maxPrice,
+    String? approvalStatus,
+    String? ordering,
+    bool? isAvailable,
   }) async {
     try {
       final queryParams = <String, dynamic>{'page': page};
       if (category != null) queryParams['category'] = category;
-      if (search != null) queryParams['search'] = search;
-      if (sellerId != null) queryParams['seller_id'] = sellerId;
-      if (sellerEmail != null) queryParams['seller_email'] = sellerEmail;
+      final trimmedCategoryName = categoryName?.trim();
+      if (trimmedCategoryName != null && trimmedCategoryName.isNotEmpty) {
+        queryParams['category_name'] = trimmedCategoryName;
+      }
+      final trimmedSearch = search?.trim();
+      if (trimmedSearch != null && trimmedSearch.isNotEmpty) {
+        queryParams['search'] = trimmedSearch;
+      }
+      final trimmedSellerId = sellerId?.trim();
+      if (trimmedSellerId != null && trimmedSellerId.isNotEmpty) {
+        queryParams['seller_id'] = trimmedSellerId;
+      }
+      if (sellerEmail != null && sellerEmail.trim().isNotEmpty) {
+        queryParams['seller_email'] = sellerEmail.trim();
+      }
+      if (minPrice != null && minPrice.trim().isNotEmpty) {
+        queryParams['min_price'] = minPrice.trim();
+      }
+      if (maxPrice != null && maxPrice.trim().isNotEmpty) {
+        queryParams['max_price'] = maxPrice.trim();
+      }
+      if (approvalStatus != null && approvalStatus.trim().isNotEmpty) {
+        queryParams['approval_status'] = approvalStatus.trim();
+      }
+      if (ordering != null && ordering.trim().isNotEmpty) {
+        queryParams['ordering'] = ordering.trim();
+      }
+      if (isAvailable != null) {
+        queryParams['is_available'] = isAvailable;
+      }
 
       final response = await apiManager.get(
         ApiEndpoints.products,
@@ -296,22 +342,35 @@ class KrishiApiService {
   Future<Product> createProduct({
     required String name,
     required String sellerPhoneNumber,
+    required String sellerAddress,
     required int category,
-    required String price,
+    required String basePrice,
     required String description,
     required int unit,
-    required bool isAvailable,
+    bool isAvailable = true,
     String? imagePath,
   }) async {
     try {
-      final formData = FormData.fromMap({
+      final payload = {
         'name': name,
         'seller_phone_number': sellerPhoneNumber,
+        'address': sellerAddress,
         'category': category,
-        'price': price,
+        'base_price': basePrice,
         'description': description,
         'unit': unit,
         'is_available': isAvailable,
+      };
+
+      if (kDebugMode) {
+        print(
+          '🆕 Create Product Payload: $payload'
+          ' ${imagePath != null ? '(includes image)' : ''}',
+        );
+      }
+
+      final formData = FormData.fromMap({
+        ...payload,
         if (imagePath != null) 'image': await MultipartFile.fromFile(imagePath),
       });
 
@@ -335,33 +394,36 @@ class KrishiApiService {
     required int id,
     String? name,
     String? sellerPhoneNumber,
+    String? sellerAddress,
     int? category,
-    String? price,
+    String? basePrice,
     String? description,
     int? unit,
     bool? isAvailable,
     String? imagePath,
   }) async {
     try {
-      final formData = FormData();
-      if (name != null) formData.fields.add(MapEntry('name', name));
+      final data = <String, dynamic>{};
+      if (name != null) data['name'] = name;
       if (sellerPhoneNumber != null) {
-        formData.fields.add(MapEntry('seller_phone_number', sellerPhoneNumber));
+        data['seller_phone_number'] = sellerPhoneNumber;
       }
-      if (category != null) {
-        formData.fields.add(MapEntry('category', category.toString()));
+      if (sellerAddress != null) {
+        data['address'] = sellerAddress;
       }
-      if (price != null) formData.fields.add(MapEntry('price', price));
-      if (description != null) {
-        formData.fields.add(MapEntry('description', description));
-      }
-      if (unit != null) formData.fields.add(MapEntry('unit', unit.toString()));
-      if (isAvailable != null) {
-        formData.fields.add(
-          MapEntry('is_available', isAvailable ? 'true' : 'false'),
+      if (category != null) data['category'] = category;
+      if (basePrice != null) data['base_price'] = basePrice;
+      if (description != null) data['description'] = description;
+      if (unit != null) data['unit'] = unit;
+      if (isAvailable != null) data['is_available'] = isAvailable;
+
+      if (kDebugMode) {
+        print(
+          '📝 Update Product Payload: $data'
+          ' ${imagePath != null ? '(includes new image)' : ''}',
         );
       }
-
+      final formData = FormData.fromMap(data);
       if (imagePath != null) {
         formData.files.add(
           MapEntry('image', await MultipartFile.fromFile(imagePath)),
@@ -964,7 +1026,9 @@ class KrishiApiService {
       if (trimmedOrdering != null && trimmedOrdering.isNotEmpty) {
         queryParams['ordering'] = trimmedOrdering;
       }
-      if (trimmedCategory != null && trimmedCategory.isNotEmpty && trimmedCategory != 'all') {
+      if (trimmedCategory != null &&
+          trimmedCategory.isNotEmpty &&
+          trimmedCategory != 'all') {
         queryParams['category'] = trimmedCategory;
       }
 
@@ -1047,8 +1111,9 @@ class KrishiApiService {
 
   Future<AppNotification> getNotification(int id) async {
     try {
-      final response =
-          await apiManager.get(ApiEndpoints.notificationDetail(id));
+      final response = await apiManager.get(
+        ApiEndpoints.notificationDetail(id),
+      );
       return AppNotification.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -1057,8 +1122,9 @@ class KrishiApiService {
 
   Future<int> getUnreadNotificationsCount() async {
     try {
-      final response =
-          await apiManager.get(ApiEndpoints.notificationsUnreadCount);
+      final response = await apiManager.get(
+        ApiEndpoints.notificationsUnreadCount,
+      );
       final data = response.data;
       if (data is Map<String, dynamic>) {
         if (data['count'] is int) return data['count'] as int;

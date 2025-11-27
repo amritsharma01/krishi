@@ -1186,21 +1186,21 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: isLoadingMarketPrices
               ? const Center(child: CircularProgressIndicator())
               : marketPricesError != null
-                  ? _buildMarketPricesError()
-                  : marketPrices.isEmpty
-                      ? _buildMarketPricesEmpty()
-                      : Column(
-                          children: [
-                            for (int i = 0; i < marketPrices.length; i++) ...[
-                              _buildMarketPriceRow(marketPrices[i]),
-                              if (i != marketPrices.length - 1)
-                                Divider(
-                                  color: Get.disabledColor.withValues(alpha: 0.1),
-                                  height: 20,
-                                ),
-                            ],
-                          ],
+              ? _buildMarketPricesError()
+              : marketPrices.isEmpty
+              ? _buildMarketPricesEmpty()
+              : Column(
+                  children: [
+                    for (int i = 0; i < marketPrices.length; i++) ...[
+                      _buildMarketPriceRow(marketPrices[i]),
+                      if (i != marketPrices.length - 1)
+                        Divider(
+                          color: Get.disabledColor.withValues(alpha: 0.1),
+                          height: 20,
                         ),
+                    ],
+                  ],
+                ),
         ),
       ],
     );
@@ -1317,9 +1317,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         8.verticalGap,
         AppText(
           'no_market_prices'.tr(context),
-          style: Get.bodyMedium.px14.w600.copyWith(
-            color: Get.disabledColor,
-          ),
+          style: Get.bodyMedium.px14.w600.copyWith(color: Get.disabledColor),
           textAlign: TextAlign.center,
         ),
         4.verticalGap,

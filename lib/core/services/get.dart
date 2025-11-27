@@ -26,8 +26,8 @@ abstract final class Get {
   static double get height => size.height;
 
   //constant
-  //static String baseUrl = "http://192.168.101.28:8000/";
-  static String baseUrl = "https://6mf87s99-8000.inc1.devtunnels.ms/";
+  static String baseUrl = "http://192.168.1.65:8000/";
+  //static String baseUrl = "https://6mf87s99-8000.inc1.devtunnels.ms/";
 
   // Helper method to construct image URLs properly
   static String imageUrl(String? imagePath) {

@@ -338,6 +338,17 @@ class AppTranslations {
       'en': 'Or select an emoji',
       'ne': 'वा इमोजी छान्नुहोस्',
     },
+    'contact_address': {'en': 'Pickup address', 'ne': 'पिकअप ठेगाना'},
+    'base_price': {'en': 'Base price', 'ne': 'आधार मूल्य'},
+    'enter_base_price': {
+      'en': 'Enter base price',
+      'ne': 'आधार मूल्य प्रविष्ट गर्नुहोस्',
+    },
+    'base_price_hint': {
+      'en': 'Commission is added on top of this amount before buyers pay.',
+      'ne': 'खरीददारले तिर्नु अघि यस रकममा कमिसन थपिन्छ।',
+    },
+    'final_price': {'en': 'Final price', 'ne': 'अन्तिम मूल्य'},
 
     // Bottom Navigation
     'home': {'en': 'Home', 'ne': 'होम'},
@@ -420,6 +431,12 @@ class AppTranslations {
       'ne':
           'तपाईंले अहिलेसम्म कुनै उत्पादनहरू थप्नुभएको छैन। आफ्नो पहिलो उत्पादन थपेर बिक्री सुरु गर्नुहोस्!',
     },
+    'seller_id': {'en': 'Seller ID', 'ne': 'विक्रेता आईडी'},
+    'rejection_reason': {'en': 'Rejection reason', 'ne': 'अस्वीकारको कारण'},
+    'approval_status': {'en': 'Approval status', 'ne': 'अनुमोदन स्थिति'},
+    'all_statuses': {'en': 'All statuses', 'ne': 'सबै स्थिति'},
+    'approved': {'en': 'Approved', 'ne': 'स्वीकृत'},
+    'rejected': {'en': 'Rejected', 'ne': 'अस्वीकृत'},
     'product_deleted': {
       'en': 'Product deleted successfully',
       'ne': 'उत्पादन सफलतापूर्वक मेटाइयो',
@@ -706,6 +723,36 @@ class AppTranslations {
       'en': 'Seller Information',
       'ne': 'विक्रेता जानकारी',
     },
+    'seller_public_listings': {
+      'en': 'Seller listings',
+      'ne': 'विक्रेता सूचीहरू',
+    },
+    'buyer_public_listings': {
+      'en': 'Buyer listings',
+      'ne': 'क्रेताको सूचीहरू',
+    },
+    'seller_no_listings': {
+      'en': 'This seller has no other listings yet.',
+      'ne': 'यस विक्रेताको अहिले अन्य सूचीहरू छैनन्।',
+    },
+    'error_loading_seller': {
+      'en': 'Unable to load seller information.',
+      'ne': 'विक्रेता जानकारी लोड गर्न सकिएन।',
+    },
+    'seller_id_unavailable': {
+      'en': 'Seller ID unavailable',
+      'ne': 'विक्रेता आईडी उपलब्ध छैन',
+    },
+    'seller_contact_hidden': {
+      'en': 'Seller contact info is hidden for privacy.',
+      'ne': 'गोपनीयताका लागि विक्रेता सम्पर्क जानकारी लुकाइएको छ।',
+    },
+    'buyer_contact_hidden': {
+      'en': 'Buyer contact info is hidden for privacy.',
+      'ne': 'गोपनीयताका लागि क्रेताको सम्पर्क जानकारी लुकाइएको छ।',
+    },
+    'seller_id_label': {'en': 'Seller ID', 'ne': 'विक्रेता आईडी'},
+    'buyer_id_label': {'en': 'Buyer ID', 'ne': 'क्रेता आईडी'},
     'mark_as_complete': {
       'en': 'Mark as complete',
       'ne': 'पुरा भएको चिन्ह लगाउनुहोस्',

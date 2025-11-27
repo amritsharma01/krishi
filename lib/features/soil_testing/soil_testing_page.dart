@@ -60,7 +60,9 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
     }
 
     try {
-      final response = await ref.read(krishiApiServiceProvider).getSoilTests(
+      final response = await ref
+          .read(krishiApiServiceProvider)
+          .getSoilTests(
             page: _currentPage,
             search: _searchQuery.isEmpty ? null : _searchQuery,
             ordering: 'municipality_name',
@@ -116,158 +118,88 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
         ),
         title: AppText(
           'soil_testing'.tr(context),
-          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
       ),
-      body: RefreshIndicator(
-        onRefresh: () => _loadSoilTests(refresh: true),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16).rt,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeroCard(),
-              24.verticalGap,
-              _buildIntroSection(context),
-              32.verticalGap,
-              _buildFeatures(context),
-              32.verticalGap,
-              _buildCentersSection(context),
-              20.verticalGap,
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeroCard() {
-    return Container(
-      width: double.infinity,
-      height: 200.rt,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF5E35B1), Color(0xFF7E57C2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20).rt,
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF5E35B1).withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+      body: Column(
+        children: [
+          _buildHeaderSection(context),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: () => _loadSoilTests(refresh: true),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24).rt,
+                child: Column(
+                  children: [_buildCentersSection(context), 20.verticalGap],
+                ),
+              ),
+            ),
           ),
         ],
       ),
-      child: Center(
-        child: Icon(
-          Icons.science_rounded,
-          size: 100.st,
-          color: AppColors.white,
-        ),
-      ),
     );
   }
 
-  Widget _buildIntroSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppText(
-          'soil_testing_title'.tr(context),
-          style: Get.bodyLarge.px24.w800.copyWith(color: Get.disabledColor),
-        ),
-        12.verticalGap,
-        AppText(
-          'soil_testing_description'.tr(context),
-          style: Get.bodyMedium.px15.w400.copyWith(
-            color: Get.disabledColor.withValues(alpha: 0.7),
-            height: 1.6,
+  Widget _buildHeaderSection(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16).rt,
+      decoration: BoxDecoration(
+        color: Get.cardColor,
+        borderRadius: BorderRadius.vertical(
+          bottom: const Radius.circular(28),
+        ).rt,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFeatures(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppText(
-          'soil_testing_features'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
-        ),
-        16.verticalGap,
-        _buildFeatureCard(
-          icon: Icons.water_drop_rounded,
-          title: 'ph_level',
-          description: 'ph_level_description',
-          color: Colors.blue,
-        ),
-        12.verticalGap,
-        _buildFeatureCard(
-          icon: Icons.grass_rounded,
-          title: 'nutrients',
-          description: 'nutrients_description',
-          color: Colors.green,
-        ),
-        12.verticalGap,
-        _buildFeatureCard(
-          icon: Icons.opacity_rounded,
-          title: 'moisture',
-          description: 'moisture_description',
-          color: Colors.cyan,
-        ),
-        12.verticalGap,
-        _buildFeatureCard(
-          icon: Icons.psychology_rounded,
-          title: 'recommendations',
-          description: 'recommendations_description',
-          color: Colors.orange,
-        ),
-      ],
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppText(
+            'soil_testing_centers'.tr(context),
+            style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
+          ),
+          8.verticalGap,
+          AppText(
+            'soil_testing_centers_subtitle'.tr(context),
+            maxLines: 3,
+            style: Get.bodyMedium.px12.copyWith(
+              color: Get.disabledColor.withValues(alpha: 0.75),
+              height: 1.4,
+            ),
+          ),
+          16.verticalGap,
+          _buildSearchField(context),
+        ],
+      ),
     );
   }
 
   Widget _buildCentersSection(BuildContext context) {
+    if (_isInitialLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_centers.isEmpty) {
+      return _buildEmptyState(context);
+    }
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        AppText(
-          'soil_testing_centers'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
-        ),
-        8.verticalGap,
-        AppText(
-          'soil_testing_centers_subtitle'.tr(context),
-          style: Get.bodyMedium.copyWith(
-            color: Get.disabledColor.withValues(alpha: 0.7),
-          ),
+        ListView.separated(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemBuilder: (context, index) =>
+              _buildSoilTestCard(context, _centers[index]),
+          separatorBuilder: (_, __) => 12.verticalGap,
+          itemCount: _centers.length,
         ),
         16.verticalGap,
-        _buildSearchField(context),
-        16.verticalGap,
-        if (_isInitialLoading)
-          const Center(child: CircularProgressIndicator())
-        else if (_centers.isEmpty)
-          _buildEmptyState(context)
-        else
-          Column(
-            children: [
-              ListView.separated(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemBuilder: (context, index) =>
-                    _buildSoilTestCard(context, _centers[index]),
-                separatorBuilder: (_, __) => 12.verticalGap,
-                itemCount: _centers.length,
-              ),
-              16.verticalGap,
-              if (_hasMore) _buildLoadMoreButton(),
-            ],
-          ),
+        if (_hasMore) _buildLoadMoreButton(),
       ],
     );
   }
@@ -286,10 +218,12 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
               )
             : null,
         filled: true,
-        fillColor: Get.cardColor,
+        fillColor: Get.scaffoldBackgroundColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16).rt,
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(
+            color: Get.disabledColor.withValues(alpha: 0.08),
+          ),
         ),
         contentPadding: EdgeInsets.zero,
       ),
@@ -352,10 +286,7 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
                   color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(16).rt,
                 ),
-                child: Icon(
-                  Icons.science_outlined,
-                  color: AppColors.primary,
-                ),
+                child: Icon(Icons.science_outlined, color: AppColors.primary),
               ),
               12.horizontalGap,
               Expanded(
@@ -364,7 +295,9 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
                   children: [
                     AppText(
                       center.title,
-                      style: Get.bodyLarge.px16.w700.copyWith(color: titleColor),
+                      style: Get.bodyLarge.px16.w700.copyWith(
+                        color: titleColor,
+                      ),
                     ),
                     4.verticalGap,
                     Row(
@@ -424,7 +357,11 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
               label: 'email'.tr(context),
               value: center.email!,
               trailing: IconButton(
-                icon: Icon(Icons.open_in_new, color: AppColors.primary, size: 18.st),
+                icon: Icon(
+                  Icons.open_in_new,
+                  color: AppColors.primary,
+                  size: 18.st,
+                ),
                 onPressed: () => _launchEmail(center.email!),
               ),
             ),
@@ -451,7 +388,8 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
               value: center.duration!,
             ),
           ],
-          if (center.requirements != null && center.requirements!.isNotEmpty) ...[
+          if (center.requirements != null &&
+              center.requirements!.isNotEmpty) ...[
             16.verticalGap,
             Container(
               padding: const EdgeInsets.all(12).rt,
@@ -494,7 +432,11 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: Get.disabledColor.withValues(alpha: 0.7), size: 18.st),
+        Icon(
+          icon,
+          color: Get.disabledColor.withValues(alpha: 0.7),
+          size: 18.st,
+        ),
         10.horizontalGap,
         Expanded(
           child: Column(
@@ -509,9 +451,7 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
               2.verticalGap,
               AppText(
                 value,
-                style: Get.bodyMedium.copyWith(
-                  color: Get.disabledColor,
-                ),
+                style: Get.bodyMedium.copyWith(color: Get.disabledColor),
               ),
             ],
           ),
@@ -532,10 +472,7 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(16).rt,
-        border: Border.all(
-          color: color.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.1), width: 1),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -553,11 +490,7 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12).rt,
             ),
-            child: Icon(
-              icon,
-              size: 24.st,
-              color: color,
-            ),
+            child: Icon(icon, size: 24.st, color: color),
           ),
           16.horizontalGap,
           Expanded(
@@ -597,9 +530,7 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
         12.verticalGap,
         AppText(
           'no_soil_tests'.tr(context),
-          style: Get.bodyLarge.px16.w600.copyWith(
-            color: Get.disabledColor,
-          ),
+          style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
           textAlign: TextAlign.center,
         ),
         6.verticalGap,
@@ -632,4 +563,3 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
     }
   }
 }
-

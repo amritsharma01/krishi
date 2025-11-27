@@ -8,6 +8,7 @@ final class ApiEndpoints {
   static const String updateProfile = "auth/me/update/";
   static const String uploadAvatar = "auth/me/avatar/";
   static String userProfile(int userId) => "auth/users/$userId/";
+  static String userProfilePublic(String krUserId) => "auth/users/$krUserId/";
 
   // Weather
   static const String currentWeather = "weather/current/";

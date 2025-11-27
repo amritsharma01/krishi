@@ -1,5 +1,8 @@
+import 'product.dart';
+
 class UserProfile {
   final int id;
+  final String? krUserId;
   final String fullName;
   final String? phoneNumber;
   final String? address;
@@ -9,6 +12,7 @@ class UserProfile {
 
   UserProfile({
     required this.id,
+    this.krUserId,
     required this.fullName,
     this.phoneNumber,
     this.address,
@@ -20,6 +24,7 @@ class UserProfile {
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
       id: json['id'] as int? ?? 0,
+      krUserId: json['kr_user_id'] as String?,
       fullName: (json['full_name'] as String?) ?? '',
       phoneNumber: json['phone_number'] as String?,
       address: json['address'] as String?,
@@ -36,6 +41,7 @@ class UserProfile {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'kr_user_id': krUserId,
       'full_name': fullName,
       'phone_number': phoneNumber,
       'address': address,
@@ -106,6 +112,26 @@ class User {
       'profile': profile?.toJson(),
       'seller_products': sellerProducts,
     };
+  }
+}
+
+class UserPublicProfile {
+  final int id;
+  final List<Product> sellerProducts;
+
+  UserPublicProfile({
+    required this.id,
+    required this.sellerProducts,
+  });
+
+  factory UserPublicProfile.fromJson(Map<String, dynamic> json) {
+    final productsJson = json['seller_products'] as List<dynamic>? ?? [];
+    return UserPublicProfile(
+      id: json['id'] as int? ?? 0,
+      sellerProducts: productsJson
+          .map((item) => Product.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    );
   }
 }
 

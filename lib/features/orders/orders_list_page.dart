@@ -14,7 +14,7 @@ import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/orders/order_detail_page.dart';
-import 'package:krishi/features/seller/seller_profile_page.dart';
+import 'package:krishi/features/seller/seller_public_listings_page.dart';
 import 'package:krishi/models/order.dart';
 
 class OrdersListPage extends ConsumerStatefulWidget {
@@ -39,6 +39,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
   int _currentPage = 1;
   bool _hasMore = true;
   bool _isLoadingMore = false;
+  String? _loadingPublicListingsId;
 
   @override
   void initState() {
@@ -227,6 +228,40 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     }
   }
 
+  Future<void> _openPublicListings(String? krId, String titleKey) async {
+    if (krId == null || krId.isEmpty) {
+      Get.snackbar('seller_id_unavailable'.tr(context), color: Colors.red);
+      return;
+    }
+    setState(() => _loadingPublicListingsId = krId);
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final profile = await apiService.getSellerPublicProfile(krId);
+      if (!mounted) return;
+      if (profile.sellerProducts.isEmpty) {
+        Get.snackbar(
+          'seller_no_listings'.tr(context),
+          color: Colors.orange.shade700,
+        );
+        return;
+      }
+      Get.to(
+        SellerPublicListingsPage(
+          userKrId: krId,
+          initialListings: profile.sellerProducts,
+          titleKey: titleKey,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Get.snackbar('error_loading_seller'.tr(context), color: Colors.red);
+    } finally {
+      if (mounted) {
+        setState(() => _loadingPublicListingsId = null);
+      }
+    }
+  }
+
   Widget _buildFilterChips() {
     final filters = [
       {'key': 'all', 'label': 'all'.tr(context)},
@@ -389,6 +424,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
   Widget _buildOrderCard(Order order) {
     final status = order.status.toLowerCase();
     final isCompleted = status == 'completed';
+    final showCompleteButton = !widget.showSales && status == 'delivered';
     final isCompleting = _completingOrders.contains(order.id);
     final canEditContact = _canEditContactDetails(order);
     final displayStatus =
@@ -459,149 +495,88 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
               ),
             ),
             12.verticalGap,
-            Row(
+            Wrap(
+              spacing: 8.rt,
+              runSpacing: 6.rt,
               children: [
                 _buildInfoChip(
                   label: 'Rs. ${order.totalAmountAsDouble.toStringAsFixed(2)}',
                 ),
-                8.horizontalGap,
                 _buildInfoChip(
                   icon: Icons.shopping_cart_rounded,
                   label: '${order.quantity} pcs',
                 ),
+                _buildInfoChip(
+                  icon: Icons.badge_outlined,
+                  label:
+                      '${widget.showSales ? 'buyer_id_label'.tr(context) : 'seller_id_label'.tr(context)}: ${(widget.showSales ? order.buyerKrId : order.sellerKrId) ?? 'seller_id_unavailable'.tr(context)}',
+                ),
               ],
             ),
-            3.verticalGap,
-            Divider(color: Get.disabledColor.withValues(alpha: 0.12)),
-            3.verticalGap,
-            InkWell(
-              onTap: widget.showSales
-                  ? null // Don't navigate for buyers
-                  : () {
-                      // Navigate to seller profile
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              SellerProfilePage(sellerId: order.seller),
-                        ),
-                      );
-                    },
-              borderRadius: BorderRadius.circular(8).rt,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 4,
-                  horizontal: 8,
-                ).rt,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      widget.showSales ? Icons.person_outline : Icons.store,
-                      color: Get.disabledColor.withValues(alpha: 0.6),
-                      size: 18.st,
-                    ),
-                    8.horizontalGap,
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          AppText(
-                            widget.showSales
-                                ? order.buyerName
-                                : order.sellerEmail,
-                            style: Get.bodyMedium.px14.w600.copyWith(
-                              color: Get.disabledColor,
-                            ),
-                          ),
-                          2.verticalGap,
-                          AppText(
-                            widget.showSales
-                                ? order.buyerPhoneNumber
-                                : (order.sellerPhoneNumber ??
-                                      'no_phone'.tr(context)),
-                            style: Get.bodySmall.px12.w500.copyWith(
-                              color: Get.disabledColor.withValues(alpha: 0.6),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (!widget.showSales)
-                      Icon(
-                        Icons.arrow_forward_ios,
-                        size: 14.st,
+
+            8.verticalGap,
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: widget.showSales || !canEditContact
+                        ? () => _navigateToOrderDetail(order)
+                        : () => _handleEditOrder(order),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12).rt,
+                      side: BorderSide(
                         color: Get.disabledColor.withValues(alpha: 0.3),
                       ),
-                  ],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12).rt,
+                      ),
+                    ),
+                    child: AppText(
+                      (!widget.showSales && canEditContact)
+                          ? 'edit_order'.tr(context)
+                          : 'view_details'.tr(context),
+                      style: Get.bodyMedium.px13.w600.copyWith(
+                        color: (!widget.showSales && canEditContact)
+                            ? AppColors.primary
+                            : Get.disabledColor,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            if (_showQuickAction(order)) ...[
-              5.verticalGap,
-              Row(
-                children: [
+                if (showCompleteButton) ...[
+                  12.horizontalGap,
                   Expanded(
-                    child: OutlinedButton(
-                      onPressed: widget.showSales || !canEditContact
-                          ? () => _navigateToOrderDetail(order)
-                          : () => _handleEditOrder(order),
-                      style: OutlinedButton.styleFrom(
+                    child: ElevatedButton(
+                      onPressed: isCompleting
+                          ? null
+                          : () => _completeOrder(order),
+                      style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12).rt,
-                        side: BorderSide(
-                          color: Get.disabledColor.withValues(alpha: 0.3),
-                        ),
+                        backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12).rt,
                         ),
                       ),
-                      child: AppText(
-                        (!widget.showSales && canEditContact)
-                            ? 'edit_order'.tr(context)
-                            : 'view_details'.tr(context),
-                        style: Get.bodyMedium.px13.w600.copyWith(
-                          color: (!widget.showSales && canEditContact)
-                              ? AppColors.primary
-                              : Get.disabledColor,
-                        ),
-                      ),
+                      child: isCompleting
+                          ? SizedBox(
+                              height: 18.st,
+                              width: 18.st,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : AppText(
+                              'mark_as_complete'.tr(context),
+                              style: Get.bodyMedium.px13.w700.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
-                  if (!widget.showSales) ...[
-                    12.horizontalGap,
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: isCompleting
-                            ? null
-                            : () => _completeOrder(order),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12).rt,
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12).rt,
-                          ),
-                        ),
-                        child: isCompleting
-                            ? SizedBox(
-                                height: 18.st,
-                                width: 18.st,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : AppText(
-                                'mark_as_complete'.tr(context),
-                                style: Get.bodyMedium.px13.w700.copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
                 ],
-              ),
-            ],
+              ],
+            ),
           ],
         ),
       ),
@@ -644,7 +619,9 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
   bool _canEditContactDetails(Order order) {
     if (widget.showSales) return false;
     final status = order.status.toLowerCase();
-    return status == 'pending' || status == 'accepted' || status == 'in_transit';
+    return status == 'pending' ||
+        status == 'accepted' ||
+        status == 'in_transit';
   }
 
   Future<void> _handleEditOrder(Order order) async {
@@ -664,8 +641,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
   Future<Order?> _showEditOrderSheet(Order order) {
     final nameController = TextEditingController(text: order.buyerName);
     final addressController = TextEditingController(text: order.buyerAddress);
-    final phoneController =
-        TextEditingController(text: order.buyerPhoneNumber);
+    final phoneController = TextEditingController(text: order.buyerPhoneNumber);
     final formKey = GlobalKey<FormState>();
 
     return showModalBottomSheet<Order>(
@@ -742,8 +718,8 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                       ),
                       validator: (value) =>
                           (value == null || value.trim().isEmpty)
-                              ? 'required_field'.tr(context)
-                              : null,
+                          ? 'required_field'.tr(context)
+                          : null,
                     ),
                     12.verticalGap,
                     TextFormField(
@@ -758,8 +734,8 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                       maxLines: 4,
                       validator: (value) =>
                           (value == null || value.trim().isEmpty)
-                              ? 'required_field'.tr(context)
-                              : null,
+                          ? 'required_field'.tr(context)
+                          : null,
                     ),
                     12.verticalGap,
                     TextFormField(
@@ -773,8 +749,8 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                       keyboardType: TextInputType.phone,
                       validator: (value) =>
                           (value == null || value.trim().isEmpty)
-                              ? 'required_field'.tr(context)
-                              : null,
+                          ? 'required_field'.tr(context)
+                          : null,
                     ),
                     20.verticalGap,
                     SizedBox(

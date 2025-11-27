@@ -31,6 +31,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   final _priceController = TextEditingController();
   final _descriptionController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _addressController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
   File? _selectedImage;
@@ -51,9 +52,10 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
 
     if (widget.product != null) {
       _nameController.text = widget.product!.name;
-      _priceController.text = widget.product!.price;
+      _priceController.text = widget.product!.basePrice;
       _descriptionController.text = widget.product!.description;
       _phoneController.text = widget.product!.sellerPhoneNumber ?? '';
+      _addressController.text = widget.product!.sellerAddress ?? '';
       _isAvailable = widget.product!.isAvailable;
     } else {
       _isAvailable = true;
@@ -142,6 +144,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     _priceController.dispose();
     _descriptionController.dispose();
     _phoneController.dispose();
+    _addressController.dispose();
     super.dispose();
   }
 
@@ -330,11 +333,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         if (widget.product == null) {
           // Create new product
           await apiService.createProduct(
-            name: _nameController.text,
-            sellerPhoneNumber: _phoneController.text,
+            name: _nameController.text.trim(),
+            sellerPhoneNumber: _phoneController.text.trim(),
+            sellerAddress: _addressController.text.trim(),
             category: selectedCategory!.id,
-            price: _priceController.text,
-            description: _descriptionController.text,
+            basePrice: _priceController.text.trim(),
+            description: _descriptionController.text.trim(),
             unit: selectedUnit!.id,
             isAvailable: _isAvailable,
             imagePath: _selectedImage?.path,
@@ -343,11 +347,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
           // Update existing product
           await apiService.updateProduct(
             id: widget.product!.id,
-            name: _nameController.text,
-            sellerPhoneNumber: _phoneController.text,
+            name: _nameController.text.trim(),
+            sellerPhoneNumber: _phoneController.text.trim(),
+            sellerAddress: _addressController.text.trim(),
             category: selectedCategory!.id,
-            price: _priceController.text,
-            description: _descriptionController.text,
+            basePrice: _priceController.text.trim(),
+            description: _descriptionController.text.trim(),
             unit: selectedUnit!.id,
             isAvailable: _isAvailable,
 
@@ -624,6 +629,37 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                     ),
                     16.verticalGap,
 
+                    // Address
+                    AppText(
+                      'contact_address'.tr(context),
+                      style: Get.bodyMedium.px15.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    8.verticalGap,
+                    TextFormField(
+                      controller: _addressController,
+                      decoration: InputDecoration(
+                        hintText: 'enter_address'.tr(context),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12).rt,
+                        ),
+                      ),
+                      minLines: 1,
+                      maxLines: 2,
+                      validator: (value) {
+                        final trimmed = value?.trim() ?? '';
+                        if (trimmed.isEmpty) {
+                          return 'required_field'.tr(context);
+                        }
+                        if (trimmed.length < 5) {
+                          return 'address_min_length'.tr(context);
+                        }
+                        return null;
+                      },
+                    ),
+                    16.verticalGap,
+
                     // Category
                     AppText(
                       'category'.tr(context),
@@ -680,7 +716,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               AppText(
-                                'price'.tr(context),
+                                    'base_price'.tr(context),
                                 style: Get.bodyMedium.px15.w700.copyWith(
                                   color: Get.disabledColor,
                                 ),
@@ -689,7 +725,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                               TextFormField(
                                 controller: _priceController,
                                 decoration: InputDecoration(
-                                  hintText: '0.00',
+                                      hintText: 'enter_base_price'.tr(context),
                                   prefixText: 'Rs. ',
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12).rt,
@@ -704,6 +740,15 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                   }
                                   return null;
                                 },
+                              ),
+                                  6.verticalGap,
+                                  AppText(
+                                    'base_price_hint'.tr(context),
+                                    style: Get.bodySmall.copyWith(
+                                      color: Get.disabledColor.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                    ),
                               ),
                             ],
                           ),

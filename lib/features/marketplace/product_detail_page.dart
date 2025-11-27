@@ -10,7 +10,7 @@ import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/cart/checkout_page.dart';
-import 'package:krishi/features/seller/seller_profile_page.dart';
+import 'package:krishi/features/seller/seller_public_listings_page.dart';
 import 'package:krishi/models/comment.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/models/review.dart';
@@ -34,6 +34,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   bool commentsError = false;
   bool isInCart = false;
   bool isAddingToCart = false;
+  bool _isFetchingSellerListings = false;
 
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _reviewCommentController =
@@ -107,6 +108,45 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         setState(() {
           commentsError = true;
           isLoadingComments = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleSellerInfoTap() async {
+    if (_isFetchingSellerListings) return;
+    setState(() {
+      _isFetchingSellerListings = true;
+    });
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final latestProduct = await apiService.getProduct(widget.product.id);
+      final sellerKrId =
+          latestProduct.sellerId ?? widget.product.sellerId ?? '';
+      if (sellerKrId.isEmpty) {
+        Get.snackbar('seller_id_unavailable'.tr(context), color: Colors.red);
+        return;
+      }
+      final publicProfile =
+          await apiService.getSellerPublicProfile(sellerKrId);
+      if (!mounted) return;
+      if (publicProfile.sellerProducts.isEmpty) {
+        Get.snackbar('seller_no_listings'.tr(context),
+            color: Colors.orange.shade700);
+        return;
+      }
+      Get.to(
+        SellerPublicListingsPage(
+          userKrId: sellerKrId,
+          initialListings: publicProfile.sellerProducts,
+        ),
+      );
+    } catch (e) {
+      Get.snackbar('error_loading_seller'.tr(context), color: Colors.red);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isFetchingSellerListings = false;
         });
       }
     }
@@ -510,8 +550,6 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         _metaChip(Icons.category_outlined, widget.product.categoryName),
       if (widget.product.unitName.trim().isNotEmpty)
         _metaChip(Icons.monitor_weight_outlined, widget.product.unitName),
-      _metaChip(Icons.inventory_2_outlined,
-          widget.product.sellerName ?? widget.product.sellerEmail),
     ];
 
     return _sectionCard(
@@ -572,19 +610,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   }
 
   Widget _buildSellerInfo() {
-    final phone = widget.product.sellerPhoneNumber;
+    final sellerKrId =
+        widget.product.sellerId ?? widget.product.seller.toString();
     return _sectionCard(
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => SellerProfilePage(
-                sellerId: widget.product.seller,
-              ),
-            ),
-          );
-        },
+        onTap: _handleSellerInfoTap,
         borderRadius: BorderRadius.circular(12).rt,
         child: Padding(
           padding: const EdgeInsets.all(4).rt,
@@ -608,34 +638,38 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                     ),
                     4.verticalGap,
                    AppText(
-                     widget.product.sellerName ?? widget.product.sellerEmail,
+                      'seller_id_label'.tr(context),
+                      style: Get.bodySmall.px11.w600.copyWith(
+                        color: Get.disabledColor.withValues(alpha: 0.6),
+                      ),
+                    ),
+                    4.verticalGap,
+                    AppText(
+                      sellerKrId,
                      style: Get.bodyMedium.px15.w700.copyWith(
                        color: Get.disabledColor,
                      ),
                    ),
-                    if (phone != null && phone.isNotEmpty) ...[
                       4.verticalGap,
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.phone_outlined,
-                            size: 14.st,
+                    AppText(
+                      'seller_contact_hidden'.tr(context),
+                      style: Get.bodySmall.px12.w500.copyWith(
                             color: Get.disabledColor.withValues(alpha: 0.6),
-                          ),
-                          6.horizontalGap,
-                          AppText(
-                            phone,
-                            style: Get.bodySmall.px12.w600.copyWith(
-                              color: Get.disabledColor.withValues(alpha: 0.7),
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ],
-                ),
               ),
-              Icon(
+              _isFetchingSellerListings
+                  ? SizedBox(
+                      width: 18.st,
+                      height: 18.st,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primary,
+                ),
+                    )
+                  : Icon(
                 Icons.arrow_forward_ios,
                 size: 16.st,
                 color: Get.disabledColor.withValues(alpha: 0.3),
