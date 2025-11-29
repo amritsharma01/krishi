@@ -547,7 +547,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
           children: [
             // Order ID
             AppText(
-              'order_id'.tr(context) + ' #${orderItem.orderId}',
+              orderItem.productName,
               style: Get.bodyMedium.px16.w700.copyWith(
                 color: Get.disabledColor,
               ),
@@ -585,12 +585,14 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                 // Product name chip
                 _buildInfoChip(
                   icon: Icons.shopping_bag,
-                  label: orderItem.productName,
+
+             label:'${'order_id'.tr(context)} #${orderItem.orderId}',
+               
                 ),
                 // Base price chip
                 _buildInfoChip(
                   label:
-                      'Rs. ${orderItem.basePriceAsDouble.toStringAsFixed(2)}',
+                      'Rs. ${(orderItem.basePriceAsDouble*orderItem.quantity).toStringAsFixed(2)}',
                 ),
                 // Quantity chip
                 _buildInfoChip(
