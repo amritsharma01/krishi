@@ -39,17 +39,18 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  List<Product> trendingProducts = [];
-  int receivedOrdersCount = 0;
-  int placedOrdersCount = 0;
-  List<MarketPrice> marketPrices = [];
-  User? currentUser;
-  bool isLoadingProducts = true;
-  bool isLoadingOrders = true;
-  bool isLoadingMarketPrices = true;
-  String? productsError;
-  String? ordersError;
-  String? marketPricesError;
+  // ValueNotifiers for reactive state management
+  final ValueNotifier<List<Product>> trendingProducts = ValueNotifier([]);
+  final ValueNotifier<int> receivedOrdersCount = ValueNotifier(0);
+  final ValueNotifier<int> placedOrdersCount = ValueNotifier(0);
+  final ValueNotifier<List<MarketPrice>> marketPrices = ValueNotifier([]);
+  final ValueNotifier<User?> currentUser = ValueNotifier(null);
+  final ValueNotifier<bool> isLoadingProducts = ValueNotifier(true);
+  final ValueNotifier<bool> isLoadingOrders = ValueNotifier(true);
+  final ValueNotifier<bool> isLoadingMarketPrices = ValueNotifier(true);
+  final ValueNotifier<String?> productsError = ValueNotifier(null);
+  final ValueNotifier<String?> ordersError = ValueNotifier(null);
+  final ValueNotifier<String?> marketPricesError = ValueNotifier(null);
 
   @override
   void initState() {
@@ -59,6 +60,22 @@ class _HomePageState extends ConsumerState<HomePage> {
         _loadData();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    trendingProducts.dispose();
+    receivedOrdersCount.dispose();
+    placedOrdersCount.dispose();
+    marketPrices.dispose();
+    currentUser.dispose();
+    isLoadingProducts.dispose();
+    isLoadingOrders.dispose();
+    isLoadingMarketPrices.dispose();
+    productsError.dispose();
+    ordersError.dispose();
+    marketPricesError.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -76,9 +93,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       final apiService = ref.read(krishiApiServiceProvider);
       final user = await apiService.getCurrentUser();
       if (mounted) {
-        setState(() {
-          currentUser = user;
-        });
+        currentUser.value = user;
       }
     } catch (_) {
       // ignore profile fetch errors silently
@@ -86,37 +101,29 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _loadOrdersCounts() async {
-    setState(() {
-      isLoadingOrders = true;
-      ordersError = null;
-    });
+    isLoadingOrders.value = true;
+    ordersError.value = null;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final counts = await apiService.getOrdersCounts();
 
       if (mounted) {
-        setState(() {
-          receivedOrdersCount = counts.salesCount;
-          placedOrdersCount = counts.purchasesCount;
-          isLoadingOrders = false;
-        });
+        receivedOrdersCount.value = counts.salesCount;
+        placedOrdersCount.value = counts.purchasesCount;
+        isLoadingOrders.value = false;
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          ordersError = e.toString();
-          isLoadingOrders = false;
-        });
+        ordersError.value = e.toString();
+        isLoadingOrders.value = false;
       }
     }
   }
 
   Future<void> _loadTrendingProducts() async {
-    setState(() {
-      isLoadingProducts = true;
-      productsError = null;
-    });
+    isLoadingProducts.value = true;
+    productsError.value = null;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
@@ -125,26 +132,20 @@ class _HomePageState extends ConsumerState<HomePage> {
           .where((product) => product.isAvailable)
           .toList();
       if (mounted) {
-        setState(() {
-          trendingProducts = filtered.take(5).toList();
-          isLoadingProducts = false;
-        });
+        trendingProducts.value = filtered.take(5).toList();
+        isLoadingProducts.value = false;
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          productsError = e.toString();
-          isLoadingProducts = false;
-        });
+        productsError.value = e.toString();
+        isLoadingProducts.value = false;
       }
     }
   }
 
   Future<void> _loadMarketPrices() async {
-    setState(() {
-      isLoadingMarketPrices = true;
-      marketPricesError = null;
-    });
+    isLoadingMarketPrices.value = true;
+    marketPricesError.value = null;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
@@ -153,17 +154,13 @@ class _HomePageState extends ConsumerState<HomePage> {
         ordering: '-updated_at',
       );
       if (mounted) {
-        setState(() {
-          marketPrices = response.results.take(4).toList();
-          isLoadingMarketPrices = false;
-        });
+        marketPrices.value = response.results.take(4).toList();
+        isLoadingMarketPrices.value = false;
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          marketPricesError = e.toString();
-          isLoadingMarketPrices = false;
-        });
+        marketPricesError.value = e.toString();
+        isLoadingMarketPrices.value = false;
       }
     }
   }
@@ -186,39 +183,39 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.all(16).rt,
+              padding: const EdgeInsets.all(10).rt,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Welcome Card with Weather
                   _buildWelcomeCard(),
 
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Top Row: Received Order and Placed Order (2-column)
                   _buildOrdersTiles(),
 
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Main Services: Soil Test and Notices (2-column)
                   _buildMainServices(),
 
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Services: Experts, Providers, Contacts (3-column)
                   _buildServicesGrid(),
 
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Knowledge Base: Krishi Gyan, News, Videos, Crop Calendars (2-column grid)
                   _buildKnowledgeBaseGrid(),
 
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Market Prices Section
                   _buildMarketPricesSection(),
 
-                  20.verticalGap,
+                  10.verticalGap,
                 ],
               ),
             ),
@@ -256,138 +253,161 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildWelcomeCard() {
-    final userName = (currentUser?.displayName ?? '').trim();
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: const AssetImage('assets/images/image.png'),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            AppColors.primary.withValues(alpha: 0.4),
-            BlendMode.srcATop,
-          ),
-        ),
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withValues(alpha: 0.95),
-            AppColors.primary.withValues(alpha: 0.85),
-            AppColors.primary.withValues(alpha: 0.7),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: const [0.05, 0.5, 1.0],
-        ),
-        borderRadius: BorderRadius.circular(20).rt,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Decorative circles
-          Positioned(
-            top: -20,
-            right: -20,
-            child: Container(
-              width: 100.rt,
-              height: 100.rt,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.white.withValues(alpha: 0.1),
+    return ValueListenableBuilder<User?>(
+      valueListenable: currentUser,
+      builder: (context, user, child) {
+        final userName = (user?.displayName ?? '').trim();
+        return Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: const AssetImage('assets/images/image.png'),
+              fit: BoxFit.cover,
+              alignment: Alignment.centerRight,
+              colorFilter: ColorFilter.mode(
+                AppColors.primary.withValues(alpha: 0.25),
+                BlendMode.srcATop,
               ),
             ),
-          ),
-          Positioned(
-            bottom: -30,
-            left: -30,
-            child: Container(
-              width: 120.rt,
-              height: 120.rt,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.white.withValues(alpha: 0.05),
-              ),
-            ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(20).rt,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  _getGreeting().tr(context),
-                  style: Get.bodyMedium.px15.w500.copyWith(
-                    color: AppColors.white.withValues(alpha: 0.95),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                6.verticalGap,
-                AppText(
-                  userName.isNotEmpty ? userName : 'welcome_user'.tr(context),
-                  style: Get.bodyLarge.px28.w800.copyWith(
-                    color: AppColors.white,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                12.verticalGap,
-                AppText(
-                  'app_tagline'.tr(context),
-                  style: Get.bodyMedium.px14.w500.copyWith(
-                    color: AppColors.white.withValues(alpha: 0.9),
-                    height: 1.4,
-                  ),
-                ),
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primary.withValues(alpha: 0.5),
+                AppColors.primary.withValues(alpha: 0.8),
+                AppColors.primary.withValues(alpha: 0.7),
               ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              stops: const [0.05, 0.5, 1.0],
             ),
+            borderRadius: BorderRadius.circular(20).rt,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+                spreadRadius: 2,
+              ),
+            ],
           ),
-        ],
-      ),
+          child: Stack(
+            children: [
+              // Decorative circles
+              Positioned(
+                top: -20,
+                right: -20,
+                child: Container(
+                  width: 100.rt,
+                  height: 100.rt,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -30,
+                left: -30,
+                child: Container(
+                  width: 120.rt,
+                  height: 120.rt,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.white.withValues(alpha: 0.05),
+                  ),
+                ),
+              ),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20).rt,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      _getGreeting().tr(context),
+                      style: Get.bodyMedium.px14.w500.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.95),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    6.verticalGap,
+                    AppText(
+                      userName.isNotEmpty
+                          ? userName
+                          : 'welcome_user'.tr(context),
+                      style: Get.bodyLarge.px28.w800.copyWith(
+                        color: AppColors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    12.verticalGap,
+                    AppText(
+                      'app_tagline'.tr(context),
+                      style: Get.bodyMedium.px14.w500.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.9),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   Widget _buildOrdersTiles() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildOrderCard(
-            title: 'received_orders',
-            subtitle: 'orders_as_seller',
-            count: receivedOrdersCount,
-            icon: Icons.inventory_2_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLoadingOrders,
+      builder: (context, loading, child) {
+        return Row(
+          children: [
+            Expanded(
+              child: ValueListenableBuilder<int>(
+                valueListenable: receivedOrdersCount,
+                builder: (context, count, child) {
+                  return _buildOrderCard(
+                    title: 'received_orders',
+                    subtitle: 'orders_as_seller',
+                    count: count,
+                    icon: Icons.inventory_2_rounded,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
+                    ),
+                    onTap: () {
+                      Get.to(const OrdersListPage.sales());
+                    },
+                    isLoading: loading,
+                  );
+                },
+              ),
             ),
-            onTap: () {
-              Get.to(const OrdersListPage.sales());
-            },
-            isLoading: isLoadingOrders,
-          ),
-        ),
-        12.horizontalGap,
-        Expanded(
-          child: _buildOrderCard(
-            title: 'placed_orders',
-            subtitle: 'orders_as_buyer',
-            count: placedOrdersCount,
-            icon: Icons.shopping_bag_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+            12.horizontalGap,
+            Expanded(
+              child: ValueListenableBuilder<int>(
+                valueListenable: placedOrdersCount,
+                builder: (context, count, child) {
+                  return _buildOrderCard(
+                    title: 'placed_orders',
+                    subtitle: 'orders_as_buyer',
+                    count: count,
+                    icon: Icons.shopping_bag_rounded,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+                    ),
+                    onTap: () {
+                      // Navigate to placed orders (my purchases)
+                      Get.to(const OrdersListPage.purchases());
+                    },
+                    isLoading: loading,
+                  );
+                },
+              ),
             ),
-            onTap: () {
-              // Navigate to placed orders (my purchases)
-              Get.to(const OrdersListPage.purchases());
-            },
-            isLoading: isLoadingOrders,
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -409,7 +429,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         splashColor: AppColors.primary.withValues(alpha: 0.12),
         highlightColor: AppColors.primary.withValues(alpha: 0.08),
         child: Container(
-          height: 130.ht,
+          height: 100.ht,
           padding: const EdgeInsets.all(16).rt,
           decoration: BoxDecoration(
             color: Get.cardColor,
@@ -424,19 +444,18 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12).rt,
-                decoration: BoxDecoration(
-                  gradient: gradient,
-                  borderRadius: BorderRadius.circular(14).rt,
-                ),
-                child: Icon(icon, color: AppColors.white, size: 24.st),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
+                  Container(
+                    padding: const EdgeInsets.all(10).rt,
+                    decoration: BoxDecoration(
+                      gradient: gradient,
+                      borderRadius: BorderRadius.circular(14).rt,
+                    ),
+                    child: Icon(icon, color: AppColors.white, size: 24.st),
+                  ),
+                  15.horizontalGap,
                   isLoading
                       ? SizedBox(
                           width: 24.st,
@@ -447,13 +466,20 @@ class _HomePageState extends ConsumerState<HomePage> {
                           ),
                         )
                       : AppText(
+                          overflow: TextOverflow.ellipsis,
                           '$count',
-                          style: Get.bodyLarge.px28.w800.copyWith(
+                          style: Get.bodyLarge.px26.w800.copyWith(
                             color: Get.disabledColor,
                           ),
                         ),
-                  4.verticalGap,
+                ],
+              ),
+              10.verticalGap,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   AppText(
+                    overflow: TextOverflow.ellipsis,
                     title.tr(context),
                     style: Get.bodyMedium.px13.w700.copyWith(
                       color: Get.disabledColor,
@@ -461,6 +487,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                   2.verticalGap,
                   AppText(
+                    overflow: TextOverflow.ellipsis,
                     subtitle.tr(context),
                     style: Get.bodySmall.px10.w500.copyWith(
                       color: Get.disabledColor.withValues(alpha: 0.6),
@@ -530,14 +557,14 @@ class _HomePageState extends ConsumerState<HomePage> {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16).rt,
+        padding: const EdgeInsets.all(10).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
-          borderRadius: BorderRadius.circular(16).rt,
+          borderRadius: BorderRadius.circular(30).rt,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
+              blurRadius: 2,
               offset: const Offset(0, 2),
             ),
           ],
@@ -545,12 +572,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(14).rt,
+              padding: const EdgeInsets.all(20).rt,
               decoration: BoxDecoration(
                 gradient: gradient,
                 borderRadius: BorderRadius.circular(12).rt,
               ),
-              child: Icon(icon, color: AppColors.white, size: 26.st),
+              child: Icon(icon, color: AppColors.white, size: 24.st),
             ),
             16.horizontalGap,
             Expanded(
@@ -594,10 +621,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(
+          overflow: TextOverflow.ellipsis,
           'main_services'.tr(context),
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        12.verticalGap,
+        7.verticalGap,
         _buildMainServiceCard(
           titleKey: 'soil_testing',
           descriptionKey: 'test_soil_quality',
@@ -607,7 +635,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             Get.to(const SoilTestingPage());
           },
         ),
-        12.verticalGap,
+        7.verticalGap,
         _buildMainServiceCard(
           titleKey: 'notices',
           descriptionKey: 'important_announcements',
@@ -617,7 +645,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             Get.to(const NoticesPage());
           },
         ),
-        12.verticalGap,
+        7.verticalGap,
         _buildMainServiceCard(
           titleKey: 'programs',
           descriptionKey: 'agricultural_development_programs',
@@ -653,7 +681,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 },
               ),
             ),
-            12.horizontalGap,
+            7.horizontalGap,
             Expanded(
               child: _buildDirectoryCard(
                 title: 'service_providers',
@@ -664,7 +692,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 },
               ),
             ),
-            12.horizontalGap,
+            7.horizontalGap,
             Expanded(
               child: _buildDirectoryCard(
                 title: 'emergency_contacts',
@@ -690,7 +718,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           'knowledge_base'.tr(context),
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        12.verticalGap,
+        10.verticalGap,
         Column(
           children: [
             Row(
@@ -761,10 +789,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18).rt,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
-          borderRadius: BorderRadius.circular(18).rt,
+          borderRadius: BorderRadius.circular(50).rt,
           border: Border.all(color: accentColor.withValues(alpha: 0.15)),
           boxShadow: [
             BoxShadow(
@@ -782,12 +810,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12).rt,
+              padding: const EdgeInsets.all(10).rt,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: accentColor.withValues(alpha: 0.12),
               ),
-              child: Icon(icon, color: accentColor, size: 28.st),
+              child: Icon(icon, color: accentColor, size: 24.st),
             ),
             16.horizontalGap,
             Expanded(
@@ -796,14 +824,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                 children: [
                   AppText(
                     titleKey.tr(context),
-                    style: Get.bodyLarge.px15.w700.copyWith(
+                    style: Get.bodyLarge.px14.w700.copyWith(
                       color: Get.disabledColor,
                     ),
                   ),
-                  4.verticalGap,
+
                   AppText(
                     descriptionKey.tr(context),
-                    style: Get.bodySmall.px12.w500.copyWith(
+                    style: Get.bodySmall.px11.w500.copyWith(
                       color: Get.disabledColor.withValues(alpha: 0.65),
                     ),
                     maxLines: 2,
@@ -833,7 +861,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8).rt,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(14).rt,
@@ -850,6 +878,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(10).rt,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
@@ -857,7 +886,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
               child: Icon(icon, color: color, size: 28.st),
             ),
-            10.verticalGap,
+            6.verticalGap,
             AppText(
               title.tr(context),
               style: Get.bodySmall.px11.w600.copyWith(color: Get.disabledColor),
@@ -881,74 +910,47 @@ class _HomePageState extends ConsumerState<HomePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 120.ht,
+        height: 40.ht,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              accentColor.withValues(alpha: 0.15),
-              accentColor.withValues(alpha: 0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+          color: accentColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16).rt,
+          border: Border.all(
+            color: accentColor.withValues(alpha: 0.15),
+            width: 1,
           ),
-          borderRadius: BorderRadius.circular(20).rt,
-          border: Border.all(color: accentColor.withValues(alpha: 0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: accentColor.withValues(alpha: 0.2),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
         ),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -6.rt,
-              bottom: -6.rt,
-              child: Icon(
-                icon,
-                size: 90.st,
-                color: accentColor.withValues(alpha: 0.08),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3).rt,
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4).rt,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+                child: Icon(icon, color: accentColor, size: 24.st),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(18).rt,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10).rt,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon, color: accentColor, size: 22.st),
+              16.horizontalGap,
+              Expanded(
+                child: AppText(
+                  title,
+                  style: Get.bodyLarge.px12.w600.copyWith(
+                    color: Get.disabledColor,
+                    height: 1.3,
                   ),
-                  12.verticalGap,
-                  Expanded(
-                    child: AppText(
-                      title,
-                      style: Get.bodyLarge.px16.w700.copyWith(
-                        color: Get.disabledColor,
-                        height: 1.2,
-                      ),
-                      maxLines: 2,
-                    ),
-                  ),
-                ],
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            Positioned(
-              right: 12.rt,
-              top: 12.rt,
-              child: Icon(
+              8.horizontalGap,
+              Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: accentColor.withValues(alpha: 0.8),
-                size: 16.st,
+                color: accentColor.withValues(alpha: 0.6),
+                size: 14.st,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -998,38 +1000,57 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
         12.verticalGap,
-        Container(
-          padding: const EdgeInsets.all(16).rt,
-          decoration: BoxDecoration(
-            color: Get.cardColor,
-            borderRadius: BorderRadius.circular(16).rt,
-            border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: isLoadingMarketPrices
-              ? const Center(child: CircularProgressIndicator())
-              : marketPricesError != null
-              ? _buildMarketPricesError()
-              : marketPrices.isEmpty
-              ? _buildMarketPricesEmpty()
-              : Column(
-                  children: [
-                    for (int i = 0; i < marketPrices.length; i++) ...[
-                      _buildMarketPriceRow(marketPrices[i]),
-                      if (i != marketPrices.length - 1)
-                        Divider(
+        ValueListenableBuilder<bool>(
+          valueListenable: isLoadingMarketPrices,
+          builder: (context, loading, child) {
+            return ValueListenableBuilder<String?>(
+              valueListenable: marketPricesError,
+              builder: (context, error, child) {
+                return ValueListenableBuilder<List<MarketPrice>>(
+                  valueListenable: marketPrices,
+                  builder: (context, prices, child) {
+                    return Container(
+                      padding: const EdgeInsets.all(16).rt,
+                      decoration: BoxDecoration(
+                        color: Get.cardColor,
+                        borderRadius: BorderRadius.circular(16).rt,
+                        border: Border.all(
                           color: Get.disabledColor.withValues(alpha: 0.1),
-                          height: 20,
                         ),
-                    ],
-                  ],
-                ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: loading
+                          ? const Center(child: CircularProgressIndicator())
+                          : error != null
+                          ? _buildMarketPricesError()
+                          : prices.isEmpty
+                          ? _buildMarketPricesEmpty()
+                          : Column(
+                              children: [
+                                for (int i = 0; i < prices.length; i++) ...[
+                                  _buildMarketPriceRow(prices[i]),
+                                  if (i != prices.length - 1)
+                                    Divider(
+                                      color: Get.disabledColor.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      height: 20,
+                                    ),
+                                ],
+                              ],
+                            ),
+                    );
+                  },
+                );
+              },
+            );
+          },
         ),
       ],
     );
@@ -1211,37 +1232,52 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   // ignore: unused_element
   Widget _buildTrendingProductsList() {
-    if (isLoadingProducts) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32).rt,
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      );
-    }
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLoadingProducts,
+      builder: (context, loading, child) {
+        if (loading) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32).rt,
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          );
+        }
 
-    if (productsError != null) {
-      return ErrorState(
-        subtitle: 'error_loading_products_subtitle'.tr(context),
-        onRetry: _loadTrendingProducts,
-      );
-    }
+        return ValueListenableBuilder<String?>(
+          valueListenable: productsError,
+          builder: (context, error, child) {
+            if (error != null) {
+              return ErrorState(
+                subtitle: 'error_loading_products_subtitle'.tr(context),
+                onRetry: _loadTrendingProducts,
+              );
+            }
 
-    if (trendingProducts.isEmpty) {
-      return EmptyState(
-        title: 'no_products_available'.tr(context),
-        subtitle: 'no_products_subtitle'.tr(context),
-        icon: Icons.shopping_bag_outlined,
-      );
-    }
+            return ValueListenableBuilder<List<Product>>(
+              valueListenable: trendingProducts,
+              builder: (context, products, child) {
+                if (products.isEmpty) {
+                  return EmptyState(
+                    title: 'no_products_available'.tr(context),
+                    subtitle: 'no_products_subtitle'.tr(context),
+                    icon: Icons.shopping_bag_outlined,
+                  );
+                }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: trendingProducts.length,
-      itemBuilder: (context, index) {
-        final product = trendingProducts[index];
-        return _buildProductCard(product);
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return _buildProductCard(product);
+                  },
+                );
+              },
+            );
+          },
+        );
       },
     );
   }

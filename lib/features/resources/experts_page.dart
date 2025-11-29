@@ -22,7 +22,7 @@ class ExpertsPage extends ConsumerStatefulWidget {
 
 class _ExpertsPageState extends ConsumerState<ExpertsPage> {
   List<Expert> _experts = [];
-  bool _isLoading = true;
+  final ValueNotifier<bool> _isLoading = ValueNotifier(true);
 
   @override
   void initState() {
@@ -30,23 +30,25 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
     _loadExperts();
   }
 
+  @override
+  void dispose() {
+    _isLoading.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadExperts() async {
-    setState(() {
-      _isLoading = true;
-    });
+    _isLoading.value = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final experts = await apiService.getExperts();
-      setState(() {
-        _experts = experts;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
       if (mounted) {
+        _experts = experts;
+        _isLoading.value = false;
+      }
+    } catch (e) {
+      if (mounted) {
+        _isLoading.value = false;
         Get.snackbar('error_loading_products'.tr(context));
       }
     }
@@ -129,13 +131,18 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
         elevation: 0,
         iconTheme: IconThemeData(color: Get.disabledColor),
       ),
-      body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
-          : _experts.isEmpty
-          ? _buildEmptyState(context)
-          : _buildExpertsList(context),
+      body: ValueListenableBuilder<bool>(
+        valueListenable: _isLoading,
+        builder: (context, isLoading, _) {
+          return isLoading
+              ? Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                )
+              : _experts.isEmpty
+              ? _buildEmptyState(context)
+              : _buildExpertsList(context);
+        },
+      ),
     );
   }
 

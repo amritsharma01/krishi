@@ -23,6 +23,9 @@ class Product {
   final String? approvalStatus;
   final String? rejectionReason;
   final bool isAvailable;
+  final bool? recommend;
+  final bool? freeDelivery;
+  final String? rating;
 
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -52,6 +55,9 @@ class Product {
     this.approvalStatus,
     this.rejectionReason,
     required this.isAvailable,
+    this.recommend,
+    this.freeDelivery,
+    this.rating,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -85,6 +91,9 @@ class Product {
         approvalStatus: json['approval_status'] as String?,
         rejectionReason: json['rejection_reason'] as String?,
         isAvailable: (json['is_available'] as bool?) ?? true,
+        recommend: json['recommend'] as bool?,
+        freeDelivery: json['free_delivery'] as bool?,
+        rating: json['rating']?.toString(),
         createdAt: json['created_at'] != null
             ? DateTime.parse(json['created_at'] as String)
             : DateTime.now(),
@@ -126,6 +135,9 @@ class Product {
       'approval_status': approvalStatus,
       'rejection_reason': rejectionReason,
       'is_available': isAvailable,
+      'recommend': recommend,
+      'free_delivery': freeDelivery,
+      'rating': rating,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };

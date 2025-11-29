@@ -9,7 +9,9 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/cart/cart_page.dart';
 import 'package:krishi/features/cart/checkout_page.dart';
+import 'package:krishi/features/marketplace/providers/marketplace_providers.dart';
 import 'package:krishi/features/seller/seller_public_listings_page.dart';
 import 'package:krishi/models/comment.dart';
 import 'package:krishi/models/product.dart';
@@ -26,17 +28,11 @@ class ProductDetailPage extends ConsumerStatefulWidget {
 
 class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     with SingleTickerProviderStateMixin {
-  List<Review> reviews = [];
-  List<Comment> comments = [];
-  bool isLoadingReviews = true;
-  bool isLoadingComments = true;
-  bool reviewsError = false;
-  bool commentsError = false;
-  bool isInCart = false;
-  bool isAddingToCart = false;
-  bool _isFetchingSellerListings = false;
-  bool _isSubmittingComment = false;
-  int _feedbackTabIndex = 0;
+  final ValueNotifier<bool> isInCart = ValueNotifier(false);
+  final ValueNotifier<bool> isAddingToCart = ValueNotifier(false);
+  final ValueNotifier<bool> _isFetchingSellerListings = ValueNotifier(false);
+  final ValueNotifier<bool> _isSubmittingComment = ValueNotifier(false);
+  final ValueNotifier<int> _feedbackTabIndex = ValueNotifier(0);
 
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _reviewCommentController =
@@ -51,8 +47,6 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    _loadReviews();
-    _loadComments();
   }
 
   @override
@@ -60,66 +54,17 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     _commentController.dispose();
     _reviewCommentController.dispose();
     _animationController.dispose();
+    isInCart.dispose();
+    isAddingToCart.dispose();
+    _isFetchingSellerListings.dispose();
+    _isSubmittingComment.dispose();
+    _feedbackTabIndex.dispose();
     super.dispose();
   }
 
-  Future<void> _loadReviews() async {
-    setState(() {
-      isLoadingReviews = true;
-      reviewsError = false;
-    });
-
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final reviewsData = await apiService.getProductReviews(widget.product.id);
-      if (mounted) {
-        setState(() {
-          reviews = reviewsData;
-          isLoadingReviews = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          reviewsError = true;
-          isLoadingReviews = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _loadComments() async {
-    setState(() {
-      isLoadingComments = true;
-      commentsError = false;
-    });
-
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final commentsData = await apiService.getProductComments(
-        widget.product.id,
-      );
-      if (mounted) {
-        setState(() {
-          comments = commentsData;
-          isLoadingComments = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          commentsError = true;
-          isLoadingComments = false;
-        });
-      }
-    }
-  }
-
   Future<void> _handleSellerInfoTap() async {
-    if (_isFetchingSellerListings) return;
-    setState(() {
-      _isFetchingSellerListings = true;
-    });
+    if (_isFetchingSellerListings.value) return;
+    _isFetchingSellerListings.value = true;
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final latestProduct = await apiService.getProduct(widget.product.id);
@@ -148,39 +93,35 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       Get.snackbar('error_loading_seller'.tr(context), color: Colors.red);
     } finally {
       if (mounted) {
-        setState(() {
-          _isFetchingSellerListings = false;
-        });
+        _isFetchingSellerListings.value = false;
       }
     }
   }
 
   Future<void> _addToCart() async {
-    if (isInCart) return;
+    if (isInCart.value) return;
 
-    setState(() => isAddingToCart = true);
+    isAddingToCart.value = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.addToCart(productId: widget.product.id, quantity: 1);
       if (mounted) {
-        setState(() {
-          isInCart = true;
-          isAddingToCart = false;
-        });
+        isInCart.value = true;
+        isAddingToCart.value = false;
         _animationController.forward();
         Get.snackbar('added_to_cart'.tr(context), color: Colors.green);
       }
     } catch (e) {
       if (mounted) {
-        setState(() => isAddingToCart = false);
+        isAddingToCart.value = false;
       }
       Get.snackbar('error_adding_to_cart'.tr(context), color: Colors.red);
     }
   }
 
   Future<void> _checkoutDirectly() async {
-    setState(() => isAddingToCart = true);
+    isAddingToCart.value = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
@@ -191,16 +132,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       // Get the updated cart (will contain only this product)
       final cart = await apiService.getCart();
       if (mounted) {
-        setState(() {
-          isInCart = true;
-          isAddingToCart = false;
-        });
+        isInCart.value = true;
+        isAddingToCart.value = false;
         // Navigate directly to checkout page (user won't see cart page)
         Get.to(CheckoutPage(cart: cart));
       }
     } catch (e) {
       if (mounted) {
-        setState(() => isAddingToCart = false);
+        isAddingToCart.value = false;
       }
       Get.snackbar('error_adding_to_cart'.tr(context), color: Colors.red);
     }
@@ -208,21 +147,21 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
 
   Future<void> _submitComment() async {
     final text = _commentController.text.trim();
-    if (text.isEmpty || _isSubmittingComment) return;
+    if (text.isEmpty || _isSubmittingComment.value) return;
 
-    setState(() => _isSubmittingComment = true);
+    _isSubmittingComment.value = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.addComment(widget.product.id, text);
       _commentController.clear();
-      await _loadComments();
+      ref.invalidate(productCommentsProvider(widget.product.id));
       Get.snackbar('comment_added'.tr(context), color: Colors.green);
     } catch (e) {
       Get.snackbar('error_adding_comment'.tr(context), color: Colors.red);
     } finally {
       if (mounted) {
-        setState(() => _isSubmittingComment = false);
+        _isSubmittingComment.value = false;
       }
     }
   }
@@ -244,7 +183,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       );
       _reviewCommentController.clear();
       _rating = 5;
-      _loadReviews();
+      ref.invalidate(productReviewsProvider(widget.product.id));
       Get.pop();
       Get.snackbar('review_added'.tr(context), color: Colors.green);
     } catch (e) {
@@ -278,6 +217,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
         centerTitle: false,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart_outlined, color: Get.disabledColor),
+            onPressed: () {
+              Get.to(const CartPage());
+            },
+          ),
+        ],
       ),
       body: ListView(
         physics: const BouncingScrollPhysics(),
@@ -300,131 +247,144 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   }
 
   Widget _buildAddToCartButton() {
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: EdgeInsets.fromLTRB(16.rt, 12.ht, 16.rt, 16.ht),
-        decoration: BoxDecoration(
-          color: Get.cardColor,
-          borderRadius: BorderRadius.vertical(
-            top: const Radius.circular(20),
-          ).rt,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 18,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            // Add to Cart Button
-            Expanded(
-              child: ElevatedButton(
-                onPressed: isAddingToCart ? null : _addToCart,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: isInCart
-                      ? Colors.green.shade500
-                      : AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 16.rt),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                  ),
-                  elevation: isInCart ? 2 : 3,
-                  shadowColor: (isInCart ? Colors.green : AppColors.primary)
-                      .withValues(alpha: 0.3),
+    return ValueListenableBuilder<bool>(
+      valueListenable: isAddingToCart,
+      builder: (context, adding, child) {
+        return ValueListenableBuilder<bool>(
+          valueListenable: isInCart,
+          builder: (context, inCart, child) {
+            return SafeArea(
+              top: false,
+              child: Container(
+                padding: EdgeInsets.fromLTRB(16.rt, 12.ht, 16.rt, 16.ht),
+                decoration: BoxDecoration(
+                  color: Get.cardColor,
+                  borderRadius: BorderRadius.vertical(
+                    top: const Radius.circular(20),
+                  ).rt,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.06),
+                      blurRadius: 18,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
                 ),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: isAddingToCart
-                      ? SizedBox(
-                          key: const ValueKey('loading'),
-                          height: 20.st,
-                          width: 20.st,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2.5,
+                child: Row(
+                  children: [
+                    // Add to Cart Button
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: adding ? null : _addToCart,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: inCart
+                              ? Colors.green.shade500
+                              : AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 16.rt),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12).rt,
                           ),
-                        )
-                      : isInCart
-                      ? Row(
-                          key: const ValueKey('added'),
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.check_circle, size: 20.st),
-                            8.horizontalGap,
-                            AppText(
-                              'added_to_cart'.tr(context),
-                              style: Get.bodyMedium.px15.w600.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          key: const ValueKey('add'),
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.shopping_cart, size: 20.st),
-                            8.horizontalGap,
-                            AppText(
-                              'add_to_cart'.tr(context),
-                              style: Get.bodyMedium.px15.w600.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                          elevation: inCart ? 2 : 3,
+                          shadowColor:
+                              (inCart ? Colors.green : AppColors.primary)
+                                  .withValues(alpha: 0.3),
                         ),
-                ),
-              ),
-            ),
-            12.horizontalGap,
-            // Checkout Button
-            Expanded(
-              child: ElevatedButton(
-                onPressed: isAddingToCart ? null : _checkoutDirectly,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary.withValues(alpha: 0.9),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 16.rt),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12).rt,
-                  ),
-                  elevation: 3,
-                  shadowColor: AppColors.primary.withValues(alpha: 0.3),
-                ),
-                child: isAddingToCart
-                    ? SizedBox(
-                        height: 20.st,
-                        width: 20.st,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2.5,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: adding
+                              ? SizedBox(
+                                  key: const ValueKey('loading'),
+                                  height: 20.st,
+                                  width: 20.st,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : inCart
+                              ? Row(
+                                  key: const ValueKey('added'),
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.check_circle, size: 20.st),
+                                    8.horizontalGap,
+                                    AppText(
+                                      'added_to_cart'.tr(context),
+                                      style: Get.bodyMedium.px15.w600.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  key: const ValueKey('add'),
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.shopping_cart, size: 20.st),
+                                    8.horizontalGap,
+                                    AppText(
+                                      'add_to_cart'.tr(context),
+                                      style: Get.bodyMedium.px15.w600.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                         ),
-                      )
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.payment, size: 20.st),
-                          8.horizontalGap,
-                          AppText(
-                            'checkout'.tr(context),
-                            style: Get.bodyMedium.px15.w600.copyWith(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
                       ),
+                    ),
+                    12.horizontalGap,
+                    // Checkout Button
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: adding ? null : _checkoutDirectly,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary.withValues(
+                            alpha: 0.9,
+                          ),
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 16.rt),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12).rt,
+                          ),
+                          elevation: 3,
+                          shadowColor: AppColors.primary.withValues(alpha: 0.3),
+                        ),
+                        child: adding
+                            ? SizedBox(
+                                height: 20.st,
+                                width: 20.st,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.payment, size: 20.st),
+                                  8.horizontalGap,
+                                  AppText(
+                                    'checkout'.tr(context),
+                                    style: Get.bodyMedium.px15.w600.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -515,21 +475,6 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     );
   }
 
-  Widget _heroMetaPill(String text) {
-    if (text.trim().isEmpty) return const SizedBox.shrink();
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.wt, vertical: 6.ht),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(30).rt,
-      ),
-      child: AppText(
-        text,
-        style: Get.bodySmall.px11.w600.copyWith(color: Colors.white),
-      ),
-    );
-  }
-
   Widget _sectionCard({required Widget child}) {
     return Container(
       width: double.infinity,
@@ -571,13 +516,55 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     );
   }
 
+  Widget _featureChip(IconData icon, String label, Color color) {
+    // Get darker shade for text/icon
+    final textColor = color == Colors.amber
+        ? Colors.amber.shade700
+        : color == Colors.green
+        ? Colors.green.shade700
+        : color;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6).rt,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(30).rt,
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.st, color: textColor),
+          6.horizontalGap,
+          AppText(
+            label,
+            style: Get.bodySmall.px11.w600.copyWith(color: textColor),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProductInfo() {
-    final averageRating = _calculateAverageRating();
+    final reviewsAsync = ref.watch(productReviewsProvider(widget.product.id));
+    final reviews = reviewsAsync.maybeWhen(
+      data: (list) => list,
+      orElse: () => <Review>[],
+    );
+    final averageRating = _calculateAverageRating(reviews);
     final chips = <Widget>[
       if (widget.product.categoryName.trim().isNotEmpty)
         _metaChip(Icons.category_outlined, widget.product.categoryName),
       if (widget.product.unitName.trim().isNotEmpty)
         _metaChip(Icons.monitor_weight_outlined, widget.product.unitName),
+      if (widget.product.freeDelivery == true)
+        _featureChip(
+          Icons.local_shipping,
+          'free_delivery'.tr(context),
+          Colors.green,
+        ),
+      if (widget.product.recommend == true)
+        _featureChip(Icons.star, 'recommended'.tr(context), Colors.amber),
     ];
 
     return _sectionCard(
@@ -681,20 +668,23 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                   ],
                 ),
               ),
-              _isFetchingSellerListings
-                  ? SizedBox(
-                      width: 18.st,
-                      height: 18.st,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.primary,
+              ValueListenableBuilder<bool>(
+                valueListenable: _isFetchingSellerListings,
+                builder: (context, fetching, _) => fetching
+                    ? SizedBox(
+                        width: 18.st,
+                        height: 18.st,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16.st,
+                        color: Get.disabledColor.withValues(alpha: 0.3),
                       ),
-                    )
-                  : Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16.st,
-                      color: Get.disabledColor.withValues(alpha: 0.3),
-                    ),
+              ),
             ],
           ),
         ),
@@ -754,17 +744,22 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
           12.verticalGap,
           _buildFeedbackTabs(),
           16.verticalGap,
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            child: _feedbackTabIndex == 0
-                ? KeyedSubtree(
-                    key: const ValueKey('reviews'),
-                    child: _buildReviewsPanel(),
-                  )
-                : KeyedSubtree(
-                    key: const ValueKey('comments'),
-                    child: _buildCommentsPanel(),
-                  ),
+          ValueListenableBuilder<int>(
+            valueListenable: _feedbackTabIndex,
+            builder: (context, tabIndex, child) {
+              return AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: tabIndex == 0
+                    ? KeyedSubtree(
+                        key: const ValueKey('reviews'),
+                        child: _buildReviewsPanel(),
+                      )
+                    : KeyedSubtree(
+                        key: const ValueKey('comments'),
+                        child: _buildCommentsPanel(),
+                      ),
+              );
+            },
           ),
         ],
       ),
@@ -773,173 +768,201 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
 
   Widget _buildFeedbackTabs() {
     final tabs = ['reviews'.tr(context), 'comments'.tr(context)];
-    return Container(
-      padding: const EdgeInsets.all(4).rt,
-      decoration: BoxDecoration(
-        color: Get.disabledColor.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12).rt,
-      ),
-      child: Row(
-        children: List.generate(tabs.length, (index) {
-          final isActive = _feedbackTabIndex == index;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () {
-                if (_feedbackTabIndex == index) return;
-                setState(() => _feedbackTabIndex = index);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(vertical: 10.ht),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? AppColors.primary.withValues(alpha: 0.15)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10).rt,
-                ),
-                child: Center(
-                  child: AppText(
-                    tabs[index],
-                    style: Get.bodySmall.px13.w700.copyWith(
-                      color: isActive ? AppColors.primary : Get.disabledColor,
+    return ValueListenableBuilder<int>(
+      valueListenable: _feedbackTabIndex,
+      builder: (context, tabIndex, child) {
+        return Container(
+          padding: const EdgeInsets.all(4).rt,
+          decoration: BoxDecoration(
+            color: Get.disabledColor.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(12).rt,
+          ),
+          child: Row(
+            children: List.generate(tabs.length, (index) {
+              final isActive = tabIndex == index;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    if (tabIndex == index) return;
+                    _feedbackTabIndex.value = index;
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: EdgeInsets.symmetric(vertical: 10.ht),
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? AppColors.primary.withValues(alpha: 0.15)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10).rt,
+                    ),
+                    child: Center(
+                      child: AppText(
+                        tabs[index],
+                        style: Get.bodySmall.px13.w700.copyWith(
+                          color: isActive
+                              ? AppColors.primary
+                              : Get.disabledColor,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          );
-        }),
-      ),
+              );
+            }),
+          ),
+        );
+      },
     );
   }
 
   Widget _buildReviewsPanel() {
-    if (isLoadingReviews) {
-      return Center(
+    final reviewsAsync = ref.watch(productReviewsProvider(widget.product.id));
+
+    return reviewsAsync.when(
+      data: (reviewsList) {
+        if (reviewsList.isEmpty) {
+          return AppText(
+            'no_reviews_yet'.tr(context),
+            style: Get.bodySmall.px13.copyWith(
+              color: Get.disabledColor.withValues(alpha: 0.7),
+            ),
+          );
+        }
+        return Column(children: reviewsList.map(_buildReviewCard).toList());
+      },
+      loading: () => Center(
         child: Padding(
           padding: const EdgeInsets.all(16).rt,
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
-      );
-    }
-
-    if (reviewsError) {
-      return TextButton(
-        onPressed: _loadReviews,
+      ),
+      error: (error, stack) => TextButton(
+        onPressed: () {
+          ref.invalidate(productReviewsProvider(widget.product.id));
+        },
         child: AppText(
           'error_loading_reviews'.tr(context),
           style: Get.bodySmall.px12.w600.copyWith(color: AppColors.primary),
         ),
-      );
-    }
-
-    if (reviews.isEmpty) {
-      return AppText(
-        'no_reviews_yet'.tr(context),
-        style: Get.bodySmall.px13.copyWith(
-          color: Get.disabledColor.withValues(alpha: 0.7),
-        ),
-      );
-    }
-
-    return Column(children: reviews.map(_buildReviewCard).toList());
+      ),
+    );
   }
 
   Widget _buildCommentsPanel() {
+    final commentsAsync = ref.watch(productCommentsProvider(widget.product.id));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildCommentComposer(),
         6.verticalGap,
-        if (isLoadingComments)
-          Center(
+        commentsAsync.when(
+          data: (commentsList) {
+            if (commentsList.isEmpty) {
+              return AppText(
+                'no_comments_yet'.tr(context),
+                style: Get.bodySmall.px13.copyWith(
+                  color: Get.disabledColor.withValues(alpha: 0.7),
+                ),
+              );
+            }
+            return Column(
+              children: commentsList.map(_buildCommentCard).toList(),
+            );
+          },
+          loading: () => Center(
             child: Padding(
               padding: const EdgeInsets.all(12).rt,
               child: CircularProgressIndicator(color: AppColors.primary),
             ),
-          )
-        else if (commentsError)
-          TextButton(
-            onPressed: _loadComments,
+          ),
+          error: (error, stack) => TextButton(
+            onPressed: () {
+              ref.invalidate(productCommentsProvider(widget.product.id));
+            },
             child: AppText(
               'error_loading_comments'.tr(context),
               style: Get.bodySmall.px12.w600.copyWith(color: AppColors.primary),
             ),
-          )
-        else if (comments.isEmpty)
-          AppText(
-            'no_comments_yet'.tr(context),
-            style: Get.bodySmall.px13.copyWith(
-              color: Get.disabledColor.withValues(alpha: 0.7),
-            ),
-          )
-        else
-          ...comments.map(_buildCommentCard),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildCommentComposer() {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.08)),
-        borderRadius: BorderRadius.circular(14).rt,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8).rt,
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _commentController,
-              decoration: InputDecoration(
-                hintText: 'add_comment'.tr(context),
-                border: InputBorder.none,
-              ),
-              minLines: 1,
-              maxLines: 3,
+    return ValueListenableBuilder<bool>(
+      valueListenable: _isSubmittingComment,
+      builder: (context, submitting, child) {
+        return Container(
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Get.disabledColor.withValues(alpha: 0.08),
             ),
+            borderRadius: BorderRadius.circular(14).rt,
           ),
-          12.horizontalGap,
-          ElevatedButton(
-            onPressed: _isSubmittingComment ? null : _submitComment,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10).rt,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8).rt,
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _commentController,
+                  decoration: InputDecoration(
+                    hintText: 'add_comment'.tr(context),
+                    border: InputBorder.none,
+                  ),
+                  minLines: 1,
+                  maxLines: 3,
+                ),
               ),
-            ),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: _isSubmittingComment
-                  ? SizedBox(
-                      key: const ValueKey('comment-loading'),
-                      width: 18.st,
-                      height: 18.st,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : Row(
-                      key: const ValueKey('comment-action'),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.send_rounded, size: 16.st),
-                        6.horizontalGap,
-                        AppText(
-                          'add_comment'.tr(context),
-                          style: Get.bodySmall.px12.w600.copyWith(
-                            color: Colors.white,
+              12.horizontalGap,
+              ElevatedButton(
+                onPressed: submitting ? null : _submitComment,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.wt,
+                    vertical: 12.ht,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10).rt,
+                  ),
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: submitting
+                      ? SizedBox(
+                          key: const ValueKey('comment-loading'),
+                          width: 18.st,
+                          height: 18.st,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
+                        )
+                      : Row(
+                          key: const ValueKey('comment-action'),
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.send_rounded, size: 16.st),
+                            6.horizontalGap,
+                            AppText(
+                              'add_comment'.tr(context),
+                              style: Get.bodySmall.px12.w600.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-            ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -1101,9 +1124,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                     (index) => GestureDetector(
                       onTap: () {
                         setModalState(() {
-                          setState(() {
-                            _rating = index + 1;
-                          });
+                          _rating = index + 1;
                         });
                       },
                       child: Icon(
@@ -1158,7 +1179,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     );
   }
 
-  double _calculateAverageRating() {
+  double _calculateAverageRating(List<Review> reviews) {
     if (reviews.isEmpty) return 0.0;
     return reviews.map((r) => r.rating).reduce((a, b) => a + b) /
         reviews.length;

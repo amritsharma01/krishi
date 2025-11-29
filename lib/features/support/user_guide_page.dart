@@ -22,8 +22,8 @@ class UserGuidePage extends ConsumerStatefulWidget {
 
 class _UserGuidePageState extends ConsumerState<UserGuidePage> {
   List<UserManual> _manuals = [];
-  bool _isLoading = true;
-  String _selectedCategory = 'all';
+  final ValueNotifier<bool> _isLoading = ValueNotifier(true);
+  final ValueNotifier<String> _selectedCategory = ValueNotifier('all');
 
   Map<String, String> _getCategories(BuildContext context) {
     return {
@@ -58,25 +58,28 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
     _loadManuals();
   }
 
+  @override
+  void dispose() {
+    _isLoading.dispose();
+    _selectedCategory.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadManuals({String? category}) async {
-    setState(() {
-      _isLoading = true;
-    });
+    _isLoading.value = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final manuals = await apiService.getUserManuals(
         category: category == 'all' ? null : category,
       );
-      setState(() {
-        _manuals = manuals;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
       if (mounted) {
+        _manuals = manuals;
+        _isLoading.value = false;
+      }
+    } catch (e) {
+      if (mounted) {
+        _isLoading.value = false;
         Get.snackbar('error_loading_products'.tr(context));
       }
     }
@@ -99,13 +102,18 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
         children: [
           _buildCategoryFilter(context),
           Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  )
-                : _manuals.isEmpty
-                ? _buildEmptyState(context)
-                : _buildManualsList(context),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isLoading,
+              builder: (context, isLoading, _) {
+                return isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(color: AppColors.primary),
+                      )
+                    : _manuals.isEmpty
+                    ? _buildEmptyState(context)
+                    : _buildManualsList(context);
+              },
+            ),
           ),
         ],
       ),
@@ -114,48 +122,51 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
 
   Widget _buildCategoryFilter(BuildContext context) {
     final categories = _getCategories(context);
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
-        ).rt,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: categories.entries.map((entry) {
-            final isSelected = _selectedCategory == entry.key;
-            final color = _categoryColors[entry.key] ?? AppColors.primary;
-            final icon = entry.key == 'all'
-                ? Icons.all_inclusive
-                : _categoryIcons[entry.key] ?? Icons.help_outline_rounded;
-            return Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: _buildFilterPill(
-                label: entry.value,
-                icon: icon,
-                color: color,
-                isSelected: isSelected,
-                onTap: () {
-                  setState(() {
-                    _selectedCategory = entry.key;
-                  });
-                  _loadManuals(category: entry.key);
-                },
+    return ValueListenableBuilder<String>(
+      valueListenable: _selectedCategory,
+      builder: (context, selectedCategory, _) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
+          decoration: BoxDecoration(
+            color: Get.cardColor,
+            borderRadius: BorderRadius.vertical(
+              bottom: const Radius.circular(28),
+            ).rt,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 6),
               ),
-            );
-          }).toList(),
-        ),
-      ),
+            ],
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: categories.entries.map((entry) {
+                final isSelected = selectedCategory == entry.key;
+                final color = _categoryColors[entry.key] ?? AppColors.primary;
+                final icon = entry.key == 'all'
+                    ? Icons.all_inclusive
+                    : _categoryIcons[entry.key] ?? Icons.help_outline_rounded;
+                return Padding(
+                  padding: EdgeInsets.only(right: 8.w),
+                  child: _buildFilterPill(
+                    label: entry.value,
+                    icon: icon,
+                    color: color,
+                    isSelected: isSelected,
+                    onTap: () {
+                      _selectedCategory.value = entry.key;
+                      _loadManuals(category: entry.key);
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -227,7 +238,7 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
 
   Widget _buildManualsList(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: () => _loadManuals(category: _selectedCategory),
+      onRefresh: () => _loadManuals(category: _selectedCategory.value),
       child: ListView.builder(
         padding: EdgeInsets.all(16.rt),
         itemCount: _manuals.length,

@@ -622,15 +622,20 @@ class KrishiApiService {
     required String buyerName,
     required String buyerAddress,
     required String buyerPhoneNumber,
+    String? messageToSeller,
   }) async {
     try {
+      final data = {
+        'buyer_name': buyerName,
+        'buyer_address': buyerAddress,
+        'buyer_phone_number': buyerPhoneNumber,
+      };
+      if (messageToSeller != null && messageToSeller.isNotEmpty) {
+        data['message_to_seller'] = messageToSeller;
+      }
       final response = await apiManager.post(
         ApiEndpoints.checkout,
-        data: {
-          'buyer_name': buyerName,
-          'buyer_address': buyerAddress,
-          'buyer_phone_number': buyerPhoneNumber,
-        },
+        data: data,
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
@@ -706,9 +711,49 @@ class KrishiApiService {
         ApiEndpoints.myPurchases,
         queryParameters: {'page': page},
       );
-      return _parsePaginatedResponse(
-        response.data,
-        (json) => Order.fromJson(json),
+      
+      // Check if response is a list or paginated object
+      List<dynamic> results;
+      int? count;
+      String? next;
+      String? previous;
+      
+      if (response.data is List) {
+        // Direct list response
+        results = response.data as List<dynamic>;
+        count = results.length;
+        next = null;
+        previous = null;
+      } else {
+        // Paginated response
+        final data = response.data as Map<String, dynamic>;
+        results = data['results'] as List<dynamic>? ?? [];
+        count = data['count'] as int?;
+        next = data['next'] as String?;
+        previous = data['previous'] as String?;
+      }
+      
+      // Parse orders directly from response (list API already includes all needed data)
+      // The simplified response has: id, created_at, total_price, items_count, status
+      // Order.fromJson can handle missing fields with defaults
+      final orders = results.map((item) {
+        final orderData = item as Map<String, dynamic>;
+        // Ensure updated_at exists (use created_at if not present)
+        if (!orderData.containsKey('updated_at') && orderData.containsKey('created_at')) {
+          orderData['updated_at'] = orderData['created_at'];
+        }
+        // Map items_count to items array if items are not present
+        if (!orderData.containsKey('items') && orderData.containsKey('items_count')) {
+          orderData['items'] = [];
+        }
+        return Order.fromJson(orderData);
+      }).toList();
+      
+      return PaginatedResponse(
+        count: count ?? orders.length,
+        next: next,
+        previous: previous,
+        results: orders,
       );
     } catch (e) {
       rethrow;
@@ -721,32 +766,71 @@ class KrishiApiService {
     return response.results;
   }
 
-  /// Get my sales (orders where user is the seller) with pagination support
-  Future<PaginatedResponse<Order>> getMySalesPaginated({int page = 1}) async {
+  /// Get my sales (order items where user is the seller) with pagination support
+  Future<PaginatedResponse<OrderItemSeller>> getMySalesPaginated({int page = 1}) async {
     try {
       final response = await apiManager.get(
         ApiEndpoints.mySales,
         queryParameters: {'page': page},
       );
-      return _parsePaginatedResponse(
-        response.data,
-        (json) => Order.fromJson(json),
+      
+      // Check if response is a list or paginated object
+      List<dynamic> results;
+      int? count;
+      String? next;
+      String? previous;
+      
+      if (response.data is List) {
+        // Direct list response
+        results = response.data as List<dynamic>;
+        count = results.length;
+        next = null;
+        previous = null;
+      } else {
+        // Paginated response
+        final data = response.data as Map<String, dynamic>;
+        results = data['results'] as List<dynamic>? ?? [];
+        count = data['count'] as int?;
+        next = data['next'] as String?;
+        previous = data['previous'] as String?;
+      }
+      
+      // Parse order items directly from response
+      final orderItems = results
+          .map((item) => OrderItemSeller.fromJson(item as Map<String, dynamic>))
+          .toList();
+      
+      return PaginatedResponse(
+        count: count ?? orderItems.length,
+        next: next,
+        previous: previous,
+        results: orderItems,
       );
     } catch (e) {
       rethrow;
     }
   }
 
-  /// Get my sales (orders where user is the seller)
-  Future<List<Order>> getMySales() async {
+  /// Get my sales (order items where user is the seller)
+  Future<List<OrderItemSeller>> getMySales() async {
     final response = await getMySalesPaginated(page: 1);
     return response.results;
   }
 
-  /// Accept an order (seller only)
-  Future<Order> acceptOrder(int id) async {
+  /// Get order item details (for seller)
+  Future<OrderItemSeller> getOrderItemDetail(int itemId) async {
     try {
-      final response = await apiManager.post(ApiEndpoints.acceptOrder(id));
+      final response = await apiManager.get(ApiEndpoints.orderItemDetail(itemId));
+      return OrderItemSeller.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Start delivery for an order (seller only - marks as IN_TRANSIT)
+  Future<Order> startDelivery(int id) async {
+    try {
+      final response = await apiManager.post(ApiEndpoints.startDelivery(id));
       return Order.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
@@ -773,13 +857,10 @@ class KrishiApiService {
     }
   }
 
-  /// Mark order as in transit (seller only)
-  Future<Order> markOrderInTransit(int id) async {
+  /// Delete an order (buyer only, pending orders only)
+  Future<void> deleteOrder(int id) async {
     try {
-      final response = await apiManager.post(
-        ApiEndpoints.markOrderInTransit(id),
-      );
-      return Order.fromJson(response.data as Map<String, dynamic>);
+      await apiManager.delete(ApiEndpoints.deleteOrder(id));
     } catch (e) {
       rethrow;
     }

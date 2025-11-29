@@ -25,8 +25,8 @@ class _ProgramsPageState extends ConsumerState<ProgramsPage> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _searchDebounce;
 
-  bool _isInitialLoading = true;
-  bool _isLoadingMore = false;
+  final ValueNotifier<bool> _isInitialLoading = ValueNotifier(true);
+  final ValueNotifier<bool> _isLoadingMore = ValueNotifier(false);
   bool _hasMore = true;
   int _currentPage = 1;
   String _searchQuery = '';
@@ -41,28 +41,24 @@ class _ProgramsPageState extends ConsumerState<ProgramsPage> {
   void dispose() {
     _searchController.dispose();
     _searchDebounce?.cancel();
+    _isInitialLoading.dispose();
+    _isLoadingMore.dispose();
     super.dispose();
   }
 
   Future<void> _loadPrograms({bool refresh = false}) async {
-    if (_isLoadingMore && !refresh) return;
+    if (_isLoadingMore.value && !refresh) return;
     if (!_hasMore && !refresh && _currentPage > 1) return;
 
     if (refresh) {
-      setState(() {
-        _currentPage = 1;
-        _hasMore = true;
-      });
+      _currentPage = 1;
+      _hasMore = true;
     }
 
     if (_currentPage == 1) {
-      setState(() {
-        _isInitialLoading = true;
-      });
+      _isInitialLoading.value = true;
     } else {
-      setState(() {
-        _isLoadingMore = true;
-      });
+      _isLoadingMore.value = true;
     }
 
     try {
@@ -74,25 +70,21 @@ class _ProgramsPageState extends ConsumerState<ProgramsPage> {
             ordering: '-created_at',
           );
       if (!mounted) return;
-      setState(() {
-        if (_currentPage == 1) {
-          _programs
-            ..clear()
-            ..addAll(response.results);
-        } else {
-          _programs.addAll(response.results);
-        }
-        _hasMore = response.next != null;
-        _currentPage += 1;
-        _isInitialLoading = false;
-        _isLoadingMore = false;
-      });
+      if (_currentPage == 1) {
+        _programs
+          ..clear()
+          ..addAll(response.results);
+      } else {
+        _programs.addAll(response.results);
+      }
+      _hasMore = response.next != null;
+      _currentPage += 1;
+      _isInitialLoading.value = false;
+      _isLoadingMore.value = false;
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _isInitialLoading = false;
-        _isLoadingMore = false;
-      });
+      _isInitialLoading.value = false;
+      _isLoadingMore.value = false;
       if (e is! FormatException) {
         Get.snackbar('failed_to_load_programs'.tr(context));
       }
@@ -162,11 +154,16 @@ class _ProgramsPageState extends ConsumerState<ProgramsPage> {
         children: [
           _buildHeader(context),
           Expanded(
-            child: _isInitialLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _programs.isEmpty
-                ? _buildEmptyState(context)
-                : _buildProgramsList(),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isInitialLoading,
+              builder: (context, isInitialLoading, _) {
+                return isInitialLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _programs.isEmpty
+                    ? _buildEmptyState(context)
+                    : _buildProgramsList();
+              },
+            ),
           ),
         ],
       ),
@@ -257,31 +254,36 @@ class _ProgramsPageState extends ConsumerState<ProgramsPage> {
 
   Widget _buildLoadMoreButton() {
     if (!_hasMore) return const SizedBox.shrink();
-    return Padding(
-      padding: EdgeInsets.only(top: 8.ht),
-      child: ElevatedButton(
-        onPressed: _isLoadingMore ? null : () => _loadPrograms(),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Get.primaryColor,
-          minimumSize: const Size(double.infinity, 48),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16).rt,
-          ),
-        ),
-        child: _isLoadingMore
-            ? SizedBox(
-                height: 18.st,
-                width: 18.st,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : AppText(
-                'load_more'.tr(context),
-                style: Get.bodyMedium.copyWith(color: Colors.white),
+    return ValueListenableBuilder<bool>(
+      valueListenable: _isLoadingMore,
+      builder: (context, isLoadingMore, _) {
+        return Padding(
+          padding: EdgeInsets.only(top: 8.ht),
+          child: ElevatedButton(
+            onPressed: isLoadingMore ? null : () => _loadPrograms(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Get.primaryColor,
+              minimumSize: const Size(double.infinity, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16).rt,
               ),
-      ),
+            ),
+            child: isLoadingMore
+                ? SizedBox(
+                    height: 18.st,
+                    width: 18.st,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : AppText(
+                    'load_more'.tr(context),
+                    style: Get.bodyMedium.copyWith(color: Colors.white),
+                  ),
+          ),
+        );
+      },
     );
   }
 

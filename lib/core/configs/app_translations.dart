@@ -230,6 +230,8 @@ class AppTranslations {
       'en': 'Add New Product',
       'ne': 'नयाँ उत्पादन थप्नुहोस्',
     },
+    'recommended': {'en': 'Recommended', 'ne': 'सिफारिस गरिएको'},
+    'free_delivery': {'en': 'Free Delivery', 'ne': 'नि:शुल्क डेलिभरी'},
     'your_listings': {'en': 'Your Listings', 'ne': 'तपाईंको सूची'},
     'edit': {'en': 'Edit', 'ne': 'सम्पादन'},
     'remove': {'en': 'Remove', 'ne': 'हटाउनुहोस्'},
@@ -296,6 +298,10 @@ class AppTranslations {
 
     // Add/Edit Product
     'product_name': {'en': 'Product Name', 'ne': 'उत्पादन नाम'},
+    'product_information': {
+      'en': 'Product Information',
+      'ne': 'उत्पादन जानकारी',
+    },
     'product_price': {'en': 'Product Price', 'ne': 'उत्पादन मूल्य'},
     'product_description': {'en': 'Product Description', 'ne': 'उत्पादन विवरण'},
     'product_category': {'en': 'Category', 'ne': 'श्रेणी'},
@@ -475,6 +481,18 @@ class AppTranslations {
     'checkout_error': {
       'en': 'Error processing checkout',
       'ne': 'चेकआउट प्रशोधन गर्दा त्रुटि',
+    },
+    'message_to_seller': {
+      'en': 'Message to Seller',
+      'ne': 'विक्रेतालाई सन्देश',
+    },
+    'message_to_seller_hint': {
+      'en': 'Optional message for the seller(s)',
+      'ne': 'विक्रेता(हरू)को लागि वैकल्पिक सन्देश',
+    },
+    'enter_message_to_seller': {
+      'en': 'Enter your message (optional)',
+      'ne': 'आफ्नो सन्देश प्रविष्ट गर्नुहोस् (वैकल्पिक)',
     },
     'confirm': {'en': 'Confirm', 'ne': 'पुष्टि गर्नुहोस्'},
     'ok': {'en': 'OK', 'ne': 'ठीक छ'},
@@ -713,7 +731,7 @@ class AppTranslations {
       'ne':
           'तपाईंले कुनै अर्डर राख्नुभएको छैन। बजारमा किनमेल सुरु गर्नुहोस् र यहाँ अर्डरहरू देख्नुहोस्।',
     },
-    'pending': {'en': 'Pending', 'ne': 'बाँकी'},
+    'pending': {'en': 'Pending', 'ne': 'पेन्डिङ'},
     'completed': {'en': 'Completed', 'ne': 'पूरा भयो'},
     'add_phone_hint': {'en': 'Add phone number', 'ne': 'फोन नम्बर थप्नुहोस्'},
     'add_address_hint': {'en': 'Add address', 'ne': 'ठेगाना थप्नुहोस्'},
@@ -849,12 +867,52 @@ class AppTranslations {
       'en': 'Failed to cancel order',
       'ne': 'अर्डर रद्द गर्न असफल',
     },
+    'delete_order': {'en': 'Delete Order', 'ne': 'अर्डर मेटाउनुहोस्'},
+    'delete_order_confirm': {
+      'en':
+          'Are you sure you want to delete this order? This action cannot be undone.',
+      'ne':
+          'के तपाईं यो अर्डर मेटाउन निश्चित हुनुहुन्छ? यो कार्य पूर्ववत गर्न सकिँदैन।',
+    },
+    'order_deleted': {
+      'en': 'Order deleted successfully',
+      'ne': 'अर्डर सफलतापूर्वक मेटाइयो',
+    },
+    'order_delete_failed': {
+      'en': 'Failed to delete order',
+      'ne': 'अर्डर मेटाउन असफल',
+    },
+    'order_delete_pending_only': {
+      'en': 'Only pending orders can be deleted',
+      'ne': 'केवल पेन्डिङ अर्डरहरू मेटाउन सकिन्छ',
+    },
+    'admin_notes': {'en': 'Admin Notes', 'ne': 'प्रशासक नोटहरू'},
+    'admin_notes_empty': {
+      'en': 'No admin notes available',
+      'ne': 'कुनै प्रशासक नोट उपलब्ध छैन',
+    },
 
     // Order Statuses
     'accepted': {'en': 'Accepted', 'ne': 'स्वीकृत'},
     'in_transit': {'en': 'In Transit', 'ne': 'ट्रान्जिटमा'},
     'delivered': {'en': 'Delivered', 'ne': 'डेलिभर भयो'},
     'cancelled': {'en': 'Cancelled', 'ne': 'रद्द गरियो'},
+
+    // New order-related translations
+    'awaiting_admin_approval': {'en': 'Pending', 'ne': 'पेन्डिङ'},
+    'order_awaiting_approval': {
+      'en': 'Your order is awaiting admin approval',
+      'ne': 'तपाईंको अर्डर प्रशासक स्वीकृतिको प्रतीक्षामा छ',
+    },
+    'delivery_charges': {'en': 'Delivery Charges', 'ne': 'डेलिभरी शुल्क'},
+    'items_count': {'en': 'Items', 'ne': 'वस्तुहरू'},
+    'order_edit_cancel_info': {
+      'en':
+          'For editing or canceling the order, please contact the admin through the Contact Us page.',
+      'ne':
+          'अर्डर सम्पादन वा रद्द गर्नको लागि, कृपया सम्पर्क हामी पृष्ठ मार्फत प्रशासकसँग सम्पर्क गर्नुहोस्।',
+    },
+    'order_items': {'en': 'Order Items', 'ne': 'अर्डर वस्तुहरू'},
 
     // Contact Actions
     'call_buyer': {'en': 'Call Buyer', 'ne': 'खरीददारलाई कल गर्नुहोस्'},
@@ -1014,7 +1072,7 @@ class AppTranslations {
     'alt_call': {'en': 'Alt. Call', 'ne': 'वैकल्पिक कल'},
 
     // Experts Page
-    'agri_experts': {'en': 'Agri Experts', 'ne': 'कृषि विशेषज्ञहरू'},
+    'agri_experts': {'en': 'Agri \n Experts', 'ne': 'कृषि विशेषज्ञहरू'},
     'no_experts_available': {
       'en': 'No experts available',
       'ne': 'कुनै विशेषज्ञ उपलब्ध छैन',

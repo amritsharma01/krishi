@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
-import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -12,53 +11,16 @@ import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/knowledge/news_detail_page.dart';
+import 'package:krishi/features/knowledge/providers/knowledge_providers.dart';
 import 'package:krishi/models/article.dart';
 
-class NewsPage extends ConsumerStatefulWidget {
+class NewsPage extends ConsumerWidget {
   const NewsPage({super.key});
 
   @override
-  ConsumerState<NewsPage> createState() => _NewsPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final newsAsync = ref.watch(newsProvider);
 
-class _NewsPageState extends ConsumerState<NewsPage> {
-  List<Article> news = [];
-  bool isLoading = true;
-  bool hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadNews();
-  }
-
-  Future<void> _loadNews() async {
-    setState(() {
-      isLoading = true;
-      hasError = false;
-    });
-
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final response = await apiService.getNews(page: 1);
-      if (mounted) {
-        setState(() {
-          news = response.results;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          hasError = true;
-          isLoading = false;
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -73,43 +35,43 @@ class _NewsPageState extends ConsumerState<NewsPage> {
           style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
         ),
       ),
-      body: _buildBody(),
-    );
-  }
+      body: newsAsync.when(
+        data: (newsList) {
+          if (newsList.isEmpty) {
+            return EmptyState(
+              title: 'no_news_available'.tr(context),
+              subtitle: 'no_news_subtitle'.tr(context),
+              icon: Icons.newspaper_outlined,
+            );
+          }
 
-  Widget _buildBody() {
-    if (isLoading) {
-      return Center(child: CircularProgressIndicator(color: AppColors.primary));
-    }
-
-    if (hasError) {
-      return ErrorState(
-        subtitle: 'error_loading_news_subtitle'.tr(context),
-        onRetry: _loadNews,
-      );
-    }
-
-    if (news.isEmpty) {
-      return EmptyState(
-        title: 'no_news_available'.tr(context),
-        subtitle: 'no_news_subtitle'.tr(context),
-        icon: Icons.newspaper_outlined,
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadNews,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16).rt,
-        itemCount: news.length,
-        itemBuilder: (context, index) {
-          return _buildNewsCard(news[index]);
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(newsProvider);
+            },
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16).rt,
+              itemCount: newsList.length,
+              itemBuilder: (context, index) {
+                return _buildNewsCard(context, newsList[index]);
+              },
+            ),
+          );
         },
+        loading: () => Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+        error: (error, stack) => ErrorState(
+          subtitle: 'error_loading_news_subtitle'.tr(context),
+          onRetry: () {
+            ref.invalidate(newsProvider);
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildNewsCard(Article article) {
+  Widget _buildNewsCard(BuildContext context, Article article) {
     return GestureDetector(
       onTap: () {
         Get.to(NewsDetailPage(news: article));
@@ -219,7 +181,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
                       ),
                       6.horizontalGap,
                       AppText(
-                        _formatDate(article.createdAt),
+                        _formatDate(article.createdAt, context),
                         style: Get.bodySmall.px12.copyWith(
                           color: Get.disabledColor.withValues(alpha: 0.6),
                         ),
@@ -235,7 +197,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime date, BuildContext context) {
     final now = DateTime.now();
     final difference = now.difference(date);
 

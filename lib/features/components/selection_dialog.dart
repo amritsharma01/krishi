@@ -94,7 +94,7 @@ class SelectionDialog<T> extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final item = items[index];
                   final isSelected = selectedItem != null &&
-                      getItemId(selectedItem!) == getItemId(item);
+                      getItemId(selectedItem as T) == getItemId(item);
                   return GestureDetector(
                     onTap: () {
                       onItemSelected(item);

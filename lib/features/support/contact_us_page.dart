@@ -20,8 +20,8 @@ class ContactUsPage extends ConsumerStatefulWidget {
 
 class _ContactUsPageState extends ConsumerState<ContactUsPage> {
   List<Contact> _contacts = [];
-  bool _isLoading = true;
-  String _selectedType = 'all';
+  final ValueNotifier<bool> _isLoading = ValueNotifier(true);
+  final ValueNotifier<String> _selectedType = ValueNotifier('all');
 
   Map<String, String> _getContactTypes(BuildContext context) {
     return {
@@ -53,25 +53,28 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
     _loadContacts();
   }
 
+  @override
+  void dispose() {
+    _isLoading.dispose();
+    _selectedType.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadContacts({String? contactType}) async {
-    setState(() {
-      _isLoading = true;
-    });
+    _isLoading.value = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final contacts = await apiService.getContacts(
         contactType: contactType == 'all' ? null : contactType,
       );
-      setState(() {
-        _contacts = contacts;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
       if (mounted) {
+        _contacts = contacts;
+        _isLoading.value = false;
+      }
+    } catch (e) {
+      if (mounted) {
+        _isLoading.value = false;
         Get.snackbar('error_loading_products'.tr(context));
       }
     }
@@ -120,13 +123,18 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
         children: [
           _buildTypeFilter(context),
           Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  )
-                : _contacts.isEmpty
-                    ? _buildEmptyState(context)
-                    : _buildContactsList(context),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isLoading,
+              builder: (context, isLoading, _) {
+                return isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(color: AppColors.primary),
+                      )
+                    : _contacts.isEmpty
+                        ? _buildEmptyState(context)
+                        : _buildContactsList(context);
+              },
+            ),
           ),
         ],
       ),
@@ -135,7 +143,10 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
 
   Widget _buildTypeFilter(BuildContext context) {
     final contactTypes = _getContactTypes(context);
-    return Container(
+    return ValueListenableBuilder<String>(
+      valueListenable: _selectedType,
+      builder: (context, selectedType, _) {
+        return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
@@ -154,7 +165,7 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
         scrollDirection: Axis.horizontal,
         child: Row(
           children: contactTypes.entries.map((entry) {
-            final isSelected = _selectedType == entry.key;
+            final isSelected = selectedType == entry.key;
             final color = _contactColors[entry.key] ?? AppColors.primary;
             final icon = entry.key == 'all'
                 ? Icons.all_inclusive
@@ -167,9 +178,7 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
                 color: color,
                 isSelected: isSelected,
                 onTap: () {
-                  setState(() {
-                    _selectedType = entry.key;
-                  });
+                  _selectedType.value = entry.key;
                   _loadContacts(contactType: entry.key);
                 },
               ),
@@ -177,6 +186,8 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
           }).toList(),
         ),
       ),
+        );
+      },
     );
   }
 
@@ -246,7 +257,7 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
 
   Widget _buildContactsList(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: () => _loadContacts(contactType: _selectedType),
+      onRefresh: () => _loadContacts(contactType: _selectedType.value),
       child: ListView.builder(
         padding: EdgeInsets.all(16.rt),
         itemCount: _contacts.length,

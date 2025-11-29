@@ -73,7 +73,7 @@ class AppTextFormField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 7),
       child: SizedBox(
-        width: MediaQuery.of(context).size.width - 50,
+        width: MediaQuery.of(context).size.width - 10,
         height: height,
         child: Column(
           mainAxisSize: MainAxisSize.min,

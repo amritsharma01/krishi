@@ -43,13 +43,14 @@ final class ApiEndpoints {
   // Orders
   static const String orders = "orders/";
   static String orderDetail(int id) => "orders/$id/";
+  static String deleteOrder(int id) => "orders/$id/";
   static String completeOrder(int id) => "orders/$id/complete/";
-  static String acceptOrder(int id) => "orders/$id/accept/";
+  static String startDelivery(int id) => "orders/$id/start_delivery/";
   static String cancelOrder(int id) => "orders/$id/cancel/";
   static String deliverOrder(int id) => "orders/$id/deliver/";
-  static String markOrderInTransit(int id) => "orders/$id/mark_in_transit/";
   static const String myPurchases = "orders/my_purchases/";
   static const String mySales = "orders/my_sales/";
+  static String orderItemDetail(int itemId) => "orders/items/$itemId/";
   static const String ordersCounts = "orders/counts/";
   static const String purchasesSummary = "orders/purchases_summary/";
   static const String salesSummary = "orders/sales_summary/";

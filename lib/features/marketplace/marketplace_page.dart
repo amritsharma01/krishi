@@ -357,6 +357,24 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
           ],
         ),
       ),
+      floatingActionButton: !isBuyTab
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                final result = await Get.to(AddEditProductPage());
+                if (result == true) {
+                  _loadUserListings();
+                }
+              },
+              backgroundColor: AppColors.primary,
+              icon: Icon(Icons.add, color: AppColors.white, size: 20.st),
+              label: AppText(
+                'add_new_product'.tr(context),
+                style: Get.bodyMedium.px14.w600.copyWith(
+                  color: AppColors.white,
+                ),
+              ),
+            )
+          : null,
     );
   }
 
@@ -380,12 +398,12 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
 
   Widget _buildTabSelector() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16).rt,
+      padding: const EdgeInsets.symmetric(horizontal: 6).rt,
       child: Container(
-        padding: const EdgeInsets.all(4).rt,
+        padding: const EdgeInsets.all(6).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
-          borderRadius: BorderRadius.circular(12).rt,
+          borderRadius: BorderRadius.circular(20).rt,
           border: Border.all(
             color: Get.disabledColor.withValues(alpha: 0.1),
             width: 1,
@@ -397,11 +415,11 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
               child: GestureDetector(
                 onTap: () => setState(() => isBuyTab = true),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 400),
                   padding: const EdgeInsets.symmetric(vertical: 10).rt,
                   decoration: BoxDecoration(
                     color: isBuyTab ? AppColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10).rt,
+                    borderRadius: BorderRadius.circular(20).rt,
                     boxShadow: isBuyTab
                         ? [
                             BoxShadow(
@@ -415,10 +433,10 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                   child: Center(
                     child: AppText(
                       'buy'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
+                      style: Get.bodyMedium.px12.w700.copyWith(
                         color: isBuyTab
                             ? AppColors.white
-                            : Get.disabledColor.withValues(alpha: 0.6),
+                            : Get.disabledColor.withValues(alpha: 0.4),
                       ),
                     ),
                   ),
@@ -429,15 +447,15 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
               child: GestureDetector(
                 onTap: () => setState(() => isBuyTab = false),
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 400),
                   padding: const EdgeInsets.symmetric(vertical: 10).rt,
                   decoration: BoxDecoration(
                     color: !isBuyTab ? AppColors.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10).rt,
+                    borderRadius: BorderRadius.circular(20).rt,
                     boxShadow: !isBuyTab
                         ? [
                             BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.3),
+                              color: AppColors.primary.withValues(alpha: 0.4),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -447,7 +465,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                   child: Center(
                     child: AppText(
                       'sell'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
+                      style: Get.bodyMedium.px12.w700.copyWith(
                         color: !isBuyTab
                             ? AppColors.white
                             : Get.disabledColor.withValues(alpha: 0.6),
@@ -470,7 +488,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
         controller: _buyScrollController,
         physics: Get.scrollPhysics,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10).rt,
+          padding: const EdgeInsets.symmetric(horizontal: 7).rt,
           child: Column(
             children: [
               AppTextFormField(
@@ -490,9 +508,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 },
               ),
 
-              5.verticalGap,
+              3.verticalGap,
               _buildCategoryFilters(isNepali),
-              5.verticalGap,
+              3.verticalGap,
               // Products Grid
               if (isLoadingBuyProducts)
                 _buildBuySkeleton()
@@ -513,9 +531,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 12.rt,
-                    mainAxisSpacing: 12.rt,
-                    childAspectRatio: 0.75,
+                    crossAxisSpacing: 6.rt,
+                    mainAxisSpacing: 6.rt,
+                    childAspectRatio: 0.8,
                   ),
                   itemCount: buyProducts.length,
                   itemBuilder: (context, index) {
@@ -544,61 +562,13 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
         controller: _sellScrollController,
         physics: Get.scrollPhysics,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16).rt,
+          padding: const EdgeInsets.symmetric(horizontal: 6).rt,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Add New Product Button
-              GestureDetector(
-                onTap: () async {
-                  final result = await Get.to(AddEditProductPage());
-                  if (result == true) {
-                    _loadUserListings();
-                  }
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 10).rt,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primary,
-                        AppColors.primary.withValues(alpha: 0.85),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(12).rt,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.add_circle_outline,
-                        color: AppColors.white,
-                        size: 22.st,
-                      ),
-                      10.horizontalGap,
-                      AppText(
-                        'add_new_product'.tr(context),
-                        style: Get.bodyMedium.px15.w700.copyWith(
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              12.verticalGap,
-
               // Your Listings
               _buildSellStatusFilters(),
-              12.verticalGap,
+              9.verticalGap,
               // Listings
               if (isLoadingUserListings)
                 _buildSellSkeleton()
@@ -844,7 +814,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   Widget _buildCategoryFilters(bool isNepali) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(10).rt,
+      padding: const EdgeInsets.all(6).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(30).rt,
@@ -970,38 +940,6 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     );
   }
 
-  Widget _buildStatusBadge(String? status) {
-    final normalized = (status ?? 'pending').toLowerCase();
-    MaterialColor baseColor;
-    String labelKey;
-
-    switch (normalized) {
-      case 'approved':
-        baseColor = Colors.green;
-        labelKey = 'approved';
-        break;
-      case 'rejected':
-        baseColor = Colors.red;
-        labelKey = 'rejected';
-        break;
-      default:
-        baseColor = Colors.orange;
-        labelKey = 'pending';
-    }
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.rt, vertical: 4.rt),
-      decoration: BoxDecoration(
-        color: baseColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20).rt,
-      ),
-      child: AppText(
-        labelKey.tr(context),
-        style: Get.bodySmall.w700.copyWith(color: baseColor.shade700),
-      ),
-    );
-  }
-
   Widget _buildProductCard(Product product, bool isNepali) {
     return Container(
       decoration: BoxDecoration(
@@ -1028,52 +966,94 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             onTap: () {
               Get.to(ProductDetailPage(product: product));
             },
-            child: Container(
-              width: double.infinity,
-              height: 112.ht,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16.rt),
-                  topRight: Radius.circular(16.rt),
+            child: Stack(
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 112.ht,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16.rt),
+                      topRight: Radius.circular(16.rt),
+                    ),
+                  ),
+                  child: product.image != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(16.rt),
+                            topRight: Radius.circular(16.rt),
+                          ),
+                          child: Image.network(
+                            Get.imageUrl(product.image),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Center(
+                                child: Icon(
+                                  Icons.image_not_supported,
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  size: 40.st,
+                                ),
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  color: AppColors.primary,
+                                  strokeWidth: 2,
+                                ),
+                              );
+                            },
+                          ),
+                        )
+                      : Center(
+                          child: Icon(
+                            Icons.image_not_supported,
+                            color: AppColors.primary.withValues(alpha: 0.3),
+                            size: 42.st,
+                          ),
+                        ),
                 ),
-              ),
-              child: product.image != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(16.rt),
-                        topRight: Radius.circular(16.rt),
+                // Free Delivery Icon at top left
+                if (product.freeDelivery == true)
+                  Positioned(
+                    top: 8.rt,
+                    left: 8.rt,
+                    child: Container(
+                      padding: EdgeInsets.all(4.rt),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(6).rt,
                       ),
-                      child: Image.network(
-                        Get.imageUrl(product.image),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Icon(
-                              Icons.image_not_supported,
-                              color: AppColors.primary.withValues(alpha: 0.3),
-                              size: 40.st,
-                            ),
-                          );
-                        },
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                              strokeWidth: 2,
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  : Center(
                       child: Icon(
-                        Icons.image_not_supported,
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        size: 42.st,
+                        Icons.local_shipping,
+                        size: 14.st,
+                        color: Colors.green.shade700,
                       ),
                     ),
+                  ),
+                // Recommend Icon at top right
+                if (product.recommend == true)
+                  Positioned(
+                    top: 8.rt,
+                    right: 8.rt,
+                    child: Container(
+                      padding: EdgeInsets.all(4.rt),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(6).rt,
+                      ),
+                      child: Icon(
+                        Icons.star,
+                        size: 14.st,
+                        color: Colors.amber.shade700,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           Padding(
@@ -1084,6 +1064,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Product Name
                   AppText(
                     product.name,
                     style: Get.bodyLarge.px16.w800.copyWith(
@@ -1094,12 +1075,34 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   4.verticalGap,
-                  AppText(
-                    'Rs. ${product.price}/${product.localizedUnitName(isNepali)}',
-                    style: Get.bodyMedium.px12.w700.copyWith(
-                      color: AppColors.primary,
-                    ),
-                    maxLines: 1,
+                  // Price and Rating
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppText(
+                          'Rs. ${product.price}/${product.localizedUnitName(isNepali)}',
+                          style: Get.bodyMedium.px12.w700.copyWith(
+                            color: AppColors.primary,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (product.rating != null && product.rating!.isNotEmpty)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.star, size: 14.st, color: Colors.amber),
+                            4.horizontalGap,
+                            AppText(
+                              product.rating!,
+                              style: Get.bodySmall.px11.w600.copyWith(
+                                color: Get.disabledColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -1134,11 +1137,11 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
 
   Widget _buildListingCard(Product listing, bool isNepali) {
     return Container(
-      margin: EdgeInsets.only(bottom: 12.rt),
-      padding: const EdgeInsets.all(8).rt,
+      margin: EdgeInsets.only(bottom: 6.rt),
+      padding: const EdgeInsets.all(6).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(16).rt,
+        borderRadius: BorderRadius.circular(20).rt,
         border: Border.all(
           color: Get.disabledColor.withValues(alpha: 0.08),
           width: 1,
@@ -1153,47 +1156,54 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       ),
       child: Row(
         children: [
-          // Product Image
-          Container(
-            width: 70.rt,
-            height: 70.rt,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12).rt,
-            ),
-            child: listing.image != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12).rt,
-                    child: Image.network(
-                      Get.imageUrl(listing.image),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Center(
-                          child: Icon(
-                            Icons.image_not_supported,
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            size: 32.st,
-                          ),
-                        );
-                      },
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
-                            strokeWidth: 2,
-                          ),
-                        );
-                      },
-                    ),
-                  )
-                : Center(
-                    child: Icon(
-                      Icons.image_not_supported,
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      size: 32.st,
-                    ),
-                  ),
+          // Product Image with Status Chip
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 70.rt,
+                height: 70.rt,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+                child: listing.image != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12).rt,
+                        child: Image.network(
+                          Get.imageUrl(listing.image),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: AppColors.primary.withValues(alpha: 0.3),
+                                size: 32.st,
+                              ),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                                strokeWidth: 2,
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          size: 32.st,
+                        ),
+                      ),
+              ),
+              4.verticalGap,
+              _buildStatusChip(listing.approvalStatus),
+            ],
           ),
           16.horizontalGap,
           // Product Details
@@ -1201,56 +1211,21 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: AppText(
-                        listing.name,
-                        style: Get.bodyMedium.px15.w700.copyWith(
-                          color: Get.disabledColor,
-                        ),
-                      ),
-                    ),
-                  ],
+                AppText(
+                  listing.name,
+                  style: Get.bodyMedium.px14.w700.copyWith(
+                    color: Get.disabledColor,
+                  ),
                 ),
 
+                4.verticalGap,
                 AppText(
                   maxLines: 2,
                   'Rs. ${listing.price}/${listing.localizedUnitName(isNepali)}',
-                  style: Get.bodyMedium.px12.w700.copyWith(
+                  style: Get.bodyMedium.px10.w700.copyWith(
                     color: AppColors.primary,
                   ),
                 ),
-                if (listing.rejectionReason?.isNotEmpty ?? false) ...[
-                  8.verticalGap,
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(10).rt,
-                    decoration: BoxDecoration(
-                      color: Colors.red.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(10).rt,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppText(
-                          'rejection_reason'.tr(context),
-                          style: Get.bodySmall.w700.copyWith(
-                            color: Colors.red.shade700,
-                          ),
-                        ),
-                        4.verticalGap,
-                        AppText(
-                          listing.rejectionReason!,
-                          style: Get.bodySmall.copyWith(
-                            color: Colors.red.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
               ],
             ),
           ),
@@ -1300,6 +1275,47 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatusChip(String? approvalStatus) {
+    if (approvalStatus == null) return const SizedBox.shrink();
+
+    Color bgColor;
+    Color textColor;
+    String label;
+
+    switch (approvalStatus.toLowerCase()) {
+      case 'approved':
+        bgColor = Colors.green.withValues(alpha: 0.15);
+        textColor = Colors.green.shade700;
+        label = 'approved'.tr(context);
+        break;
+      case 'pending':
+        bgColor = Colors.orange.withValues(alpha: 0.15);
+        textColor = Colors.orange.shade700;
+        label = 'pending'.tr(context);
+        break;
+      case 'rejected':
+        bgColor = Colors.red.withValues(alpha: 0.15);
+        textColor = Colors.red.shade700;
+        label = 'rejected'.tr(context);
+        break;
+      default:
+        return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 6.rt, vertical: 2.rt),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6).rt,
+        border: Border.all(color: textColor.withValues(alpha: 0.3), width: 1),
+      ),
+      child: AppText(
+        label,
+        style: Get.bodySmall.px08.w600.copyWith(color: textColor),
       ),
     );
   }

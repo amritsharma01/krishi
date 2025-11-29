@@ -31,7 +31,7 @@ class Notice {
   });
 
   factory Notice.fromJson(Map<String, dynamic> json) {
-    int _parseInt(dynamic value) {
+    int parseInt(dynamic value) {
       if (value == null) return 0;
       if (value is int) return value;
       if (value is num) return value.toInt();
@@ -39,7 +39,7 @@ class Notice {
     }
 
     return Notice(
-      id: _parseInt(json['id']),
+      id: parseInt(json['id']),
       title: (json['title'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
       noticeType: (json['notice_type'] as String?) ?? '',
@@ -49,7 +49,7 @@ class Notice {
       publishedDate: json['published_date'] != null
           ? DateTime.parse(json['published_date'] as String)
           : DateTime.now(),
-      createdBy: _parseInt(json['created_by']),
+      createdBy: parseInt(json['created_by']),
       createdByEmail: (json['created_by_email'] as String?) ?? '',
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
@@ -440,7 +440,7 @@ class Program {
   });
 
   factory Program.fromJson(Map<String, dynamic> json) {
-    DateTime _parseDate(dynamic value) {
+    DateTime parseDate(dynamic value) {
       if (value == null) return DateTime.now();
       if (value is DateTime) return value;
       return DateTime.tryParse(value.toString()) ?? DateTime.now();
@@ -451,8 +451,8 @@ class Program {
       title: (json['title'] as String?) ?? '',
       description: (json['description'] as String?) ?? '',
       googleFormLink: (json['google_form_link'] as String?) ?? '',
-      createdAt: _parseDate(json['created_at']),
-      updatedAt: _parseDate(json['updated_at']),
+      createdAt: parseDate(json['created_at']),
+      updatedAt: parseDate(json['updated_at']),
     );
   }
 }
@@ -480,13 +480,13 @@ class MarketPrice {
   });
 
   factory MarketPrice.fromJson(Map<String, dynamic> json) {
-    double _parsePrice(dynamic value) {
+    double parsePrice(dynamic value) {
       if (value == null) return 0;
       if (value is num) return value.toDouble();
       return double.tryParse(value.toString()) ?? 0;
     }
 
-    DateTime _parseDate(dynamic value) {
+    DateTime parseDate(dynamic value) {
       if (value == null) return DateTime.now();
       if (value is DateTime) return value;
       return DateTime.tryParse(value.toString()) ?? DateTime.now();
@@ -497,10 +497,10 @@ class MarketPrice {
       category: (json['category'] as String?) ?? '',
       categoryDisplay: (json['category_display'] as String?) ?? '',
       name: (json['name'] as String?) ?? '',
-      price: _parsePrice(json['price']),
+      price: parsePrice(json['price']),
       unit: (json['unit'] as String?) ?? '',
-      createdAt: _parseDate(json['created_at']),
-      updatedAt: _parseDate(json['updated_at']),
+      createdAt: parseDate(json['created_at']),
+      updatedAt: parseDate(json['updated_at']),
     );
   }
 }
@@ -538,7 +538,7 @@ class SoilTest {
   });
 
   factory SoilTest.fromJson(Map<String, dynamic> json) {
-    DateTime _parseDate(dynamic value) {
+    DateTime parseDate(dynamic value) {
       if (value == null) return DateTime.now();
       if (value is DateTime) return value;
       return DateTime.tryParse(value.toString()) ?? DateTime.now();
@@ -556,8 +556,8 @@ class SoilTest {
       cost: json['cost'] as String?,
       duration: json['duration'] as String?,
       requirements: json['requirements'] as String?,
-      createdAt: _parseDate(json['created_at']),
-      updatedAt: _parseDate(json['updated_at']),
+      createdAt: parseDate(json['created_at']),
+      updatedAt: parseDate(json['updated_at']),
     );
   }
 }

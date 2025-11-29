@@ -22,8 +22,8 @@ class EmergencyContactsPage extends ConsumerStatefulWidget {
 
 class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
   List<Contact> _contacts = [];
-  bool _isLoading = true;
-  String _selectedType = 'all';
+  final ValueNotifier<bool> _isLoading = ValueNotifier(true);
+  final ValueNotifier<String> _selectedType = ValueNotifier('all');
 
   Map<String, String> _getContactTypes(BuildContext context) {
     return {
@@ -58,25 +58,28 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
     _loadContacts();
   }
 
+  @override
+  void dispose() {
+    _isLoading.dispose();
+    _selectedType.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadContacts({String? contactType}) async {
-    setState(() {
-      _isLoading = true;
-    });
+    _isLoading.value = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final contacts = await apiService.getContacts(
         contactType: contactType == 'all' ? null : contactType,
       );
-      setState(() {
-        _contacts = contacts;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
       if (mounted) {
+        _contacts = contacts;
+        _isLoading.value = false;
+      }
+    } catch (e) {
+      if (mounted) {
+        _isLoading.value = false;
         Get.snackbar('error_loading_products'.tr(context));
       }
     }
@@ -121,13 +124,18 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
         children: [
           _buildTypeFilter(context),
           Expanded(
-            child: _isLoading
-                ? Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  )
-                : _contacts.isEmpty
-                ? _buildEmptyState(context)
-                : _buildContactsList(context),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isLoading,
+              builder: (context, isLoading, _) {
+                return isLoading
+                    ? Center(
+                        child: CircularProgressIndicator(color: AppColors.primary),
+                      )
+                    : _contacts.isEmpty
+                    ? _buildEmptyState(context)
+                    : _buildContactsList(context);
+              },
+            ),
           ),
         ],
       ),
@@ -136,48 +144,51 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
 
   Widget _buildTypeFilter(BuildContext context) {
     final contactTypes = _getContactTypes(context);
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
-        ).rt,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: contactTypes.entries.map((entry) {
-            final isSelected = _selectedType == entry.key;
-            final color = _contactColors[entry.key] ?? Colors.red;
-            final icon = entry.key == 'all'
-                ? Icons.all_inclusive
-                : _contactIcons[entry.key] ?? Icons.phone_rounded;
-            return Padding(
-              padding: EdgeInsets.only(right: 8.wt),
-              child: _buildFilterPill(
-                label: entry.value,
-                icon: icon,
-                color: color,
-                isSelected: isSelected,
-                onTap: () {
-                  setState(() {
-                    _selectedType = entry.key;
-                  });
-                  _loadContacts(contactType: entry.key);
-                },
+    return ValueListenableBuilder<String>(
+      valueListenable: _selectedType,
+      builder: (context, selectedType, _) {
+        return Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
+          decoration: BoxDecoration(
+            color: Get.cardColor,
+            borderRadius: BorderRadius.vertical(
+              bottom: const Radius.circular(28),
+            ).rt,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 6),
               ),
-            );
-          }).toList(),
-        ),
-      ),
+            ],
+          ),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: contactTypes.entries.map((entry) {
+                final isSelected = selectedType == entry.key;
+                final color = _contactColors[entry.key] ?? Colors.red;
+                final icon = entry.key == 'all'
+                    ? Icons.all_inclusive
+                    : _contactIcons[entry.key] ?? Icons.phone_rounded;
+                return Padding(
+                  padding: EdgeInsets.only(right: 8.wt),
+                  child: _buildFilterPill(
+                    label: entry.value,
+                    icon: icon,
+                    color: color,
+                    isSelected: isSelected,
+                    onTap: () {
+                      _selectedType.value = entry.key;
+                      _loadContacts(contactType: entry.key);
+                    },
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -210,7 +221,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
 
   Widget _buildContactsList(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: () => _loadContacts(contactType: _selectedType),
+      onRefresh: () => _loadContacts(contactType: _selectedType.value),
       child: ListView.builder(
         padding: const EdgeInsets.all(16).rt,
         itemCount: _contacts.length,

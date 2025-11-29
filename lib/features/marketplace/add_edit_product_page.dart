@@ -11,6 +11,7 @@ import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/selection_dialog.dart';
+import 'package:krishi/features/marketplace/providers/marketplace_providers.dart';
 import 'package:krishi/models/category.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/models/unit.dart';
@@ -41,12 +42,8 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   Category? selectedCategory;
   Unit? selectedUnit;
 
-  List<Category> categories = [];
-  List<Unit> units = [];
-  bool isLoadingCategories = true;
-  bool isLoadingUnits = true;
-  bool isSaving = false;
-  bool _isAvailable = true;
+  final ValueNotifier<bool> isSaving = ValueNotifier(false);
+  final ValueNotifier<bool> _isAvailable = ValueNotifier(true);
   Product? _prefillSourceProduct;
 
   @override
@@ -55,73 +52,33 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     _initializeForm();
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _priceController.dispose();
+    _descriptionController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    isSaving.dispose();
+    _isAvailable.dispose();
+    super.dispose();
+  }
+
   Future<void> _initializeForm() async {
     if (widget.product != null) {
       _prefillSourceProduct = widget.product;
       _applyProductTextFields(widget.product!);
-      _isAvailable = widget.product!.isAvailable;
+      _isAvailable.value = widget.product!.isAvailable;
     } else {
-      _isAvailable = true;
-    }
-
-    await _loadData();
-
-    if (_prefillSourceProduct != null) {
-      _applyCategoryAndUnitSelections(_prefillSourceProduct!);
-    } else {
-      _ensureDefaultsForNewProduct();
+      _isAvailable.value = true;
     }
 
     if (widget.product != null) {
       await _prefillFromProductDetail();
     }
-
-    if (mounted) {
-      setState(() {});
-    }
   }
 
-  Future<void> _loadData() async {
-    await Future.wait([_loadCategories(), _loadUnits()]);
-
-    if (_prefillSourceProduct != null) {
-      _applyCategoryAndUnitSelections(_prefillSourceProduct!);
-    } else {
-      _ensureDefaultsForNewProduct();
-    }
-  }
-
-  Future<void> _loadCategories() async {
-    setState(() => isLoadingCategories = true);
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final cats = await apiService.getCategories();
-      if (mounted) {
-        setState(() {
-          categories = cats;
-          isLoadingCategories = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading categories: $e');
-      if (mounted) {
-        setState(() {
-          // Set default "general" category when loading fails
-          categories = [
-            Category(id: 0, name: 'general', createdAt: DateTime.now()),
-          ];
-          selectedCategory = categories.first;
-          isLoadingCategories = false;
-        });
-        Get.snackbar(
-          'error_loading_categories'.tr(Get.context),
-          color: Colors.red,
-        );
-      }
-    }
-  }
-
-  Category? _findCategoryById(int id) {
+  Category? _findCategoryById(List<Category> categories, int id) {
     try {
       return categories.firstWhere((cat) => cat.id == id);
     } catch (_) {
@@ -129,7 +86,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     }
   }
 
-  Unit? _findUnitById(int id) {
+  Unit? _findUnitById(List<Unit> units, int id) {
     try {
       return units.firstWhere((unit) => unit.id == id);
     } catch (_) {
@@ -145,30 +102,6 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     _addressController.text = product.sellerAddress ?? '';
   }
 
-  void _applyCategoryAndUnitSelections(Product product) {
-    if (!mounted) return;
-    final category = _findCategoryById(product.category);
-    final unit = _findUnitById(product.unit);
-
-    setState(() {
-      if (category != null) selectedCategory = category;
-      if (unit != null) selectedUnit = unit;
-      _isAvailable = product.isAvailable;
-    });
-  }
-
-  void _ensureDefaultsForNewProduct() {
-    if (widget.product != null || !mounted) return;
-    setState(() {
-      if (selectedCategory == null && categories.isNotEmpty) {
-        selectedCategory = categories.first;
-      }
-      if (selectedUnit == null && units.isNotEmpty) {
-        selectedUnit = units.first;
-      }
-    });
-  }
-
   Future<void> _prefillFromProductDetail() async {
     if (widget.product == null) return;
     try {
@@ -178,47 +111,11 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
 
       _prefillSourceProduct = latest;
       _applyProductTextFields(latest);
-      _applyCategoryAndUnitSelections(latest);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Failed to preload product detail: $e');
       }
     }
-  }
-
-  Future<void> _loadUnits() async {
-    setState(() => isLoadingUnits = true);
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final uts = await apiService.getUnits();
-      if (mounted) {
-        setState(() {
-          units = uts;
-          isLoadingUnits = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading units: $e');
-      if (mounted) {
-        setState(() {
-          // Set default "general" unit when loading fails
-          units = [Unit(id: 0, name: 'general', createdAt: DateTime.now())];
-          selectedUnit = units.first;
-          isLoadingUnits = false;
-        });
-        Get.snackbar('error_loading_units'.tr(Get.context), color: Colors.red);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _priceController.dispose();
-    _descriptionController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
-    super.dispose();
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -355,7 +252,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     );
   }
 
-  void _showCategoryDialog() {
+  void _showCategoryDialog(List<Category> categories) {
     SelectionDialog.show<Category>(
       context: context,
       title: 'select_category'.tr(context),
@@ -371,7 +268,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     );
   }
 
-  void _showUnitDialog() {
+  void _showUnitDialog(List<Unit> units) {
     SelectionDialog.show<Unit>(
       context: context,
       title: 'select_unit'.tr(context),
@@ -399,7 +296,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         return;
       }
 
-      setState(() => isSaving = true);
+      isSaving.value = true;
 
       try {
         final apiService = ref.read(krishiApiServiceProvider);
@@ -414,7 +311,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             basePrice: _priceController.text.trim(),
             description: _descriptionController.text.trim(),
             unit: selectedUnit!.id,
-            isAvailable: _isAvailable,
+            isAvailable: _isAvailable.value,
             imagePath: _selectedImage?.path,
           );
         } else {
@@ -428,14 +325,14 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             basePrice: _priceController.text.trim(),
             description: _descriptionController.text.trim(),
             unit: selectedUnit!.id,
-            isAvailable: _isAvailable,
+            isAvailable: _isAvailable.value,
 
             imagePath: _selectedImage?.path,
           );
         }
 
         if (mounted) {
-          setState(() => isSaving = false);
+          isSaving.value = false;
 
           // Show success message
           Get.snackbar(
@@ -455,7 +352,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
       } catch (e) {
         print('Error saving product: $e');
         if (mounted) {
-          setState(() => isSaving = false);
+          isSaving.value = false;
           Get.snackbar(
             'error_saving_product'.tr(Get.context),
             color: Colors.red,
@@ -507,6 +404,8 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.product != null;
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final unitsAsync = ref.watch(unitsProvider);
 
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
@@ -523,514 +422,582 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
           onPressed: () => Get.pop(),
         ),
       ),
-      body: isLoadingCategories || isLoadingUnits
+      body: categoriesAsync.isLoading || unitsAsync.isLoading
           ? Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16).rt,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Image Selector
-                    AppText(
-                      'product_image'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
+          : categoriesAsync.hasError || unitsAsync.hasError
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AppText(
+                    'error_loading_data'.tr(context),
+                    style: Get.bodyMedium.copyWith(color: Colors.red),
+                  ),
+                  16.verticalGap,
+                  ElevatedButton(
+                    onPressed: () {
+                      ref.invalidate(categoriesProvider);
+                      ref.invalidate(unitsProvider);
+                    },
+                    child: AppText('retry'.tr(context)),
+                  ),
+                ],
+              ),
+            )
+          : _buildForm(
+              context,
+              isEdit,
+              categoriesAsync.value ?? [],
+              unitsAsync.value ?? [],
+            ),
+    );
+  }
+
+  Widget _buildForm(
+    BuildContext context,
+    bool isEdit,
+    List<Category> categories,
+    List<Unit> units,
+  ) {
+    // Initialize selections if needed
+    if (_prefillSourceProduct != null && selectedCategory == null) {
+      selectedCategory = _findCategoryById(
+        categories,
+        _prefillSourceProduct!.category,
+      );
+      selectedUnit = _findUnitById(units, _prefillSourceProduct!.unit);
+    } else if (!isEdit && selectedCategory == null) {
+      if (categories.isNotEmpty) selectedCategory = categories.first;
+      if (units.isNotEmpty) selectedUnit = units.first;
+    }
+
+    return Form(
+      key: _formKey,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16).rt,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Selector
+            AppText(
+              'product_image'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            12.verticalGap,
+            Stack(
+              children: [
+                GestureDetector(
+                  onTap: _showImageSourceDialog,
+                  child: Container(
+                    width: double.infinity,
+                    height: 200.rt,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(16).rt,
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        width: 2,
                       ),
                     ),
-                    12.verticalGap,
-                    Stack(
-                      children: [
-                        GestureDetector(
-                          onTap: _showImageSourceDialog,
-                          child: Container(
-                            width: double.infinity,
-                            height: 200.rt,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(16).rt,
-                              border: Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.2),
-                                width: 2,
-                              ),
+                    child: _selectedImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(14).rt,
+                            child: Image.file(
+                              _selectedImage!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
                             ),
-                            child: _selectedImage != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(14).rt,
-                                    child: Image.file(
-                                      _selectedImage!,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    ),
-                                  )
-                                : (widget.product?.image != null
-                                      ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            14,
-                                          ).rt,
-                                          child: Image.network(
-                                            Get.baseUrl +
-                                                widget.product!.image!,
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Icon(
-                                                        Icons
-                                                            .add_photo_alternate_outlined,
-                                                        size: 48.st,
-                                                        color: AppColors.primary
-                                                            .withValues(
-                                                              alpha: 0.5,
-                                                            ),
-                                                      ),
-                                                      12.verticalGap,
-                                                      AppText(
-                                                        'tap_to_add_image'.tr(
-                                                          context,
-                                                        ),
-                                                        style: Get
-                                                            .bodyMedium
-                                                            .px14
-                                                            .copyWith(
-                                                              color: Get
-                                                                  .disabledColor
-                                                                  .withValues(
-                                                                    alpha: 0.6,
-                                                                  ),
-                                                            ),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                            loadingBuilder:
-                                                (
-                                                  context,
-                                                  child,
-                                                  loadingProgress,
-                                                ) {
-                                                  if (loadingProgress == null) {
-                                                    return child;
-                                                  }
-                                                  return Center(
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                          color:
-                                                              AppColors.primary,
-                                                        ),
-                                                  );
-                                                },
+                          )
+                        : (widget.product?.image != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(14).rt,
+                                  child: Image.network(
+                                    Get.imageUrl(widget.product!.image!),
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.add_photo_alternate_outlined,
+                                            size: 48.st,
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.5,
+                                            ),
                                           ),
-                                        )
-                                      : Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons
-                                                  .add_photo_alternate_outlined,
-                                              size: 48.st,
-                                              color: AppColors.primary
-                                                  .withValues(alpha: 0.5),
+                                          12.verticalGap,
+                                          AppText(
+                                            'tap_to_add_image'.tr(context),
+                                            style: Get.bodyMedium.px14.copyWith(
+                                              color: Get.disabledColor
+                                                  .withValues(alpha: 0.6),
                                             ),
-                                            12.verticalGap,
-                                            AppText(
-                                              'tap_to_add_image'.tr(context),
-                                              style: Get.bodyMedium.px14
-                                                  .copyWith(
-                                                    color: Get.disabledColor
-                                                        .withValues(alpha: 0.6),
-                                                  ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              color: AppColors.primary,
                                             ),
-                                          ],
-                                        )),
-                          ),
-                        ),
-                        if (_selectedImage != null)
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedImage = null;
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8).rt,
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.3,
+                                          );
+                                        },
+                                  ),
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.add_photo_alternate_outlined,
+                                      size: 48.st,
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.5,
                                       ),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                                    ),
+                                    12.verticalGap,
+                                    AppText(
+                                      'tap_to_add_image'.tr(context),
+                                      style: Get.bodyMedium.px14.copyWith(
+                                        color: Get.disabledColor.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                      ),
                                     ),
                                   ],
-                                ),
-                                child: Icon(
-                                  Icons.close,
-                                  color: AppColors.white,
-                                  size: 18.st,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    24.verticalGap,
-
-                    // Product Name
-                    AppText(
-                      'product_name'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        hintText: 'enter_product_name'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'required_field'.tr(context);
-                        }
-                        return null;
+                                )),
+                  ),
+                ),
+                if (_selectedImage != null)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedImage = null;
+                        });
                       },
-                    ),
-                    16.verticalGap,
-
-                    // Phone Number
-                    AppText(
-                      'contact_phone'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    TextFormField(
-                      controller: _phoneController,
-                      decoration: InputDecoration(
-                        hintText: 'enter_phone'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'required_field'.tr(context);
-                        }
-                        return null;
-                      },
-                    ),
-                    16.verticalGap,
-
-                    // Address
-                    AppText(
-                      'contact_address'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    TextFormField(
-                      controller: _addressController,
-                      decoration: InputDecoration(
-                        hintText: 'enter_address'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      minLines: 1,
-                      maxLines: 2,
-                      validator: (value) {
-                        final trimmed = value?.trim() ?? '';
-                        if (trimmed.isEmpty) {
-                          return 'required_field'.tr(context);
-                        }
-                        if (trimmed.length < 5) {
-                          return 'address_min_length'.tr(context);
-                        }
-                        return null;
-                      },
-                    ),
-                    16.verticalGap,
-
-                    // Category
-                    AppText(
-                      'category'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    GestureDetector(
-                      onTap: () => _showCategoryDialog(),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ).rt,
+                        padding: const EdgeInsets.all(8).rt,
                         decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Get.disabledColor.withValues(alpha: 0.2),
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: AppText(
-                                selectedCategory?.name ??
-                                    'select_category'.tr(context),
-                                style: Get.bodyMedium.px15.copyWith(
-                                  color: selectedCategory != null
-                                      ? Get.disabledColor
-                                      : Get.disabledColor.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_drop_down,
-                              color: Get.disabledColor.withValues(alpha: 0.5),
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
+                        child: Icon(
+                          Icons.close,
+                          color: AppColors.white,
+                          size: 18.st,
+                        ),
                       ),
                     ),
-                    16.verticalGap,
+                  ),
+              ],
+            ),
+            24.verticalGap,
 
-                    // Price and Unit in Row
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppText(
-                                'base_price'.tr(context),
-                                style: Get.bodyMedium.px15.w700.copyWith(
-                                  color: Get.disabledColor,
-                                ),
-                              ),
-                              8.verticalGap,
-                              TextFormField(
-                                controller: _priceController,
-                                decoration: InputDecoration(
-                                  hintText: 'enter_base_price'.tr(context),
-                                  prefixText: 'Rs. ',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12).rt,
-                                  ),
-                                ),
-                                keyboardType: TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'required'.tr(context);
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                        16.horizontalGap,
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppText(
-                                'unit'.tr(context),
-                                style: Get.bodyMedium.px15.w700.copyWith(
-                                  color: Get.disabledColor,
-                                ),
-                              ),
-                              8.verticalGap,
-                              GestureDetector(
-                                onTap: () => _showUnitDialog(),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 16,
-                                  ).rt,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Get.disabledColor.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12).rt,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: AppText(
-                                          selectedUnit?.name ??
-                                              'select_unit'.tr(context),
-                                          style: Get.bodyMedium.px15.copyWith(
-                                            color: selectedUnit != null
-                                                ? Get.disabledColor
-                                                : Get.disabledColor.withValues(
-                                                    alpha: 0.5,
-                                                  ),
-                                          ),
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.arrow_drop_down,
-                                        color: Get.disabledColor.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    16.verticalGap,
+            // Product Name
+            AppText(
+              'product_name'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                hintText: 'enter_product_name'.tr(context),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'required_field'.tr(context);
+                }
+                return null;
+              },
+            ),
+            16.verticalGap,
 
-                    // Description
-                    AppText(
-                      'description'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration: InputDecoration(
-                        hintText: 'enter_description'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      maxLines: 4,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'required_field'.tr(context);
-                        }
-                        return null;
-                      },
-                    ),
-                    24.verticalGap,
+            // Phone Number
+            AppText(
+              'contact_phone'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            TextFormField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                hintText: 'enter_phone'.tr(context),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+              ),
+              keyboardType: TextInputType.phone,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'required_field'.tr(context);
+                }
+                return null;
+              },
+            ),
+            16.verticalGap,
 
-                    // Availability Toggle
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16).rt,
-                      decoration: BoxDecoration(
-                        color: Get.cardColor,
-                        borderRadius: BorderRadius.circular(14).rt,
-                        border: Border.all(
-                          color: Get.disabledColor.withValues(alpha: 0.15),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    AppText(
-                                      'available_for_sale'.tr(context),
-                                      style: Get.bodyMedium.px15.w700.copyWith(
-                                        color: Get.disabledColor,
-                                      ),
-                                    ),
-                                    4.verticalGap,
-                                    AppText(
-                                      'available_for_sale_hint'.tr(context),
-                                      style: Get.bodySmall.copyWith(
-                                        color: Get.disabledColor.withValues(
-                                          alpha: 0.7,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Switch.adaptive(
-                                value: _isAvailable,
-                                onChanged: (value) =>
-                                    setState(() => _isAvailable = value),
-                                activeColor: AppColors.primary,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    24.verticalGap,
+            // Address
+            AppText(
+              'contact_address'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            TextFormField(
+              controller: _addressController,
+              decoration: InputDecoration(
+                hintText: 'enter_address'.tr(context),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+              ),
+              minLines: 1,
+              maxLines: 2,
+              validator: (value) {
+                final trimmed = value?.trim() ?? '';
+                if (trimmed.isEmpty) {
+                  return 'required_field'.tr(context);
+                }
+                if (trimmed.length < 5) {
+                  return 'address_min_length'.tr(context);
+                }
+                return null;
+              },
+            ),
+            16.verticalGap,
 
-                    // Save Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isSaving ? null : _saveProduct,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14).rt,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12).rt,
-                          ),
+            // Category
+            AppText(
+              'category'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            GestureDetector(
+              onTap: () => _showCategoryDialog(categories),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ).rt,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Get.disabledColor.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        selectedCategory?.name ?? 'select_category'.tr(context),
+                        style: Get.bodyMedium.px15.copyWith(
+                          color: selectedCategory != null
+                              ? Get.disabledColor
+                              : Get.disabledColor.withValues(alpha: 0.5),
                         ),
-                        child: isSaving
-                            ? SizedBox(
-                                height: 20.st,
-                                width: 20.st,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : AppText(
-                                isEdit
-                                    ? 'update'.tr(context)
-                                    : 'save'.tr(context),
-                                style: Get.bodyMedium.px16.w700.copyWith(
-                                  color: AppColors.white,
-                                ),
-                              ),
                       ),
                     ),
-                    20.verticalGap,
+                    Icon(
+                      Icons.arrow_drop_down,
+                      color: Get.disabledColor.withValues(alpha: 0.5),
+                    ),
                   ],
                 ),
               ),
             ),
+            16.verticalGap,
+
+            // Price and Unit in Row
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        'base_price'.tr(context),
+                        style: Get.bodyMedium.px15.w700.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                      ),
+                      8.verticalGap,
+                      TextFormField(
+                        controller: _priceController,
+                        decoration: InputDecoration(
+                          hintText: 'enter_base_price'.tr(context),
+                          prefixText: 'Rs. ',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12).rt,
+                          ),
+                        ),
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'required'.tr(context);
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                16.horizontalGap,
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        'unit'.tr(context),
+                        style: Get.bodyMedium.px15.w700.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                      ),
+                      8.verticalGap,
+                      GestureDetector(
+                        onTap: () => _showUnitDialog(units),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ).rt,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Get.disabledColor.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(12).rt,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: AppText(
+                                  selectedUnit?.name ??
+                                      'select_unit'.tr(context),
+                                  style: Get.bodyMedium.px15.copyWith(
+                                    color: selectedUnit != null
+                                        ? Get.disabledColor
+                                        : Get.disabledColor.withValues(
+                                            alpha: 0.5,
+                                          ),
+                                  ),
+                                ),
+                              ),
+                              Icon(
+                                Icons.arrow_drop_down,
+                                color: Get.disabledColor.withValues(alpha: 0.5),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            16.verticalGap,
+
+            // Description
+            AppText(
+              'description'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            TextFormField(
+              controller: _descriptionController,
+              decoration: InputDecoration(
+                hintText: 'enter_description'.tr(context),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+              ),
+              maxLines: 4,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'required_field'.tr(context);
+                }
+                return null;
+              },
+            ),
+            24.verticalGap,
+
+            // Rejection Reason (only show when editing a rejected product)
+            if (widget.product != null &&
+                widget.product!.approvalStatus?.toLowerCase() == 'rejected' &&
+                widget.product!.rejectionReason != null &&
+                widget.product!.rejectionReason!.isNotEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12).rt,
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12).rt,
+                  border: Border.all(
+                    color: Colors.red.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 16.st,
+                          color: Colors.red.shade700,
+                        ),
+                        8.horizontalGap,
+                        AppText(
+                          'rejection_reason'.tr(context),
+                          style: Get.bodySmall.px13.w700.copyWith(
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    8.verticalGap,
+                    AppText(
+                      widget.product!.rejectionReason!,
+                      style: Get.bodySmall.px12.w500.copyWith(
+                        color: Colors.red.shade800,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (widget.product != null &&
+                widget.product!.approvalStatus?.toLowerCase() == 'rejected' &&
+                widget.product!.rejectionReason != null &&
+                widget.product!.rejectionReason!.isNotEmpty)
+              16.verticalGap,
+
+            // Availability Toggle
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16).rt,
+              decoration: BoxDecoration(
+                color: Get.cardColor,
+                borderRadius: BorderRadius.circular(14).rt,
+                border: Border.all(
+                  color: Get.disabledColor.withValues(alpha: 0.15),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AppText(
+                              'available_for_sale'.tr(context),
+                              style: Get.bodyMedium.px15.w700.copyWith(
+                                color: Get.disabledColor,
+                              ),
+                            ),
+                            4.verticalGap,
+                            AppText(
+                              'available_for_sale_hint'.tr(context),
+                              style: Get.bodySmall.copyWith(
+                                color: Get.disabledColor.withValues(alpha: 0.7),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _isAvailable,
+                        builder: (context, isAvailable, _) => Switch.adaptive(
+                          value: isAvailable,
+                          onChanged: (value) => _isAvailable.value = value,
+                          activeColor: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            24.verticalGap,
+
+            // Save Button
+            ValueListenableBuilder<bool>(
+              valueListenable: isSaving,
+              builder: (context, saving, _) => SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: saving ? null : _saveProduct,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14).rt,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12).rt,
+                    ),
+                  ),
+                  child: saving
+                      ? SizedBox(
+                          height: 20.st,
+                          width: 20.st,
+                          child: CircularProgressIndicator(
+                            color: AppColors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : AppText(
+                          isEdit ? 'update'.tr(context) : 'save'.tr(context),
+                          style: Get.bodyMedium.px16.w700.copyWith(
+                            color: AppColors.white,
+                          ),
+                        ),
+                ),
+              ),
+            ),
+            20.verticalGap,
+          ],
+        ),
+      ),
     );
   }
 }
