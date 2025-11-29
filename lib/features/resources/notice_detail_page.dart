@@ -255,7 +255,7 @@ class NoticeDetailPage extends StatelessWidget {
               color: Get.cardColor.withValues(alpha: Get.isDark ? 0.3 : 0.7),
               borderRadius: BorderRadius.circular(16).rt,
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: CircularProgressIndicator.adaptive()),
           ),
           errorWidget: (context, url, error) => Container(
             height: 220.h,

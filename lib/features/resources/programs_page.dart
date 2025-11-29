@@ -158,7 +158,7 @@ class _ProgramsPageState extends ConsumerState<ProgramsPage> {
               valueListenable: _isInitialLoading,
               builder: (context, isInitialLoading, _) {
                 return isInitialLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: CircularProgressIndicator.adaptive())
                     : _programs.isEmpty
                     ? _buildEmptyState(context)
                     : _buildProgramsList();

@@ -96,8 +96,10 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
       if (!mounted) return;
       setState(() {
         for (var i = 0; i < _notifications.length; i++) {
-          _notifications[i] =
-              _notifications[i].copyWith(isRead: true, readAt: DateTime.now());
+          _notifications[i] = _notifications[i].copyWith(
+            isRead: true,
+            readAt: DateTime.now(),
+          );
         }
       });
       ref.read(unreadNotificationsProvider.notifier).resetToZero();
@@ -189,9 +191,9 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
   Future<void> _deleteAllNotifications() async {
     if (_notifications.isEmpty || _isDeletingAll) return;
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAdaptiveDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (context) => AlertDialog.adaptive(
         title: Text('delete_all_notifications'.tr(context)),
         content: Text('delete_all_notifications_warning'.tr(context)),
         actions: [
@@ -244,11 +246,14 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
               Row(
                 children: [
                   Container(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 12.wt, vertical: 6.ht),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 12.wt,
+                      vertical: 6.ht,
+                    ),
                     decoration: BoxDecoration(
-                      color: _getTypeColor(notification.notificationType)
-                          .withValues(alpha: 0.12),
+                      color: _getTypeColor(
+                        notification.notificationType,
+                      ).withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20).rt,
                     ),
                     child: AppText(
@@ -260,8 +265,9 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                   ),
                   const Spacer(),
                   AppText(
-                    DateFormat('MMM d, yyyy • h:mm a')
-                        .format(notification.createdAt),
+                    DateFormat(
+                      'MMM d, yyyy • h:mm a',
+                    ).format(notification.createdAt),
                     style: Get.bodySmall.copyWith(
                       color: Get.disabledColor.withValues(alpha: 0.7),
                     ),
@@ -269,10 +275,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                 ],
               ),
               16.verticalGap,
-              AppText(
-                notification.title,
-                style: Get.bodyLarge.px18.w700,
-              ),
+              AppText(notification.title, style: Get.bodyLarge.px18.w700),
               12.verticalGap,
               AppText(
                 notification.message,
@@ -351,19 +354,16 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
         ],
       ),
       body: _initialLoading
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator.adaptive())
           : hasNotifications
-              ? _buildNotificationsList()
-              : _buildEmptyState(),
+          ? _buildNotificationsList()
+          : _buildEmptyState(),
     );
   }
 
   Widget _buildNotificationsList() {
     return RefreshIndicator(
-      onRefresh: () => _loadNotifications(
-        refresh: true,
-        markReadOnOpen: true,
-      ),
+      onRefresh: () => _loadNotifications(refresh: true, markReadOnOpen: true),
       child: ListView.builder(
         padding: EdgeInsets.only(bottom: 24.ht),
         physics: const AlwaysScrollableScrollPhysics(),
@@ -400,9 +400,9 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
             ? SizedBox(
                 height: 18.st,
                 width: 18.st,
-                child: const CircularProgressIndicator(
+                child: const CircularProgressIndicator.adaptive(
                   strokeWidth: 2,
-                  color: Colors.white,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
             : AppText(
@@ -582,6 +582,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
             ),
             8.verticalGap,
             AppText(
+              maxLines: 3,
               'no_notifications_subtitle'.tr(context),
               style: Get.bodyMedium.copyWith(
                 color: Get.disabledColor.withValues(alpha: 0.7),
@@ -595,4 +596,3 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
     );
   }
 }
-

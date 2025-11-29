@@ -73,7 +73,7 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
       body: ValueListenableBuilder<bool>(
         valueListenable: _isLoading,
         builder: (context, isLoading, _) {
-          if (isLoading) return const Center(child: CircularProgressIndicator());
+          if (isLoading) return const Center(child: CircularProgressIndicator.adaptive());
 
           return ValueListenableBuilder<String?>(
             valueListenable: _error,

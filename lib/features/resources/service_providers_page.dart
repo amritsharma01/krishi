@@ -130,7 +130,9 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
           Expanded(
             child: _isLoading
                 ? Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
+                    child: CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    ),
                   )
                 : _providers.isEmpty
                     ? _buildEmptyState(context)

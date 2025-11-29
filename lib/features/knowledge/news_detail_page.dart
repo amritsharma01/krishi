@@ -182,7 +182,9 @@ class NewsDetailPage extends ConsumerWidget {
       color: const Color(0xFF1976D2).withValues(alpha: 0.1),
       child: Center(
         child: isLoading
-            ? CircularProgressIndicator(color: const Color(0xFF1976D2))
+            ? CircularProgressIndicator.adaptive(
+                valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF1976D2)),
+              )
             : Icon(
                 Icons.newspaper,
                 size: 80.st,

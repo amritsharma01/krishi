@@ -31,7 +31,9 @@ class ArticleDetailPage extends ConsumerWidget {
           leading: _buildBackButton(context),
         ),
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
         ),
       ),
       error: (error, stack) => Scaffold(
@@ -193,7 +195,9 @@ class ArticleDetailPage extends ConsumerWidget {
       color: AppColors.primary.withValues(alpha: 0.1),
       child: Center(
         child: isLoading
-            ? CircularProgressIndicator(color: AppColors.primary)
+            ? CircularProgressIndicator.adaptive(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              )
             : Icon(
                 Icons.article_outlined,
                 size: 80.st,

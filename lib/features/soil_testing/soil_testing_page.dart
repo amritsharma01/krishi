@@ -185,7 +185,7 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
 
   Widget _buildCentersSection(BuildContext context) {
     if (_isInitialLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator.adaptive());
     }
     if (_centers.isEmpty) {
       return _buildEmptyState(context);

@@ -138,7 +138,7 @@ class _MarketPricesPageState extends ConsumerState<MarketPricesPage> {
               valueListenable: _isInitialLoading,
               builder: (context, isInitialLoading, _) {
                 return isInitialLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: CircularProgressIndicator.adaptive())
                     : _prices.isEmpty
                         ? _buildEmptyState(context)
                         : _buildPricesList();

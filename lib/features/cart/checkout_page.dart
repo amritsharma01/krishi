@@ -304,8 +304,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                           child: SizedBox(
                             width: 18.st,
                             height: 18.st,
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
+                            child: CircularProgressIndicator.adaptive(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primary,
+                              ),
                               strokeWidth: 2,
                             ),
                           ),
@@ -514,8 +516,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               ? SizedBox(
                   width: 24.st,
                   height: 24.st,
-                  child: CircularProgressIndicator(
-                    color: AppColors.white,
+                  child: CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
                     strokeWidth: 2.5,
                   ),
                 )

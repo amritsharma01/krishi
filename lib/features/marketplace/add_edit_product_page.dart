@@ -4,6 +4,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
+import 'package:krishi/core/extensions/color_extensions.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
@@ -423,7 +424,11 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         ),
       ),
       body: categoriesAsync.isLoading || unitsAsync.isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? Center(
+              child: CircularProgressIndicator.adaptive(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
+            )
           : categoriesAsync.hasError || unitsAsync.hasError
           ? Center(
               child: Column(
@@ -548,9 +553,13 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                             return child;
                                           }
                                           return Center(
-                                            child: CircularProgressIndicator(
-                                              color: AppColors.primary,
-                                            ),
+                                            child:
+                                                CircularProgressIndicator.adaptive(
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                        Color
+                                                      >(AppColors.primary),
+                                                ),
                                           );
                                         },
                                   ),
@@ -916,10 +925,11 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
               width: double.infinity,
               padding: const EdgeInsets.all(16).rt,
               decoration: BoxDecoration(
-                color: Get.cardColor,
-                borderRadius: BorderRadius.circular(14).rt,
+                color: Get.cardColor.o2,
+                borderRadius: BorderRadius.circular(12).rt,
                 border: Border.all(
-                  color: Get.disabledColor.withValues(alpha: 0.15),
+                  color: Get.disabledColor.withValues(alpha: 0.2),
+                  width: 1,
                 ),
               ),
               child: Column(
@@ -932,6 +942,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             AppText(
+                              maxLines: 2,
                               'available_for_sale'.tr(context),
                               style: Get.bodyMedium.px15.w700.copyWith(
                                 color: Get.disabledColor,
@@ -939,8 +950,9 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                             ),
                             4.verticalGap,
                             AppText(
+                              maxLines: 3,
                               'available_for_sale_hint'.tr(context),
-                              style: Get.bodySmall.copyWith(
+                              style: Get.bodySmall.px12.copyWith(
                                 color: Get.disabledColor.withValues(alpha: 0.7),
                               ),
                             ),
@@ -980,8 +992,10 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                       ? SizedBox(
                           height: 20.st,
                           width: 20.st,
-                          child: CircularProgressIndicator(
-                            color: AppColors.white,
+                          child: CircularProgressIndicator.adaptive(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AppColors.white,
+                            ),
                             strokeWidth: 2,
                           ),
                         )

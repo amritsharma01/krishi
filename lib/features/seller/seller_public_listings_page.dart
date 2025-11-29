@@ -99,7 +99,11 @@ class _SellerPublicListingsPageState
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 32).rt,
                 child: Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
+                  child: CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.primary,
+                    ),
+                  ),
                 ),
               )
             else if (errorMessage != null)

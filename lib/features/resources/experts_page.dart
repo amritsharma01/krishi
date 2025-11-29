@@ -136,7 +136,9 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
         builder: (context, isLoading, _) {
           return isLoading
               ? Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
+                  child: CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
                 )
               : _experts.isEmpty
               ? _buildEmptyState(context)

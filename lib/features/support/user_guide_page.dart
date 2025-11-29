@@ -107,7 +107,9 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
               builder: (context, isLoading, _) {
                 return isLoading
                     ? Center(
-                        child: CircularProgressIndicator(color: AppColors.primary),
+                        child: CircularProgressIndicator.adaptive(
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        ),
                       )
                     : _manuals.isEmpty
                     ? _buildEmptyState(context)
@@ -347,7 +349,7 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
                       placeholder: (context, url) => Container(
                         height: 160.ht,
                         color: Get.cardColor.withValues(alpha: 0.3),
-                        child: const Center(child: CircularProgressIndicator()),
+                        child: const Center(child: CircularProgressIndicator.adaptive()),
                       ),
                       errorWidget: (context, url, error) => Container(
                         height: 160.ht,
