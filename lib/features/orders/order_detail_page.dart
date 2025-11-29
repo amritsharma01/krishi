@@ -449,6 +449,36 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
             'NPR ${order!.totalAmountAsDouble.toStringAsFixed(2)}',
             isBold: true,
           ),
+          if (order!.adminNotes != null && order!.adminNotes!.isNotEmpty) ...[
+            12.verticalGap,
+            Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
+            12.verticalGap,
+            AppText(
+              'admin_notes'.tr(context),
+              style: Get.bodyMedium.px14.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            Container(
+              padding: const EdgeInsets.all(12).rt,
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(8).rt,
+                border: Border.all(
+                  color: Colors.blue.withValues(alpha: 0.2),
+                  width: 1,
+                ),
+              ),
+              child: AppText(
+                order!.adminNotes!,
+                style: Get.bodySmall.px13.w500.copyWith(
+                  color: Get.disabledColor,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -572,8 +602,131 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   }
 
   Widget _buildActionButtons() {
-    // Admin handles all order status transitions
-    return const SizedBox();
+    // Show delete button only for buyers with pending orders
+    if (widget.isSeller || order == null) {
+      return const SizedBox();
+    }
+
+    final isPending = order!.status.toLowerCase() == 'pending';
+    if (!isPending) {
+      return const SizedBox();
+    }
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12).rt,
+        border: Border.all(color: Colors.red.withValues(alpha: 0.2), width: 1),
+      ),
+      child: TextButton.icon(
+        onPressed: isProcessing ? null : _deleteOrder,
+        icon: isProcessing
+            ? SizedBox(
+                width: 16.st,
+                height: 16.st,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.red.shade700,
+                ),
+              )
+            : Icon(
+                Icons.delete_outline,
+                color: Colors.red.shade700,
+                size: 20.st,
+              ),
+        label: AppText(
+          'delete_order'.tr(context),
+          style: Get.bodyMedium.px14.w600.copyWith(color: Colors.red.shade700),
+        ),
+        style: TextButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16).rt,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _deleteOrder() async {
+    if (order == null || !mounted) return;
+
+    // Get a valid context - use Get.context as fallback if widget is not mounted
+    final dialogContext = mounted ? context : Get.context;
+
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: dialogContext,
+      barrierDismissible: true,
+      builder: (builderContext) => AlertDialog(
+        backgroundColor: Get.cardColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16).rt,
+        ),
+        title: Text(
+          'delete_order'.tr(builderContext),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+        ),
+        content: Text(
+          'delete_order_confirm'.tr(builderContext),
+          style: Get.bodyMedium.px14.w500.copyWith(
+            color: Get.disabledColor.withValues(alpha: 0.7),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(builderContext).pop(false),
+            child: Text(
+              'no'.tr(builderContext),
+              style: Get.bodyMedium.px14.w500.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(builderContext).pop(true),
+            child: Text(
+              'yes'.tr(builderContext),
+              style: Get.bodyMedium.px14.w600.copyWith(
+                color: Colors.red.shade700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || confirmed != true) return;
+
+    setState(() {
+      isProcessing = true;
+    });
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      await apiService.deleteOrder(order!.id);
+      if (mounted) {
+        Get.snackbar('order_deleted'.tr(context), color: Colors.green);
+        Navigator.of(context).pop(true); // Return true to indicate deletion
+      }
+    } catch (e) {
+      if (mounted) {
+        final errorMessage = e.toString().toLowerCase();
+        if (errorMessage.contains('pending') ||
+            errorMessage.contains('status')) {
+          Get.snackbar(
+            'order_delete_pending_only'.tr(context),
+            color: Colors.orange.shade700,
+          );
+        } else {
+          Get.snackbar('order_delete_failed'.tr(context), color: Colors.red);
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isProcessing = false;
+        });
+      }
+    }
   }
 
   (Color, Color, Color) _statusColors(String status) {

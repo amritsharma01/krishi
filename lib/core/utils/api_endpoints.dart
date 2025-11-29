@@ -43,6 +43,7 @@ final class ApiEndpoints {
   // Orders
   static const String orders = "orders/";
   static String orderDetail(int id) => "orders/$id/";
+  static String deleteOrder(int id) => "orders/$id/";
   static String completeOrder(int id) => "orders/$id/complete/";
   static String startDelivery(int id) => "orders/$id/start_delivery/";
   static String cancelOrder(int id) => "orders/$id/cancel/";

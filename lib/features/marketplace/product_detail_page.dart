@@ -9,6 +9,7 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/cart/cart_page.dart';
 import 'package:krishi/features/cart/checkout_page.dart';
 import 'package:krishi/features/marketplace/providers/marketplace_providers.dart';
 import 'package:krishi/features/seller/seller_public_listings_page.dart';
@@ -216,6 +217,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
         centerTitle: false,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.shopping_cart_outlined, color: Get.disabledColor),
+            onPressed: () {
+              Get.to(const CartPage());
+            },
+          ),
+        ],
       ),
       body: ListView(
         physics: const BouncingScrollPhysics(),
@@ -274,10 +283,12 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(vertical: 16.rt),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12).rt),
+                            borderRadius: BorderRadius.circular(12).rt,
+                          ),
                           elevation: inCart ? 2 : 3,
-                          shadowColor: (inCart ? Colors.green : AppColors.primary)
-                              .withValues(alpha: 0.3),
+                          shadowColor:
+                              (inCart ? Colors.green : AppColors.primary)
+                                  .withValues(alpha: 0.3),
                         ),
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
@@ -293,45 +304,47 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                                 )
                               : inCart
                               ? Row(
-                          key: const ValueKey('added'),
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.check_circle, size: 20.st),
-                            8.horizontalGap,
-                            AppText(
-                              'added_to_cart'.tr(context),
-                              style: Get.bodyMedium.px15.w600.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Row(
-                          key: const ValueKey('add'),
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.shopping_cart, size: 20.st),
-                            8.horizontalGap,
-                            AppText(
-                              'add_to_cart'.tr(context),
-                              style: Get.bodyMedium.px15.w600.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                                  key: const ValueKey('added'),
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.check_circle, size: 20.st),
+                                    8.horizontalGap,
+                                    AppText(
+                                      'added_to_cart'.tr(context),
+                                      style: Get.bodyMedium.px15.w600.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : Row(
+                                  key: const ValueKey('add'),
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.shopping_cart, size: 20.st),
+                                    8.horizontalGap,
+                                    AppText(
+                                      'add_to_cart'.tr(context),
+                                      style: Get.bodyMedium.px15.w600.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                         ),
-                ),
-              ),
-            ),
-            12.horizontalGap,
-            // Checkout Button
+                      ),
+                    ),
+                    12.horizontalGap,
+                    // Checkout Button
                     Expanded(
                       child: ElevatedButton(
                         onPressed: adding ? null : _checkoutDirectly,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary.withValues(alpha: 0.9),
+                          backgroundColor: AppColors.primary.withValues(
+                            alpha: 0.9,
+                          ),
                           foregroundColor: Colors.white,
                           padding: EdgeInsets.symmetric(vertical: 16.rt),
                           shape: RoundedRectangleBorder(
@@ -503,15 +516,55 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     );
   }
 
+  Widget _featureChip(IconData icon, String label, Color color) {
+    // Get darker shade for text/icon
+    final textColor = color == Colors.amber
+        ? Colors.amber.shade700
+        : color == Colors.green
+        ? Colors.green.shade700
+        : color;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6).rt,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(30).rt,
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14.st, color: textColor),
+          6.horizontalGap,
+          AppText(
+            label,
+            style: Get.bodySmall.px11.w600.copyWith(color: textColor),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildProductInfo() {
     final reviewsAsync = ref.watch(productReviewsProvider(widget.product.id));
-    final reviews = reviewsAsync.maybeWhen(data: (list) => list, orElse: () => <Review>[]);
+    final reviews = reviewsAsync.maybeWhen(
+      data: (list) => list,
+      orElse: () => <Review>[],
+    );
     final averageRating = _calculateAverageRating(reviews);
     final chips = <Widget>[
       if (widget.product.categoryName.trim().isNotEmpty)
         _metaChip(Icons.category_outlined, widget.product.categoryName),
       if (widget.product.unitName.trim().isNotEmpty)
         _metaChip(Icons.monitor_weight_outlined, widget.product.unitName),
+      if (widget.product.freeDelivery == true)
+        _featureChip(
+          Icons.local_shipping,
+          'free_delivery'.tr(context),
+          Colors.green,
+        ),
+      if (widget.product.recommend == true)
+        _featureChip(Icons.star, 'recommended'.tr(context), Colors.amber),
     ];
 
     return _sectionCard(
@@ -733,26 +786,28 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                     if (tabIndex == index) return;
                     _feedbackTabIndex.value = index;
                   },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                padding: EdgeInsets.symmetric(vertical: 10.ht),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? AppColors.primary.withValues(alpha: 0.15)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10).rt,
-                ),
-                child: Center(
-                  child: AppText(
-                    tabs[index],
-                    style: Get.bodySmall.px13.w700.copyWith(
-                      color: isActive ? AppColors.primary : Get.disabledColor,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: EdgeInsets.symmetric(vertical: 10.ht),
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? AppColors.primary.withValues(alpha: 0.15)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10).rt,
+                    ),
+                    child: Center(
+                      child: AppText(
+                        tabs[index],
+                        style: Get.bodySmall.px13.w700.copyWith(
+                          color: isActive
+                              ? AppColors.primary
+                              : Get.disabledColor,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-          );
+              );
             }),
           ),
         );
@@ -841,7 +896,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       builder: (context, submitting, child) {
         return Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Get.disabledColor.withValues(alpha: 0.08)),
+            border: Border.all(
+              color: Get.disabledColor.withValues(alpha: 0.08),
+            ),
             borderRadius: BorderRadius.circular(14).rt,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8).rt,
@@ -861,40 +918,45 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
               12.horizontalGap,
               ElevatedButton(
                 onPressed: submitting ? null : _submitComment,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10).rt,
-              ),
-            ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 16.wt,
+                    vertical: 12.ht,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10).rt,
+                  ),
+                ),
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
                   child: submitting
                       ? SizedBox(
-                      key: const ValueKey('comment-loading'),
-                      width: 18.st,
-                      height: 18.st,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    )
-                  : Row(
-                      key: const ValueKey('comment-action'),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.send_rounded, size: 16.st),
-                        6.horizontalGap,
-                        AppText(
-                          'add_comment'.tr(context),
-                          style: Get.bodySmall.px12.w600.copyWith(
-                            color: Colors.white,
+                          key: const ValueKey('comment-loading'),
+                          width: 18.st,
+                          height: 18.st,
+                          child: const CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
+                        )
+                      : Row(
+                          key: const ValueKey('comment-action'),
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.send_rounded, size: 16.st),
+                            6.horizontalGap,
+                            AppText(
+                              'add_comment'.tr(context),
+                              style: Get.bodySmall.px12.w600.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                      ),
                 ),
               ),
             ],

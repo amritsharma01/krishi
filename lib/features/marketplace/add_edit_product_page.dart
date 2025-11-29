@@ -515,7 +515,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(14).rt,
                                   child: Image.network(
-                                    Get.baseUrl + widget.product!.image!,
+                                    Get.imageUrl(widget.product!.image!),
                                     fit: BoxFit.cover,
                                     width: double.infinity,
                                     height: double.infinity,
@@ -858,6 +858,58 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
               },
             ),
             24.verticalGap,
+
+            // Rejection Reason (only show when editing a rejected product)
+            if (widget.product != null &&
+                widget.product!.approvalStatus?.toLowerCase() == 'rejected' &&
+                widget.product!.rejectionReason != null &&
+                widget.product!.rejectionReason!.isNotEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12).rt,
+                decoration: BoxDecoration(
+                  color: Colors.red.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12).rt,
+                  border: Border.all(
+                    color: Colors.red.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          size: 16.st,
+                          color: Colors.red.shade700,
+                        ),
+                        8.horizontalGap,
+                        AppText(
+                          'rejection_reason'.tr(context),
+                          style: Get.bodySmall.px13.w700.copyWith(
+                            color: Colors.red.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    8.verticalGap,
+                    AppText(
+                      widget.product!.rejectionReason!,
+                      style: Get.bodySmall.px12.w500.copyWith(
+                        color: Colors.red.shade800,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (widget.product != null &&
+                widget.product!.approvalStatus?.toLowerCase() == 'rejected' &&
+                widget.product!.rejectionReason != null &&
+                widget.product!.rejectionReason!.isNotEmpty)
+              16.verticalGap,
 
             // Availability Toggle
             Container(

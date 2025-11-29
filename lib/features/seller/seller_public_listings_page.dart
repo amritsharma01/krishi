@@ -50,8 +50,7 @@ class _SellerPublicListingsPageState
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final profile =
-          await apiService.getSellerPublicProfile(widget.userKrId);
+      final profile = await apiService.getSellerPublicProfile(widget.userKrId);
       if (mounted) {
         setState(() {
           listings = profile.sellerProducts;
@@ -82,7 +81,7 @@ class _SellerPublicListingsPageState
             ),
             AppText(
               widget.userKrId,
-              style: Get.bodySmall.copyWith(
+              style: Get.bodySmall.px12.copyWith(
                 color: Get.disabledColor.withValues(alpha: 0.7),
               ),
             ),
@@ -94,7 +93,7 @@ class _SellerPublicListingsPageState
       body: RefreshIndicator(
         onRefresh: _refreshListings,
         child: ListView(
-          padding: const EdgeInsets.all(16).rt,
+          padding: const EdgeInsets.all(8).rt,
           children: [
             if (isLoading)
               Padding(
@@ -108,9 +107,7 @@ class _SellerPublicListingsPageState
                 children: [
                   AppText(
                     'error_loading_seller'.tr(context),
-                    style: Get.bodyMedium.px15.w700.copyWith(
-                      color: Colors.red,
-                    ),
+                    style: Get.bodyMedium.px15.w700.copyWith(color: Colors.red),
                   ),
                   8.verticalGap,
                   AppText(
@@ -145,14 +142,12 @@ class _SellerPublicListingsPageState
     return GestureDetector(
       onTap: () => Get.to(ProductDetailPage(product: product)),
       child: Container(
-        margin: EdgeInsets.only(bottom: 12.rt),
-        padding: const EdgeInsets.all(12).rt,
+        margin: EdgeInsets.only(bottom: 6.rt),
+        padding: const EdgeInsets.all(8).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(
-            color: Get.disabledColor.withValues(alpha: 0.08),
-          ),
+          borderRadius: BorderRadius.circular(20).rt,
+          border: Border.all(color: Get.disabledColor.withValues(alpha: 0.08)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.03),
@@ -188,11 +183,34 @@ class _SellerPublicListingsPageState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AppText(
-                    product.name,
-                    style: Get.bodyMedium.px15.w700.copyWith(
-                      color: Get.disabledColor,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: AppText(
+                          product.name,
+                          style: Get.bodyMedium.px15.w700.copyWith(
+                            color: Get.disabledColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      if (product.rating != null && product.rating!.isNotEmpty)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            8.horizontalGap,
+                            Icon(Icons.star, size: 14.st, color: Colors.amber),
+                            4.horizontalGap,
+                            AppText(
+                              product.rating!,
+                              style: Get.bodySmall.px11.w600.copyWith(
+                                color: Get.disabledColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
                   ),
                   4.verticalGap,
                   AppText(
@@ -213,15 +231,9 @@ class _SellerPublicListingsPageState
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16.st,
-              color: Get.disabledColor.withValues(alpha: 0.3),
-            ),
           ],
         ),
       ),
     );
   }
 }
-

@@ -93,6 +93,7 @@ class Order {
   final String? cancelledBy;
   final String? cancelledByDisplay;
   final DateTime? cancelledAt;
+  final String? adminNotes;
   final DateTime createdAt;
   final DateTime updatedAt;
   final int?
@@ -117,6 +118,7 @@ class Order {
     this.cancelledBy,
     this.cancelledByDisplay,
     this.cancelledAt,
+    this.adminNotes,
     required this.createdAt,
     required this.updatedAt,
     int? itemsCountFromApi,
@@ -162,6 +164,7 @@ class Order {
       cancelledAt: json['cancelled_at'] != null
           ? DateTime.parse(json['cancelled_at'] as String)
           : null,
+      adminNotes: json['admin_notes'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: json['updated_at'] != null
           ? DateTime.parse(json['updated_at'] as String)
@@ -192,6 +195,7 @@ class Order {
       'cancelled_by': cancelledBy,
       'cancelled_by_display': cancelledByDisplay,
       'cancelled_at': cancelledAt?.toIso8601String(),
+      'admin_notes': adminNotes,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };

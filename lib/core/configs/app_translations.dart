@@ -230,6 +230,8 @@ class AppTranslations {
       'en': 'Add New Product',
       'ne': 'नयाँ उत्पादन थप्नुहोस्',
     },
+    'recommended': {'en': 'Recommended', 'ne': 'सिफारिस गरिएको'},
+    'free_delivery': {'en': 'Free Delivery', 'ne': 'नि:शुल्क डेलिभरी'},
     'your_listings': {'en': 'Your Listings', 'ne': 'तपाईंको सूची'},
     'edit': {'en': 'Edit', 'ne': 'सम्पादन'},
     'remove': {'en': 'Remove', 'ne': 'हटाउनुहोस्'},
@@ -479,6 +481,18 @@ class AppTranslations {
     'checkout_error': {
       'en': 'Error processing checkout',
       'ne': 'चेकआउट प्रशोधन गर्दा त्रुटि',
+    },
+    'message_to_seller': {
+      'en': 'Message to Seller',
+      'ne': 'विक्रेतालाई सन्देश',
+    },
+    'message_to_seller_hint': {
+      'en': 'Optional message for the seller(s)',
+      'ne': 'विक्रेता(हरू)को लागि वैकल्पिक सन्देश',
+    },
+    'enter_message_to_seller': {
+      'en': 'Enter your message (optional)',
+      'ne': 'आफ्नो सन्देश प्रविष्ट गर्नुहोस् (वैकल्पिक)',
     },
     'confirm': {'en': 'Confirm', 'ne': 'पुष्टि गर्नुहोस्'},
     'ok': {'en': 'OK', 'ne': 'ठीक छ'},
@@ -852,6 +866,30 @@ class AppTranslations {
     'order_cancel_failed': {
       'en': 'Failed to cancel order',
       'ne': 'अर्डर रद्द गर्न असफल',
+    },
+    'delete_order': {'en': 'Delete Order', 'ne': 'अर्डर मेटाउनुहोस्'},
+    'delete_order_confirm': {
+      'en':
+          'Are you sure you want to delete this order? This action cannot be undone.',
+      'ne':
+          'के तपाईं यो अर्डर मेटाउन निश्चित हुनुहुन्छ? यो कार्य पूर्ववत गर्न सकिँदैन।',
+    },
+    'order_deleted': {
+      'en': 'Order deleted successfully',
+      'ne': 'अर्डर सफलतापूर्वक मेटाइयो',
+    },
+    'order_delete_failed': {
+      'en': 'Failed to delete order',
+      'ne': 'अर्डर मेटाउन असफल',
+    },
+    'order_delete_pending_only': {
+      'en': 'Only pending orders can be deleted',
+      'ne': 'केवल पेन्डिङ अर्डरहरू मेटाउन सकिन्छ',
+    },
+    'admin_notes': {'en': 'Admin Notes', 'ne': 'प्रशासक नोटहरू'},
+    'admin_notes_empty': {
+      'en': 'No admin notes available',
+      'ne': 'कुनै प्रशासक नोट उपलब्ध छैन',
     },
 
     // Order Statuses

@@ -622,15 +622,20 @@ class KrishiApiService {
     required String buyerName,
     required String buyerAddress,
     required String buyerPhoneNumber,
+    String? messageToSeller,
   }) async {
     try {
+      final data = {
+        'buyer_name': buyerName,
+        'buyer_address': buyerAddress,
+        'buyer_phone_number': buyerPhoneNumber,
+      };
+      if (messageToSeller != null && messageToSeller.isNotEmpty) {
+        data['message_to_seller'] = messageToSeller;
+      }
       final response = await apiManager.post(
         ApiEndpoints.checkout,
-        data: {
-          'buyer_name': buyerName,
-          'buyer_address': buyerAddress,
-          'buyer_phone_number': buyerPhoneNumber,
-        },
+        data: data,
       );
       return response.data as Map<String, dynamic>;
     } catch (e) {
@@ -847,6 +852,15 @@ class KrishiApiService {
     try {
       final response = await apiManager.post(ApiEndpoints.deliverOrder(id));
       return Order.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Delete an order (buyer only, pending orders only)
+  Future<void> deleteOrder(int id) async {
+    try {
+      await apiManager.delete(ApiEndpoints.deleteOrder(id));
     } catch (e) {
       rethrow;
     }

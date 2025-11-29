@@ -35,10 +35,10 @@ class _CartPageState extends ConsumerState<CartPage> {
 
   Future<void> _loadCart({bool silently = false}) async {
     if (!silently) {
-    setState(() {
-      isLoading = true;
-      error = null;
-    });
+      setState(() {
+        isLoading = true;
+        error = null;
+      });
     }
 
     try {
@@ -49,7 +49,7 @@ class _CartPageState extends ConsumerState<CartPage> {
           cart = cartData;
           error = null;
           if (!silently) {
-          isLoading = false;
+            isLoading = false;
           }
         });
       }
@@ -58,7 +58,7 @@ class _CartPageState extends ConsumerState<CartPage> {
         setState(() {
           error = e.toString();
           if (!silently) {
-          isLoading = false;
+            isLoading = false;
           }
         });
       }
@@ -66,8 +66,7 @@ class _CartPageState extends ConsumerState<CartPage> {
   }
 
   CartItem _copyCartItemWithQuantity(CartItem source, int quantity) {
-    final subtotal =
-        (source.unitPriceAsDouble * quantity).toStringAsFixed(2);
+    final subtotal = (source.unitPriceAsDouble * quantity).toStringAsFixed(2);
     return CartItem(
       id: source.id,
       product: source.product,
@@ -160,7 +159,7 @@ class _CartPageState extends ConsumerState<CartPage> {
         elevation: 0,
         title: AppText(
           'my_cart'.tr(context),
-          style: Get.bodyLarge.px22.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Get.disabledColor),
@@ -197,7 +196,7 @@ class _CartPageState extends ConsumerState<CartPage> {
     return RefreshIndicator(
       onRefresh: () => _loadCart(silently: true),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16).rt,
+        padding: const EdgeInsets.symmetric(horizontal: 6).rt,
         itemCount: cart!.items.length,
         itemBuilder: (context, index) {
           return _buildCartItem(cart!.items[index]);
@@ -212,11 +211,11 @@ class _CartPageState extends ConsumerState<CartPage> {
     final isUpdating = _updatingItemIds.contains(item.id);
 
     return Container(
-      margin: EdgeInsets.only(bottom: 12.rt),
-      padding: const EdgeInsets.all(14).rt,
+      margin: EdgeInsets.only(bottom: 5.rt),
+      padding: const EdgeInsets.all(8).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(16).rt,
+        borderRadius: BorderRadius.circular(20).rt,
         border: Border.all(
           color: Get.disabledColor.withValues(alpha: 0.08),
           width: 1,
@@ -302,30 +301,29 @@ class _CartPageState extends ConsumerState<CartPage> {
               children: [
                 AppText(
                   product.name,
-                  style: Get.bodyMedium.px15.w700.copyWith(
+                  style: Get.bodyMedium.px14.w700.copyWith(
                     color: Get.disabledColor,
                   ),
                   maxLines: 1,
                 ),
-                6.verticalGap,
+
                 Row(
                   children: [
                     AppText(
                       'Rs. ${item.unitPrice}',
-                      style: Get.bodyMedium.px14.w700.copyWith(
+                      style: Get.bodyMedium.px08.w700.copyWith(
                         color: AppColors.primary,
                       ),
                     ),
                     AppText(
                       ' /${product.unitName}',
-                      style: Get.bodySmall.px11.copyWith(
+                      style: Get.bodySmall.px08.copyWith(
                         color: Get.disabledColor.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
                 ),
-                8.verticalGap,
-                // Quantity Controls
+                4.verticalGap,
                 Row(
                   children: [
                     GestureDetector(
@@ -334,53 +332,53 @@ class _CartPageState extends ConsumerState<CartPage> {
                           : () => _updateQuantity(item, item.quantity - 1),
                       child: Opacity(
                         opacity: isUpdating ? 0.5 : 1,
-                      child: Container(
-                        padding: const EdgeInsets.all(6).rt,
-                        decoration: BoxDecoration(
-                          color: Get.disabledColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6).rt,
-                        ),
-                        child: Icon(
-                          Icons.remove,
-                          size: 16.st,
-                          color: Get.disabledColor,
+                        child: Container(
+                          padding: const EdgeInsets.all(6).rt,
+                          decoration: BoxDecoration(
+                            color: Get.disabledColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6).rt,
+                          ),
+                          child: Icon(
+                            Icons.remove,
+                            size: 10.st,
+                            color: Get.disabledColor,
                           ),
                         ),
                       ),
                     ),
-                    16.horizontalGap,
+                    10.horizontalGap,
                     isUpdating
                         ? SizedBox(
-                            width: 18.st,
-                            height: 18.st,
+                            width: 10.st,
+                            height: 10.st,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
                               color: AppColors.primary,
                             ),
                           )
                         : AppText(
-                      '${item.quantity}',
-                      style: Get.bodyMedium.px14.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    16.horizontalGap,
+                            '${item.quantity}',
+                            style: Get.bodyMedium.px10.w700.copyWith(
+                              color: Get.disabledColor,
+                            ),
+                          ),
+                    10.horizontalGap,
                     GestureDetector(
                       onTap: isUpdating
                           ? null
                           : () => _updateQuantity(item, item.quantity + 1),
                       child: Opacity(
                         opacity: isUpdating ? 0.5 : 1,
-                      child: Container(
-                        padding: const EdgeInsets.all(6).rt,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6).rt,
-                        ),
-                        child: Icon(
-                          Icons.add,
-                          size: 16.st,
-                          color: AppColors.primary,
+                        child: Container(
+                          padding: const EdgeInsets.all(6).rt,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6).rt,
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            size: 10.st,
+                            color: AppColors.primary,
                           ),
                         ),
                       ),
@@ -412,7 +410,7 @@ class _CartPageState extends ConsumerState<CartPage> {
               8.verticalGap,
               AppText(
                 'Rs. ${item.subtotal}',
-                style: Get.bodyMedium.px15.w800.copyWith(
+                style: Get.bodyMedium.px13.w800.copyWith(
                   color: Get.disabledColor,
                 ),
               ),

@@ -17,10 +17,7 @@ import 'package:krishi/models/user_profile.dart';
 class CheckoutPage extends ConsumerStatefulWidget {
   final Cart cart;
 
-  const CheckoutPage({
-    super.key,
-    required this.cart,
-  });
+  const CheckoutPage({super.key, required this.cart});
 
   @override
   ConsumerState<CheckoutPage> createState() => _CheckoutPageState();
@@ -31,6 +28,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   final _nameController = TextEditingController();
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _messageController = TextEditingController();
   bool _isProcessing = false;
 
   void _showFieldValidationError(String message) {
@@ -47,9 +45,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       return false;
     }
     if (address.length < 10) {
-      _showFieldValidationError(
-        'address_min_length'.tr(context),
-      );
+      _showFieldValidationError('address_min_length'.tr(context));
       return false;
     }
 
@@ -61,9 +57,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       return false;
     }
     if (!RegExp(r'^\d{10}$').hasMatch(phone)) {
-      _showFieldValidationError(
-        'phone_length_error'.tr(context),
-      );
+      _showFieldValidationError('phone_length_error'.tr(context));
       return false;
     }
 
@@ -81,6 +75,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     _nameController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
+    _messageController.dispose();
     super.dispose();
   }
 
@@ -130,7 +125,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         _phoneController.text = phone;
       }
     }
-
   }
 
   Future<void> _processCheckout() async {
@@ -150,15 +144,19 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.checkout(
-        buyerName: _nameController.text,
-        buyerAddress: _addressController.text,
-        buyerPhoneNumber: _phoneController.text,
+        buyerName: _nameController.text.trim(),
+        buyerAddress: _addressController.text.trim(),
+        buyerPhoneNumber: _phoneController.text.trim(),
+        messageToSeller: _messageController.text.trim().isNotEmpty
+            ? _messageController.text.trim()
+            : null,
       );
 
       // Clear form
       _nameController.clear();
       _addressController.clear();
       _phoneController.clear();
+      _messageController.clear();
 
       // Show success message
       Get.snackbar('checkout_success'.tr(Get.context), color: Colors.green);
@@ -187,7 +185,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         elevation: 0,
         title: AppText(
           'checkout'.tr(context),
-          style: Get.bodyLarge.px22.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Get.disabledColor),
@@ -203,23 +201,27 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             children: [
               // Order Summary Section
               _buildOrderSummary(),
-              24.verticalGap,
+              8.verticalGap,
 
               // Delivery Information Section
               _buildDeliveryInfoSection(),
-              24.verticalGap,
+              8.verticalGap,
 
               // Contact Information Section
               _buildContactInfoSection(),
-              32.verticalGap,
+              8.verticalGap,
+
+              // Message to Seller Section
+              _buildMessageToSellerSection(),
+              8.verticalGap,
 
               // Total Amount
               _buildTotalAmount(),
-              24.verticalGap,
+              8.verticalGap,
 
               // Confirm Button
               _buildConfirmButton(),
-              16.verticalGap,
+              8.verticalGap,
             ],
           ),
         ),
@@ -229,10 +231,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
   Widget _buildOrderSummary() {
     return Container(
-      padding: const EdgeInsets.all(16).rt,
+      padding: const EdgeInsets.all(8).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(16).rt,
+        borderRadius: BorderRadius.circular(20).rt,
         border: Border.all(
           color: Get.disabledColor.withValues(alpha: 0.08),
           width: 1,
@@ -248,9 +250,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          5.verticalGap,
           AppText(
             'order_summary'.tr(context),
-            style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+            style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
           ),
           16.verticalGap,
           ...widget.cart.items.map((item) => _buildOrderItem(item)),
@@ -264,7 +267,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     if (product == null) return const SizedBox.shrink();
 
     return Container(
-      margin: EdgeInsets.only(bottom: 12.rt),
+      margin: EdgeInsets.only(bottom: 6.rt),
       padding: const EdgeInsets.all(12).rt,
       decoration: BoxDecoration(
         color: Get.scaffoldBackgroundColor,
@@ -326,7 +329,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               children: [
                 AppText(
                   product.name,
-                  style: Get.bodyMedium.px14.w700.copyWith(
+                  style: Get.bodyMedium.px12.w700.copyWith(
                     color: Get.disabledColor,
                   ),
                   maxLines: 2,
@@ -334,7 +337,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 4.verticalGap,
                 AppText(
                   '${item.quantity} x Rs. ${item.unitPrice}',
-                  style: Get.bodySmall.px12.copyWith(
+                  style: Get.bodySmall.px10.copyWith(
                     color: Get.disabledColor.withValues(alpha: 0.6),
                   ),
                 ),
@@ -343,9 +346,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           ),
           AppText(
             'Rs. ${item.subtotal}',
-            style: Get.bodyMedium.px15.w700.copyWith(
-              color: AppColors.primary,
-            ),
+            style: Get.bodyMedium.px14.w700.copyWith(color: AppColors.primary),
           ),
         ],
       ),
@@ -363,9 +364,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         16.verticalGap,
         AppText(
           'full_name'.tr(context),
-          style: Get.bodyMedium.px15.w600.copyWith(
-            color: Get.disabledColor,
-          ),
+          style: Get.bodyMedium.px15.w600.copyWith(color: Get.disabledColor),
         ),
         8.verticalGap,
         AppTextFormField(
@@ -382,9 +381,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         16.verticalGap,
         AppText(
           'address'.tr(context),
-          style: Get.bodyMedium.px15.w600.copyWith(
-            color: Get.disabledColor,
-          ),
+          style: Get.bodyMedium.px15.w600.copyWith(color: Get.disabledColor),
         ),
         8.verticalGap,
         AppTextFormField(
@@ -414,9 +411,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         16.verticalGap,
         AppText(
           'phone_number'.tr(context),
-          style: Get.bodyMedium.px15.w600.copyWith(
-            color: Get.disabledColor,
-          ),
+          style: Get.bodyMedium.px15.w600.copyWith(color: Get.disabledColor),
         ),
         8.verticalGap,
         AppTextFormField(
@@ -429,6 +424,32 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             }
             return null;
           },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMessageToSellerSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          'message_to_seller'.tr(context),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+        ),
+        8.verticalGap,
+        AppText(
+          'message_to_seller_hint'.tr(context),
+          style: Get.bodySmall.px12.copyWith(
+            color: Get.disabledColor.withValues(alpha: 0.6),
+          ),
+        ),
+        12.verticalGap,
+        AppTextFormField(
+          controller: _messageController,
+          hintText: 'enter_message_to_seller'.tr(context),
+          maxLine: 4,
+          textInputType: TextInputType.multiline,
         ),
       ],
     );
@@ -450,15 +471,11 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         children: [
           AppText(
             'total_amount'.tr(context),
-            style: Get.bodyLarge.px18.w700.copyWith(
-              color: Get.disabledColor,
-            ),
+            style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
           ),
           AppText(
             'Rs. ${widget.cart.totalAmount}',
-            style: Get.bodyLarge.px20.w800.copyWith(
-              color: AppColors.primary,
-            ),
+            style: Get.bodyLarge.px20.w800.copyWith(color: AppColors.primary),
           ),
         ],
       ),
@@ -513,4 +530,3 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
   }
 }
-
