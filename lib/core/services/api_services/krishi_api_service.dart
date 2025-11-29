@@ -581,16 +581,15 @@ class KrishiApiService {
   }
 
   /// Update cart item quantity
-  Future<CartItem> updateCartItem({
+  Future<void> updateCartItem({
     required int itemId,
     required int quantity,
   }) async {
     try {
-      final response = await apiManager.patch(
+      await apiManager.patch(
         ApiEndpoints.cartItem(itemId),
         data: {'quantity': quantity},
       );
-      return CartItem.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }

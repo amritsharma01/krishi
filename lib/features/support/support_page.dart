@@ -71,7 +71,7 @@ class SupportPage extends StatelessWidget {
                       16.verticalGap,
                       AppText(
                         'how_can_we_help'.tr(context),
-                        style: Get.bodyLarge.px20.w700.copyWith(
+                        style: Get.bodyLarge.px18.w700.copyWith(
                           color: Get.disabledColor,
                         ),
                         textAlign: TextAlign.center,
@@ -80,7 +80,7 @@ class SupportPage extends StatelessWidget {
                   ),
                 ),
 
-                24.verticalGap,
+                10.verticalGap,
 
                 // Support Options
                 _buildSupportOption(
@@ -99,7 +99,7 @@ class SupportPage extends StatelessWidget {
                   },
                 ),
 
-                12.verticalGap,
+                8.verticalGap,
 
                 _buildSupportOption(
                   context,
@@ -119,7 +119,7 @@ class SupportPage extends StatelessWidget {
                   },
                 ),
 
-                12.verticalGap,
+                8.verticalGap,
 
                 _buildSupportOption(
                   context,
@@ -139,7 +139,7 @@ class SupportPage extends StatelessWidget {
                   },
                 ),
 
-                24.verticalGap,
+                14.verticalGap,
 
                 // Quick Contact Info
                 Container(
@@ -161,19 +161,19 @@ class SupportPage extends StatelessWidget {
                           color: Get.disabledColor,
                         ),
                       ),
-                      16.verticalGap,
+                      6.verticalGap,
                       _buildContactRow(
                         context,
                         icon: Icons.email_rounded,
                         text: 'support@krishi.com',
                       ),
-                      12.verticalGap,
+                      6.verticalGap,
                       _buildContactRow(
                         context,
                         icon: Icons.phone_rounded,
                         text: '+977 9800000000',
                       ),
-                      12.verticalGap,
+                      6.verticalGap,
                       _buildContactRow(
                         context,
                         icon: Icons.access_time_rounded,
@@ -203,7 +203,7 @@ class SupportPage extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16).rt,
+        padding: const EdgeInsets.all(8).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(16).rt,
@@ -236,7 +236,7 @@ class SupportPage extends StatelessWidget {
                 children: [
                   AppText(
                     title.tr(context),
-                    style: Get.bodyMedium.px15.w700.copyWith(
+                    style: Get.bodyMedium.px14.w700.copyWith(
                       color: Get.disabledColor,
                     ),
                   ),
@@ -273,7 +273,7 @@ class SupportPage extends StatelessWidget {
         Expanded(
           child: AppText(
             text,
-            style: Get.bodyMedium.px13.w500.copyWith(
+            style: Get.bodyMedium.px12.w500.copyWith(
               color: Get.disabledColor.withValues(alpha: 0.8),
             ),
           ),

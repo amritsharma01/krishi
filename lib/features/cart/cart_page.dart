@@ -35,10 +35,10 @@ class _CartPageState extends ConsumerState<CartPage> {
 
   Future<void> _loadCart({bool silently = false}) async {
     if (!silently) {
-      setState(() {
-        isLoading = true;
-        error = null;
-      });
+    setState(() {
+      isLoading = true;
+      error = null;
+    });
     }
 
     try {
@@ -49,7 +49,7 @@ class _CartPageState extends ConsumerState<CartPage> {
           cart = cartData;
           error = null;
           if (!silently) {
-            isLoading = false;
+          isLoading = false;
           }
         });
       }
@@ -58,7 +58,7 @@ class _CartPageState extends ConsumerState<CartPage> {
         setState(() {
           error = e.toString();
           if (!silently) {
-            isLoading = false;
+          isLoading = false;
           }
         });
       }
@@ -334,16 +334,16 @@ class _CartPageState extends ConsumerState<CartPage> {
                           : () => _updateQuantity(item, item.quantity - 1),
                       child: Opacity(
                         opacity: isUpdating ? 0.5 : 1,
-                        child: Container(
-                          padding: const EdgeInsets.all(6).rt,
-                          decoration: BoxDecoration(
-                            color: Get.disabledColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6).rt,
-                          ),
-                          child: Icon(
-                            Icons.remove,
-                            size: 16.st,
-                            color: Get.disabledColor,
+                      child: Container(
+                        padding: const EdgeInsets.all(6).rt,
+                        decoration: BoxDecoration(
+                          color: Get.disabledColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6).rt,
+                        ),
+                        child: Icon(
+                          Icons.remove,
+                          size: 16.st,
+                          color: Get.disabledColor,
                           ),
                         ),
                       ),
@@ -359,11 +359,11 @@ class _CartPageState extends ConsumerState<CartPage> {
                             ),
                           )
                         : AppText(
-                            '${item.quantity}',
-                            style: Get.bodyMedium.px14.w700.copyWith(
-                              color: Get.disabledColor,
-                            ),
-                          ),
+                      '${item.quantity}',
+                      style: Get.bodyMedium.px14.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
                     16.horizontalGap,
                     GestureDetector(
                       onTap: isUpdating
@@ -371,16 +371,16 @@ class _CartPageState extends ConsumerState<CartPage> {
                           : () => _updateQuantity(item, item.quantity + 1),
                       child: Opacity(
                         opacity: isUpdating ? 0.5 : 1,
-                        child: Container(
-                          padding: const EdgeInsets.all(6).rt,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6).rt,
-                          ),
-                          child: Icon(
-                            Icons.add,
-                            size: 16.st,
-                            color: AppColors.primary,
+                      child: Container(
+                        padding: const EdgeInsets.all(6).rt,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6).rt,
+                        ),
+                        child: Icon(
+                          Icons.add,
+                          size: 16.st,
+                          color: AppColors.primary,
                           ),
                         ),
                       ),

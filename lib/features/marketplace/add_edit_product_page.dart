@@ -47,43 +47,48 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   bool isLoadingUnits = true;
   bool isSaving = false;
   bool _isAvailable = true;
+  Product? _prefillSourceProduct;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _initializeForm();
+  }
 
+  Future<void> _initializeForm() async {
     if (widget.product != null) {
-      _nameController.text = widget.product!.name;
-      _priceController.text = widget.product!.basePrice;
-      _descriptionController.text = widget.product!.description;
-      _phoneController.text = widget.product!.sellerPhoneNumber ?? '';
-      _addressController.text = widget.product!.sellerAddress ?? '';
+      _prefillSourceProduct = widget.product;
+      _applyProductTextFields(widget.product!);
       _isAvailable = widget.product!.isAvailable;
     } else {
       _isAvailable = true;
+    }
+
+    await _loadData();
+
+    if (_prefillSourceProduct != null) {
+      _applyCategoryAndUnitSelections(_prefillSourceProduct!);
+    } else {
+      _ensureDefaultsForNewProduct();
+    }
+
+    if (widget.product != null) {
+      await _prefillFromProductDetail();
+    }
+
+    if (mounted) {
+      setState(() {});
     }
   }
 
   Future<void> _loadData() async {
     await Future.wait([_loadCategories(), _loadUnits()]);
 
-    // Set selected category and unit if editing
-    if (widget.product != null) {
-      selectedCategory = categories.firstWhere(
-        (cat) => cat.id == widget.product!.category,
-        orElse: () => categories.first,
-      );
-      selectedUnit = units.firstWhere(
-        (unit) => unit.id == widget.product!.unit,
-        orElse: () => units.first,
-      );
+    if (_prefillSourceProduct != null) {
+      _applyCategoryAndUnitSelections(_prefillSourceProduct!);
     } else {
-      // Set defaults for new product
-      if (categories.isNotEmpty) selectedCategory = categories.first;
-      if (units.isNotEmpty) selectedUnit = units.first;
+      _ensureDefaultsForNewProduct();
     }
-    setState(() {});
   }
 
   Future<void> _loadCategories() async {
@@ -112,6 +117,71 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
           'error_loading_categories'.tr(Get.context),
           color: Colors.red,
         );
+      }
+    }
+  }
+
+  Category? _findCategoryById(int id) {
+    try {
+      return categories.firstWhere((cat) => cat.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Unit? _findUnitById(int id) {
+    try {
+      return units.firstWhere((unit) => unit.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _applyProductTextFields(Product product) {
+    _nameController.text = product.name;
+    _priceController.text = product.basePrice;
+    _descriptionController.text = product.description;
+    _phoneController.text = product.sellerPhoneNumber ?? '';
+    _addressController.text = product.sellerAddress ?? '';
+  }
+
+  void _applyCategoryAndUnitSelections(Product product) {
+    if (!mounted) return;
+    final category = _findCategoryById(product.category);
+    final unit = _findUnitById(product.unit);
+
+    setState(() {
+      if (category != null) selectedCategory = category;
+      if (unit != null) selectedUnit = unit;
+      _isAvailable = product.isAvailable;
+    });
+  }
+
+  void _ensureDefaultsForNewProduct() {
+    if (widget.product != null || !mounted) return;
+    setState(() {
+      if (selectedCategory == null && categories.isNotEmpty) {
+        selectedCategory = categories.first;
+      }
+      if (selectedUnit == null && units.isNotEmpty) {
+        selectedUnit = units.first;
+      }
+    });
+  }
+
+  Future<void> _prefillFromProductDetail() async {
+    if (widget.product == null) return;
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final latest = await apiService.getProduct(widget.product!.id);
+      if (!mounted) return;
+
+      _prefillSourceProduct = latest;
+      _applyProductTextFields(latest);
+      _applyCategoryAndUnitSelections(latest);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Failed to preload product detail: $e');
       }
     }
   }

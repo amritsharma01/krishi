@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +18,7 @@ import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/orders/order_detail_page.dart';
 import 'package:krishi/features/seller/seller_public_listings_page.dart';
 import 'package:krishi/models/order.dart';
+import 'package:krishi/models/user_profile.dart';
 
 class OrdersListPage extends ConsumerStatefulWidget {
   final bool showSales;
@@ -643,6 +646,53 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     final addressController = TextEditingController(text: order.buyerAddress);
     final phoneController = TextEditingController(text: order.buyerPhoneNumber);
     final formKey = GlobalKey<FormState>();
+
+    Future<void> prefillFromProfile() async {
+      void applyUserProfile(User user) {
+        final profile = user.profile;
+
+        if (nameController.text.trim().isEmpty) {
+          final fullName = profile?.fullName.trim();
+          if (fullName != null && fullName.isNotEmpty) {
+            nameController.text = fullName;
+          } else if (user.displayName.trim().isNotEmpty) {
+            nameController.text = user.displayName.trim();
+          }
+        }
+
+        if (addressController.text.trim().isEmpty) {
+          final address = profile?.address?.trim();
+          if (address != null && address.isNotEmpty) {
+            addressController.text = address;
+          }
+        }
+
+        if (phoneController.text.trim().isEmpty) {
+          final phone = profile?.phoneNumber?.trim();
+          if (phone != null && phone.isNotEmpty) {
+            phoneController.text = phone;
+          }
+        }
+      }
+
+      try {
+        final cacheService = ref.read(cacheServiceProvider);
+        final apiService = ref.read(krishiApiServiceProvider);
+
+        final cachedProfile = await cacheService.getUserProfileCache();
+        if (cachedProfile != null) {
+          applyUserProfile(User.fromJson(cachedProfile));
+        }
+
+        final freshUser = await apiService.getCurrentUser();
+        await cacheService.saveUserProfileCache(freshUser.toJson());
+        applyUserProfile(freshUser);
+      } catch (_) {
+        // Ignore profile prefill failures; fields remain editable.
+      }
+    }
+
+    unawaited(prefillFromProfile());
 
     return showModalBottomSheet<Order>(
       context: context,

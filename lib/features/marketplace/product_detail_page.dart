@@ -283,17 +283,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         physics: const BouncingScrollPhysics(),
         padding: EdgeInsets.only(bottom: 160.ht),
         children: [
-          8.verticalGap,
           _buildHeroSection(),
-          20.verticalGap,
+          6.verticalGap,
           _buildProductInfo(),
-          16.verticalGap,
+          6.verticalGap,
           _buildSellerInfo(),
-          16.verticalGap,
+          6.verticalGap,
           _buildDescription(),
-          20.verticalGap,
+          6.verticalGap,
           _buildFeedbackSection(),
-          32.verticalGap,
+          6.verticalGap,
         ],
       ),
       bottomNavigationBar: _buildAddToCartButton(),
@@ -439,7 +438,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       child: Hero(
         tag: 'product-image-${widget.product.id}',
         child: Container(
-          height: 280.ht,
+          height: 200.ht,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(26).rt,
             boxShadow: [
@@ -480,18 +479,6 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                         ],
                       ),
                     ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 18.rt,
-                  left: 18.rt,
-                  right: 18.rt,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _heroMetaPill(widget.product.categoryName),
-                      _heroMetaPill(widget.product.unitName),
-                    ],
                   ),
                 ),
               ],
@@ -599,17 +586,17 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         children: [
           AppText(
             widget.product.name,
-            style: Get.bodyLarge.px24.w800.copyWith(
+            style: Get.bodyLarge.px22.w800.copyWith(
               color: Get.disabledColor,
               height: 1.2,
             ),
           ),
-          12.verticalGap,
+          5.verticalGap,
           Row(
             children: [
               AppText(
                 'Rs. ${widget.product.price}',
-                style: Get.bodyLarge.px30.w900.copyWith(
+                style: Get.bodyLarge.px16.w900.copyWith(
                   color: AppColors.primary,
                 ),
               ),
@@ -643,7 +630,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                 ),
             ],
           ),
-          16.verticalGap,
+          8.verticalGap,
           Wrap(spacing: 8, runSpacing: 8, children: chips),
         ],
       ),
@@ -721,13 +708,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
+            maxLines: 10,
             'description'.tr(context),
-            style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+            style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
           ),
-          12.verticalGap,
+
           AppText(
             widget.product.description,
-            style: Get.bodyMedium.px14.w400.copyWith(
+            style: Get.bodyMedium.px12.w400.copyWith(
               color: Get.disabledColor.withValues(alpha: 0.8),
               height: 1.6,
             ),
@@ -862,7 +850,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildCommentComposer(),
-        16.verticalGap,
+        6.verticalGap,
         if (isLoadingComments)
           Center(
             child: Padding(

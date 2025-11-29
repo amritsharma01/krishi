@@ -25,6 +25,7 @@ import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/components/notification_icon.dart';
 import 'package:krishi/models/product.dart';
+import 'package:krishi/models/user_profile.dart';
 import 'package:krishi/models/resources.dart';
 import 'package:krishi/features/notifications/providers/notifications_providers.dart';
 import 'package:flutter/material.dart';
@@ -42,6 +43,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   int receivedOrdersCount = 0;
   int placedOrdersCount = 0;
   List<MarketPrice> marketPrices = [];
+  User? currentUser;
   bool isLoadingProducts = true;
   bool isLoadingOrders = true;
   bool isLoadingMarketPrices = true;
@@ -61,11 +63,26 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Future<void> _loadData() async {
     await Future.wait([
+      _loadProfile(),
       _loadTrendingProducts(),
       _loadOrdersCounts(),
       _loadMarketPrices(),
       ref.read(unreadNotificationsProvider.notifier).refresh(),
     ]);
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final user = await apiService.getCurrentUser();
+      if (mounted) {
+        setState(() {
+          currentUser = user;
+        });
+      }
+    } catch (_) {
+      // ignore profile fetch errors silently
+    }
   }
 
   Future<void> _loadOrdersCounts() async {
@@ -239,6 +256,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildWelcomeCard() {
+    final userName = (currentUser?.displayName ?? '').trim();
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -312,7 +330,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 6.verticalGap,
                 AppText(
-                  'welcome_user'.tr(context),
+                  userName.isNotEmpty ? userName : 'welcome_user'.tr(context),
                   style: Get.bodyLarge.px28.w800.copyWith(
                     color: AppColors.white,
                     letterSpacing: 0.5,
@@ -326,53 +344,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     height: 1.4,
                   ),
                 ),
-                20.verticalGap,
-                Wrap(
-                  spacing: 12.wt,
-                  runSpacing: 10.ht,
-                  children: [
-                    _welcomeHighlightChip(
-                      icon: Icons.storefront_rounded,
-                      label: 'marketplace'.tr(context),
-                    ),
-                    _welcomeHighlightChip(
-                      icon: Icons.science_rounded,
-                      label: 'soil_testing'.tr(context),
-                    ),
-                  ],
-                ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _welcomeHighlightChip({
-    required IconData icon,
-    required String label,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 14.wt, vertical: 10.ht),
-      decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(32).rt,
-        border: Border.all(
-          color: AppColors.white.withValues(alpha: 0.3),
-          width: 1,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppColors.white, size: 16.st),
-          8.horizontalGap,
-          AppText(
-            label,
-            style: Get.bodySmall.px12.w600.copyWith(
-              color: AppColors.white,
-              letterSpacing: 0.3,
             ),
           ),
         ],
@@ -393,7 +365,6 @@ class _HomePageState extends ConsumerState<HomePage> {
               colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
             ),
             onTap: () {
-              // Navigate to received orders (my sales)
               Get.to(const OrdersListPage.sales());
             },
             isLoading: isLoadingOrders,
@@ -727,7 +698,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                 Expanded(
                   child: _buildKnowledgeCard(
                     title: 'krishi_gyaan'.tr(context),
-                    subtitle: 'farming_knowledge_home'.tr(context),
                     icon: Icons.local_library_rounded,
                     accentColor: const Color(0xFF6A1B9A),
                     onTap: () {
@@ -739,7 +709,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                 Expanded(
                   child: _buildKnowledgeCard(
                     title: 'news_information'.tr(context),
-                    subtitle: 'latest_updates'.tr(context),
                     icon: Icons.article_rounded,
                     accentColor: const Color(0xFFD32F2F),
                     onTap: () {
@@ -755,7 +724,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                 Expanded(
                   child: _buildKnowledgeCard(
                     title: 'videos'.tr(context),
-                    subtitle: 'watch_learn'.tr(context),
                     icon: Icons.video_library_rounded,
                     accentColor: const Color(0xFFE65100),
                     onTap: () {
@@ -767,7 +735,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                 Expanded(
                   child: _buildKnowledgeCard(
                     title: 'crop_calendar'.tr(context),
-                    subtitle: 'planting_guide'.tr(context),
                     icon: Icons.calendar_month_rounded,
                     accentColor: const Color(0xFF558B2F),
                     onTap: () {
@@ -798,9 +765,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(18).rt,
-          border: Border.all(
-            color: accentColor.withValues(alpha: 0.15),
-          ),
+          border: Border.all(color: accentColor.withValues(alpha: 0.15)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
@@ -906,10 +871,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  // Knowledge Base Card with subtitle
+  // Knowledge Base Card with icon-only highlight
   Widget _buildKnowledgeCard({
     required String title,
-    required String subtitle,
     required IconData icon,
     required Color accentColor,
     required VoidCallback onTap,
@@ -917,67 +881,74 @@ class _HomePageState extends ConsumerState<HomePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
+        height: 120.ht,
         decoration: BoxDecoration(
-          color: Get.cardColor,
-          borderRadius: BorderRadius.circular(18).rt,
-          border: Border.all(color: accentColor.withValues(alpha: 0.15)),
+          gradient: LinearGradient(
+            colors: [
+              accentColor.withValues(alpha: 0.15),
+              accentColor.withValues(alpha: 0.05),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20).rt,
+          border: Border.all(color: accentColor.withValues(alpha: 0.2)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: accentColor.withValues(alpha: 0.2),
               blurRadius: 16,
-              offset: const Offset(0, 8),
-            ),
-            BoxShadow(
-              color: accentColor.withValues(alpha: 0.08),
-              blurRadius: 18,
-              offset: const Offset(0, 4),
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16).rt,
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12).rt,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: accentColor.withValues(alpha: 0.12),
-                ),
-                child: Icon(icon, color: accentColor, size: 26.st),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -6.rt,
+              bottom: -6.rt,
+              child: Icon(
+                icon,
+                size: 90.st,
+                color: accentColor.withValues(alpha: 0.08),
               ),
-              14.horizontalGap,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      title,
-                      style: Get.bodyLarge.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+            ),
+            Padding(
+              padding: const EdgeInsets.all(18).rt,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10).rt,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      shape: BoxShape.circle,
                     ),
-                    2.verticalGap,
-                    AppText(
-                      subtitle,
-                      style: Get.bodySmall.px12.w500.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.65),
+                    child: Icon(icon, color: accentColor, size: 22.st),
+                  ),
+                  12.verticalGap,
+                  Expanded(
+                    child: AppText(
+                      title,
+                      style: Get.bodyLarge.px16.w700.copyWith(
+                        color: Get.disabledColor,
+                        height: 1.2,
                       ),
                       maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Icon(
+            ),
+            Positioned(
+              right: 12.rt,
+              top: 12.rt,
+              child: Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: accentColor,
+                color: accentColor.withValues(alpha: 0.8),
                 size: 16.st,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
