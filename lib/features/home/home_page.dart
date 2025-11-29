@@ -183,39 +183,39 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.all(16).rt,
+              padding: const EdgeInsets.all(10).rt,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Welcome Card with Weather
                   _buildWelcomeCard(),
 
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Top Row: Received Order and Placed Order (2-column)
                   _buildOrdersTiles(),
 
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Main Services: Soil Test and Notices (2-column)
                   _buildMainServices(),
 
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Services: Experts, Providers, Contacts (3-column)
                   _buildServicesGrid(),
 
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Knowledge Base: Krishi Gyan, News, Videos, Crop Calendars (2-column grid)
                   _buildKnowledgeBaseGrid(),
 
-                  20.verticalGap,
+                  10.verticalGap,
 
                   // Market Prices Section
                   _buildMarketPricesSection(),
 
-                  20.verticalGap,
+                  10.verticalGap,
                 ],
               ),
             ),
@@ -258,97 +258,100 @@ class _HomePageState extends ConsumerState<HomePage> {
       builder: (context, user, child) {
         final userName = (user?.displayName ?? '').trim();
         return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: const AssetImage('assets/images/image.png'),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            AppColors.primary.withValues(alpha: 0.4),
-            BlendMode.srcATop,
-          ),
-        ),
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withValues(alpha: 0.95),
-            AppColors.primary.withValues(alpha: 0.85),
-            AppColors.primary.withValues(alpha: 0.7),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: const [0.05, 0.5, 1.0],
-        ),
-        borderRadius: BorderRadius.circular(20).rt,
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.4),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Decorative circles
-          Positioned(
-            top: -20,
-            right: -20,
-            child: Container(
-              width: 100.rt,
-              height: 100.rt,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.white.withValues(alpha: 0.1),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: const AssetImage('assets/images/image.png'),
+              fit: BoxFit.cover,
+              alignment: Alignment.centerRight,
+              colorFilter: ColorFilter.mode(
+                AppColors.primary.withValues(alpha: 0.25),
+                BlendMode.srcATop,
               ),
             ),
-          ),
-          Positioned(
-            bottom: -30,
-            left: -30,
-            child: Container(
-              width: 120.rt,
-              height: 120.rt,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.white.withValues(alpha: 0.05),
-              ),
-            ),
-          ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(20).rt,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  _getGreeting().tr(context),
-                  style: Get.bodyMedium.px15.w500.copyWith(
-                    color: AppColors.white.withValues(alpha: 0.95),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                6.verticalGap,
-                AppText(
-                  userName.isNotEmpty ? userName : 'welcome_user'.tr(context),
-                  style: Get.bodyLarge.px28.w800.copyWith(
-                    color: AppColors.white,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                12.verticalGap,
-                AppText(
-                  'app_tagline'.tr(context),
-                  style: Get.bodyMedium.px14.w500.copyWith(
-                    color: AppColors.white.withValues(alpha: 0.9),
-                    height: 1.4,
-                  ),
-                ),
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primary.withValues(alpha: 0.5),
+                AppColors.primary.withValues(alpha: 0.8),
+                AppColors.primary.withValues(alpha: 0.7),
               ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              stops: const [0.05, 0.5, 1.0],
             ),
+            borderRadius: BorderRadius.circular(20).rt,
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+                spreadRadius: 2,
+              ),
+            ],
           ),
-        ],
-      ),
+          child: Stack(
+            children: [
+              // Decorative circles
+              Positioned(
+                top: -20,
+                right: -20,
+                child: Container(
+                  width: 100.rt,
+                  height: 100.rt,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.white.withValues(alpha: 0.1),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: -30,
+                left: -30,
+                child: Container(
+                  width: 120.rt,
+                  height: 120.rt,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.white.withValues(alpha: 0.05),
+                  ),
+                ),
+              ),
+              // Content
+              Padding(
+                padding: const EdgeInsets.all(20).rt,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      _getGreeting().tr(context),
+                      style: Get.bodyMedium.px14.w500.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.95),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    6.verticalGap,
+                    AppText(
+                      userName.isNotEmpty
+                          ? userName
+                          : 'welcome_user'.tr(context),
+                      style: Get.bodyLarge.px28.w800.copyWith(
+                        color: AppColors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    12.verticalGap,
+                    AppText(
+                      'app_tagline'.tr(context),
+                      style: Get.bodyMedium.px14.w500.copyWith(
+                        color: AppColors.white.withValues(alpha: 0.9),
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -426,7 +429,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         splashColor: AppColors.primary.withValues(alpha: 0.12),
         highlightColor: AppColors.primary.withValues(alpha: 0.08),
         child: Container(
-          height: 130.ht,
+          height: 100.ht,
           padding: const EdgeInsets.all(16).rt,
           decoration: BoxDecoration(
             color: Get.cardColor,
@@ -441,19 +444,18 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12).rt,
-                decoration: BoxDecoration(
-                  gradient: gradient,
-                  borderRadius: BorderRadius.circular(14).rt,
-                ),
-                child: Icon(icon, color: AppColors.white, size: 24.st),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
+                  Container(
+                    padding: const EdgeInsets.all(10).rt,
+                    decoration: BoxDecoration(
+                      gradient: gradient,
+                      borderRadius: BorderRadius.circular(14).rt,
+                    ),
+                    child: Icon(icon, color: AppColors.white, size: 24.st),
+                  ),
+                  15.horizontalGap,
                   isLoading
                       ? SizedBox(
                           width: 24.st,
@@ -464,13 +466,20 @@ class _HomePageState extends ConsumerState<HomePage> {
                           ),
                         )
                       : AppText(
+                          overflow: TextOverflow.ellipsis,
                           '$count',
-                          style: Get.bodyLarge.px28.w800.copyWith(
+                          style: Get.bodyLarge.px26.w800.copyWith(
                             color: Get.disabledColor,
                           ),
                         ),
-                  4.verticalGap,
+                ],
+              ),
+              10.verticalGap,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   AppText(
+                    overflow: TextOverflow.ellipsis,
                     title.tr(context),
                     style: Get.bodyMedium.px13.w700.copyWith(
                       color: Get.disabledColor,
@@ -478,6 +487,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   ),
                   2.verticalGap,
                   AppText(
+                    overflow: TextOverflow.ellipsis,
                     subtitle.tr(context),
                     style: Get.bodySmall.px10.w500.copyWith(
                       color: Get.disabledColor.withValues(alpha: 0.6),
@@ -547,14 +557,14 @@ class _HomePageState extends ConsumerState<HomePage> {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(16).rt,
+        padding: const EdgeInsets.all(10).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
-          borderRadius: BorderRadius.circular(16).rt,
+          borderRadius: BorderRadius.circular(30).rt,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
+              blurRadius: 2,
               offset: const Offset(0, 2),
             ),
           ],
@@ -562,12 +572,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(14).rt,
+              padding: const EdgeInsets.all(20).rt,
               decoration: BoxDecoration(
                 gradient: gradient,
                 borderRadius: BorderRadius.circular(12).rt,
               ),
-              child: Icon(icon, color: AppColors.white, size: 26.st),
+              child: Icon(icon, color: AppColors.white, size: 24.st),
             ),
             16.horizontalGap,
             Expanded(
@@ -611,10 +621,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(
+          overflow: TextOverflow.ellipsis,
           'main_services'.tr(context),
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        12.verticalGap,
+        7.verticalGap,
         _buildMainServiceCard(
           titleKey: 'soil_testing',
           descriptionKey: 'test_soil_quality',
@@ -624,7 +635,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             Get.to(const SoilTestingPage());
           },
         ),
-        12.verticalGap,
+        7.verticalGap,
         _buildMainServiceCard(
           titleKey: 'notices',
           descriptionKey: 'important_announcements',
@@ -634,7 +645,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             Get.to(const NoticesPage());
           },
         ),
-        12.verticalGap,
+        7.verticalGap,
         _buildMainServiceCard(
           titleKey: 'programs',
           descriptionKey: 'agricultural_development_programs',
@@ -670,7 +681,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 },
               ),
             ),
-            12.horizontalGap,
+            7.horizontalGap,
             Expanded(
               child: _buildDirectoryCard(
                 title: 'service_providers',
@@ -681,7 +692,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 },
               ),
             ),
-            12.horizontalGap,
+            7.horizontalGap,
             Expanded(
               child: _buildDirectoryCard(
                 title: 'emergency_contacts',
@@ -707,7 +718,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           'knowledge_base'.tr(context),
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        12.verticalGap,
+        10.verticalGap,
         Column(
           children: [
             Row(
@@ -778,10 +789,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18).rt,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
-          borderRadius: BorderRadius.circular(18).rt,
+          borderRadius: BorderRadius.circular(50).rt,
           border: Border.all(color: accentColor.withValues(alpha: 0.15)),
           boxShadow: [
             BoxShadow(
@@ -799,12 +810,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12).rt,
+              padding: const EdgeInsets.all(10).rt,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: accentColor.withValues(alpha: 0.12),
               ),
-              child: Icon(icon, color: accentColor, size: 28.st),
+              child: Icon(icon, color: accentColor, size: 24.st),
             ),
             16.horizontalGap,
             Expanded(
@@ -813,14 +824,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                 children: [
                   AppText(
                     titleKey.tr(context),
-                    style: Get.bodyLarge.px15.w700.copyWith(
+                    style: Get.bodyLarge.px14.w700.copyWith(
                       color: Get.disabledColor,
                     ),
                   ),
-                  4.verticalGap,
+
                   AppText(
                     descriptionKey.tr(context),
-                    style: Get.bodySmall.px12.w500.copyWith(
+                    style: Get.bodySmall.px11.w500.copyWith(
                       color: Get.disabledColor.withValues(alpha: 0.65),
                     ),
                     maxLines: 2,
@@ -850,7 +861,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8).rt,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(14).rt,
@@ -867,6 +878,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(10).rt,
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.12),
@@ -874,7 +886,7 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
               child: Icon(icon, color: color, size: 28.st),
             ),
-            10.verticalGap,
+            6.verticalGap,
             AppText(
               title.tr(context),
               style: Get.bodySmall.px11.w600.copyWith(color: Get.disabledColor),
@@ -898,74 +910,47 @@ class _HomePageState extends ConsumerState<HomePage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 120.ht,
+        height: 40.ht,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              accentColor.withValues(alpha: 0.15),
-              accentColor.withValues(alpha: 0.05),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+          color: accentColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(16).rt,
+          border: Border.all(
+            color: accentColor.withValues(alpha: 0.15),
+            width: 1,
           ),
-          borderRadius: BorderRadius.circular(20).rt,
-          border: Border.all(color: accentColor.withValues(alpha: 0.2)),
-          boxShadow: [
-            BoxShadow(
-              color: accentColor.withValues(alpha: 0.2),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
         ),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -6.rt,
-              bottom: -6.rt,
-              child: Icon(
-                icon,
-                size: 90.st,
-                color: accentColor.withValues(alpha: 0.08),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3).rt,
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4).rt,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+                child: Icon(icon, color: accentColor, size: 24.st),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(18).rt,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10).rt,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.25),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(icon, color: accentColor, size: 22.st),
+              16.horizontalGap,
+              Expanded(
+                child: AppText(
+                  title,
+                  style: Get.bodyLarge.px12.w600.copyWith(
+                    color: Get.disabledColor,
+                    height: 1.3,
                   ),
-                  12.verticalGap,
-                  Expanded(
-                    child: AppText(
-                      title,
-                      style: Get.bodyLarge.px16.w700.copyWith(
-                        color: Get.disabledColor,
-                        height: 1.2,
-                      ),
-                      maxLines: 2,
-                    ),
-                  ),
-                ],
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-            Positioned(
-              right: 12.rt,
-              top: 12.rt,
-              child: Icon(
+              8.horizontalGap,
+              Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: accentColor.withValues(alpha: 0.8),
-                size: 16.st,
+                color: accentColor.withValues(alpha: 0.6),
+                size: 14.st,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1029,7 +1014,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                       decoration: BoxDecoration(
                         color: Get.cardColor,
                         borderRadius: BorderRadius.circular(16).rt,
-                        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
+                        border: Border.all(
+                          color: Get.disabledColor.withValues(alpha: 0.1),
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.04),
@@ -1050,7 +1037,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                                   _buildMarketPriceRow(prices[i]),
                                   if (i != prices.length - 1)
                                     Divider(
-                                      color: Get.disabledColor.withValues(alpha: 0.1),
+                                      color: Get.disabledColor.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       height: 20,
                                     ),
                                 ],

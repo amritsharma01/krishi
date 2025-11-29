@@ -417,7 +417,7 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
           children: [
             // Order ID
             AppText(
-              'order_id'.tr(context) + ' #${order.id}',
+              '${'order_id'.tr(context)} #${order.id}',
               style: Get.bodyMedium.px16.w700.copyWith(
                 color: Get.disabledColor,
               ),

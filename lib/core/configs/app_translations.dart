@@ -717,10 +717,7 @@ class AppTranslations {
       'ne':
           'तपाईंले कुनै अर्डर राख्नुभएको छैन। बजारमा किनमेल सुरु गर्नुहोस् र यहाँ अर्डरहरू देख्नुहोस्।',
     },
-    'pending': {
-      'en': 'Pending (Awaiting Admin Approval)',
-      'ne': 'पेन्डिङ (प्रशासक स्वीकृति पर्खिँदै)',
-    },
+    'pending': {'en': 'Pending', 'ne': 'पेन्डिङ'},
     'completed': {'en': 'Completed', 'ne': 'पूरा भयो'},
     'add_phone_hint': {'en': 'Add phone number', 'ne': 'फोन नम्बर थप्नुहोस्'},
     'add_address_hint': {'en': 'Add address', 'ne': 'ठेगाना थप्नुहोस्'},
@@ -864,10 +861,7 @@ class AppTranslations {
     'cancelled': {'en': 'Cancelled', 'ne': 'रद्द गरियो'},
 
     // New order-related translations
-    'awaiting_admin_approval': {
-      'en': 'Awaiting admin approval',
-      'ne': 'प्रशासक स्वीकृतिको प्रतीक्षामा',
-    },
+    'awaiting_admin_approval': {'en': 'Pending', 'ne': 'पेन्डिङ'},
     'order_awaiting_approval': {
       'en': 'Your order is awaiting admin approval',
       'ne': 'तपाईंको अर्डर प्रशासक स्वीकृतिको प्रतीक्षामा छ',
@@ -1040,7 +1034,7 @@ class AppTranslations {
     'alt_call': {'en': 'Alt. Call', 'ne': 'वैकल्पिक कल'},
 
     // Experts Page
-    'agri_experts': {'en': 'Agri Experts', 'ne': 'कृषि विशेषज्ञहरू'},
+    'agri_experts': {'en': 'Agri \n Experts', 'ne': 'कृषि विशेषज्ञहरू'},
     'no_experts_available': {
       'en': 'No experts available',
       'ne': 'कुनै विशेषज्ञ उपलब्ध छैन',
