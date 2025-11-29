@@ -103,7 +103,7 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
           _buildTypeFilter(context),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator.adaptive())
                 : _crops.isEmpty
                 ? _buildEmptyState(context)
                 : _buildCropsList(context),
@@ -294,7 +294,11 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
                   color: color.withValues(alpha: 0.15),
-                  child: Center(child: CircularProgressIndicator(color: color)),
+                  child: Center(
+                    child: CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  ),
                 ),
                 errorWidget: (context, url, error) =>
                     _buildHeaderFallback(color, icon),

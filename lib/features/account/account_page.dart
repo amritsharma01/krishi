@@ -311,7 +311,11 @@ class _AccountPageState extends ConsumerState<AccountPage> {
             ),
           ],
         ),
-        child: Center(child: CircularProgressIndicator(color: AppColors.white)),
+        child: Center(
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+          ),
+        ),
       );
     }
 

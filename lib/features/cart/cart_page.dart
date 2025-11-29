@@ -26,6 +26,7 @@ class _CartPageState extends ConsumerState<CartPage> {
   bool isLoading = true;
   String? error;
   final Set<int> _updatingItemIds = {};
+  final Set<int> _deletingItemIds = {};
 
   @override
   void initState() {
@@ -131,13 +132,29 @@ class _CartPageState extends ConsumerState<CartPage> {
   }
 
   Future<void> _removeItem(int itemId) async {
+    if (_deletingItemIds.contains(itemId)) return;
+
+    setState(() {
+      _deletingItemIds.add(itemId);
+    });
+
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.removeCartItem(itemId);
-      _loadCart();
-      Get.snackbar('item_removed'.tr(Get.context), color: Colors.green);
+      await _loadCart();
+      if (mounted) {
+        Get.snackbar('item_removed'.tr(Get.context), color: Colors.green);
+      }
     } catch (e) {
-      Get.snackbar('error_removing_item'.tr(Get.context), color: Colors.red);
+      if (mounted) {
+        Get.snackbar('error_removing_item'.tr(Get.context), color: Colors.red);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _deletingItemIds.remove(itemId);
+        });
+      }
     }
   }
 
@@ -175,7 +192,11 @@ class _CartPageState extends ConsumerState<CartPage> {
 
   Widget _buildBody() {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return Center(
+        child: CircularProgressIndicator.adaptive(
+          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+        ),
+      );
     }
 
     if (error != null) {
@@ -209,6 +230,7 @@ class _CartPageState extends ConsumerState<CartPage> {
     final product = item.productDetails;
     if (product == null) return const SizedBox.shrink();
     final isUpdating = _updatingItemIds.contains(item.id);
+    final isDeleting = _deletingItemIds.contains(item.id);
 
     return Container(
       margin: EdgeInsets.only(bottom: 5.rt),
@@ -274,8 +296,10 @@ class _CartPageState extends ConsumerState<CartPage> {
                               child: SizedBox(
                                 width: 20.st,
                                 height: 20.st,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
+                                child: CircularProgressIndicator.adaptive(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.primary,
+                                  ),
                                   strokeWidth: 2,
                                 ),
                               ),
@@ -351,9 +375,11 @@ class _CartPageState extends ConsumerState<CartPage> {
                         ? SizedBox(
                             width: 10.st,
                             height: 10.st,
-                            child: CircularProgressIndicator(
+                            child: CircularProgressIndicator.adaptive(
                               strokeWidth: 2,
-                              color: AppColors.primary,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primary,
+                              ),
                             ),
                           )
                         : AppText(
@@ -392,21 +418,37 @@ class _CartPageState extends ConsumerState<CartPage> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              GestureDetector(
-                onTap: () => _removeItem(item.id),
-                child: Container(
-                  padding: const EdgeInsets.all(6).rt,
-                  decoration: BoxDecoration(
-                    color: Colors.red.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(6).rt,
-                  ),
-                  child: Icon(
-                    Icons.delete_outline,
-                    size: 18.st,
-                    color: Colors.red,
-                  ),
-                ),
-              ),
+              isDeleting
+                  ? Container(
+                      padding: const EdgeInsets.all(6).rt,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6).rt,
+                      ),
+                      child: SizedBox(
+                        width: 18.st,
+                        height: 18.st,
+                        child: CircularProgressIndicator.adaptive(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                        ),
+                      ),
+                    )
+                  : GestureDetector(
+                      onTap: () => _removeItem(item.id),
+                      child: Container(
+                        padding: const EdgeInsets.all(6).rt,
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6).rt,
+                        ),
+                        child: Icon(
+                          Icons.delete_outline,
+                          size: 18.st,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
               8.verticalGap,
               AppText(
                 'Rs. ${item.subtotal}',

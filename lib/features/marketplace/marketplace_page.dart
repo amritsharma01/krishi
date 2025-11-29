@@ -544,7 +544,11 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16).rt,
                   child: Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
+                    child: CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primary,
+                      ),
+                    ),
                   ),
                 ),
               20.verticalGap,
@@ -591,7 +595,11 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16).rt,
                   child: Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
+                    child: CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primary,
+                      ),
+                    ),
                   ),
                 ),
               20.verticalGap,
@@ -1001,8 +1009,10 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) return child;
                               return Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primary,
+                                child: CircularProgressIndicator.adaptive(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    AppColors.primary,
+                                  ),
                                   strokeWidth: 2,
                                 ),
                               );

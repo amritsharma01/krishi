@@ -131,7 +131,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
           _buildFilterChips(context),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator.adaptive())
                 : _notices.isEmpty
                     ? _buildEmptyState(context)
                     : _buildNoticesList(context),

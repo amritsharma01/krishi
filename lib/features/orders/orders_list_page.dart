@@ -320,8 +320,8 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                       children: [
                         80.verticalGap,
                         Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
+                          child: CircularProgressIndicator.adaptive(
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                           ),
                         ),
                       ],
@@ -358,8 +358,8 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                               vertical: 12,
                             ).rt,
                             child: Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.primary,
+                              child: CircularProgressIndicator.adaptive(
+                                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                               ),
                             ),
                           );

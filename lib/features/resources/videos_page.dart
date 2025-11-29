@@ -210,7 +210,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
           _buildCategoryFilter(context),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator.adaptive())
                 : _videos.isEmpty
                 ? _buildEmptyState(context)
                 : _buildVideosList(context),

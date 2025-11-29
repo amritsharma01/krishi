@@ -108,7 +108,11 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
       body: RefreshIndicator(
         onRefresh: _loadOrderDetails,
         child: isLoading
-            ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+            ? Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              )
             : error != null
             ? Padding(
                 padding: const EdgeInsets.all(16).rt,
@@ -519,9 +523,11 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                   SizedBox(
                     width: 16.st,
                     height: 16.st,
-                    child: CircularProgressIndicator(
+                    child: CircularProgressIndicator.adaptive(
                       strokeWidth: 2,
-                      color: AppColors.primary,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primary,
+                      ),
                     ),
                   )
                 else
@@ -625,9 +631,11 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
             ? SizedBox(
                 width: 16.st,
                 height: 16.st,
-                child: CircularProgressIndicator(
+                child: CircularProgressIndicator.adaptive(
                   strokeWidth: 2,
-                  color: Colors.red.shade700,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Colors.red.shade700,
+                  ),
                 ),
               )
             : Icon(
@@ -653,10 +661,10 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
     final dialogContext = mounted ? context : Get.context;
 
     // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAdaptiveDialog<bool>(
       context: dialogContext,
       barrierDismissible: true,
-      builder: (builderContext) => AlertDialog(
+      builder: (builderContext) => AlertDialog.adaptive(
         backgroundColor: Get.cardColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16).rt,

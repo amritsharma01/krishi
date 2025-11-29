@@ -59,7 +59,9 @@ class NewsPage extends ConsumerWidget {
           );
         },
         loading: () => Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
         ),
         error: (error, stack) => ErrorState(
           subtitle: 'error_loading_news_subtitle'.tr(context),

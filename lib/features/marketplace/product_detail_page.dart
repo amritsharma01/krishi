@@ -297,8 +297,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                                   key: const ValueKey('loading'),
                                   height: 20.st,
                                   width: 20.st,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
+                                  child: CircularProgressIndicator.adaptive(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
                                     strokeWidth: 2.5,
                                   ),
                                 )
@@ -469,7 +471,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         child: SizedBox(
           width: 28.st,
           height: 28.st,
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
         ),
       ),
     );
@@ -665,6 +669,21 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                         color: Get.disabledColor,
                       ),
                     ),
+                    if (widget.product.sellerDescription != null &&
+                        widget.product.sellerDescription!
+                            .trim()
+                            .isNotEmpty) ...[
+                      8.verticalGap,
+                      AppText(
+                        widget.product.sellerDescription!,
+                        style: Get.bodySmall.px12.copyWith(
+                          color: Get.disabledColor.withValues(alpha: 0.7),
+                          height: 1.4,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -674,9 +693,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                     ? SizedBox(
                         width: 18.st,
                         height: 18.st,
-                        child: CircularProgressIndicator(
+                        child: CircularProgressIndicator.adaptive(
                           strokeWidth: 2,
-                          color: AppColors.primary,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primary,
+                          ),
                         ),
                       )
                     : Icon(
@@ -833,7 +854,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       loading: () => Center(
         child: Padding(
           padding: const EdgeInsets.all(16).rt,
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
         ),
       ),
       error: (error, stack) => TextButton(
@@ -873,7 +896,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
           loading: () => Center(
             child: Padding(
               padding: const EdgeInsets.all(12).rt,
-              child: CircularProgressIndicator(color: AppColors.primary),
+              child: CircularProgressIndicator.adaptive(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
             ),
           ),
           error: (error, stack) => TextButton(
@@ -936,7 +961,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                           key: const ValueKey('comment-loading'),
                           width: 18.st,
                           height: 18.st,
-                          child: const CircularProgressIndicator(
+                          child: const CircularProgressIndicator.adaptive(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
                               Colors.white,

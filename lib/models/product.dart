@@ -26,6 +26,7 @@ class Product {
   final bool? recommend;
   final bool? freeDelivery;
   final String? rating;
+  final String? sellerDescription;
 
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -58,6 +59,7 @@ class Product {
     this.recommend,
     this.freeDelivery,
     this.rating,
+    this.sellerDescription,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -94,6 +96,7 @@ class Product {
         recommend: json['recommend'] as bool?,
         freeDelivery: json['free_delivery'] as bool?,
         rating: json['rating']?.toString(),
+        sellerDescription: json['seller_description'] as String?,
         createdAt: json['created_at'] != null
             ? DateTime.parse(json['created_at'] as String)
             : DateTime.now(),
@@ -138,6 +141,7 @@ class Product {
       'recommend': recommend,
       'free_delivery': freeDelivery,
       'rating': rating,
+      'seller_description': sellerDescription,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };

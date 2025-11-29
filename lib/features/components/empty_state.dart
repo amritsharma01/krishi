@@ -35,8 +35,9 @@ class EmptyState extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: (iconColor ?? AppColors.primary)
-                        .withValues(alpha: 0.1),
+                    color: (iconColor ?? AppColors.primary).withValues(
+                      alpha: 0.1,
+                    ),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -45,23 +46,21 @@ class EmptyState extends StatelessWidget {
               child: Icon(
                 icon,
                 size: 80.st,
-                color: iconColor ??
-                    AppColors.primary.withValues(alpha: 0.6),
+                color: iconColor ?? AppColors.primary.withValues(alpha: 0.6),
               ),
             ),
             24.verticalGap,
             AppText(
               title,
-              style: Get.bodyLarge.px20.w700.copyWith(
-                color: Get.disabledColor,
-              ),
+              style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
               12.verticalGap,
               AppText(
+                maxLines: 3,
                 subtitle!,
-                style: Get.bodyMedium.px14.copyWith(
+                style: Get.bodyMedium.px12.copyWith(
                   color: Get.disabledColor.withValues(alpha: 0.6),
                 ),
                 textAlign: TextAlign.center,
@@ -73,4 +72,3 @@ class EmptyState extends StatelessWidget {
     );
   }
 }
-

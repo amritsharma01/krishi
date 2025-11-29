@@ -21,11 +21,11 @@ class AppDialog {
     BuildContext? context,
   }) {
     final dialogContext = context ?? Get.context;
-    return showDialog<bool>(
+    return showAdaptiveDialog<bool>(
       context: dialogContext,
       barrierDismissible: barrierDismissible,
       builder: (BuildContext builderContext) {
-        return AlertDialog(
+        return AlertDialog.adaptive(
           backgroundColor: Get.cardColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16).rt,
@@ -81,11 +81,11 @@ class AppDialog {
     BuildContext? context,
   }) {
     final dialogContext = context ?? Get.context;
-    return showDialog(
+    return showAdaptiveDialog(
       context: dialogContext,
       barrierDismissible: barrierDismissible,
       builder: (BuildContext builderContext) {
-        return AlertDialog(
+        return AlertDialog.adaptive(
           backgroundColor: Get.cardColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16).rt,
@@ -128,11 +128,11 @@ class AppDialog {
     BuildContext? context,
   }) {
     final dialogContext = context ?? Get.context;
-    return showDialog<T>(
+    return showAdaptiveDialog<T>(
       context: dialogContext,
       barrierDismissible: barrierDismissible,
       builder: (BuildContext builderContext) {
-        return AlertDialog(
+        return AlertDialog.adaptive(
           backgroundColor: Get.cardColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16).rt,

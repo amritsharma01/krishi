@@ -129,7 +129,9 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
               builder: (context, isLoading, _) {
                 return isLoading
                     ? Center(
-                        child: CircularProgressIndicator(color: AppColors.primary),
+                        child: CircularProgressIndicator.adaptive(
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        ),
                       )
                     : _contacts.isEmpty
                     ? _buildEmptyState(context)

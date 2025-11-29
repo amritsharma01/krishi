@@ -95,7 +95,9 @@ class CropDetailPage extends StatelessWidget {
                           placeholder: (context, url) => Container(
                             color: color.withValues(alpha: 0.1),
                             child: Center(
-                              child: CircularProgressIndicator(color: color),
+                              child: CircularProgressIndicator.adaptive(
+                                valueColor: AlwaysStoppedAnimation<Color>(color),
+                              ),
                             ),
                           ),
                           errorWidget: (context, url, error) =>

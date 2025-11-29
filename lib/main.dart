@@ -92,7 +92,7 @@ class Core extends ConsumerWidget {
               ],
               home: !isReady
                   ? const Scaffold(
-                      body: Center(child: CircularProgressIndicator()),
+                      body: Center(child: CircularProgressIndicator.adaptive()),
                     )
                   : auth.isAuthenticated
                       ? const MainNavigation()

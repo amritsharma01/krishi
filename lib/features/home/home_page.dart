@@ -429,7 +429,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         splashColor: AppColors.primary.withValues(alpha: 0.12),
         highlightColor: AppColors.primary.withValues(alpha: 0.08),
         child: Container(
-          height: 100.ht,
+          height: 110.ht,
           padding: const EdgeInsets.all(16).rt,
           decoration: BoxDecoration(
             color: Get.cardColor,
@@ -668,7 +668,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           'services_directory'.tr(context),
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        12.verticalGap,
+        5.verticalGap,
         Row(
           children: [
             Expanded(
@@ -718,7 +718,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           'knowledge_base'.tr(context),
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        10.verticalGap,
+        5.verticalGap,
         Column(
           children: [
             Row(
@@ -1026,7 +1026,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                         ],
                       ),
                       child: loading
-                          ? const Center(child: CircularProgressIndicator())
+                          ? const Center(
+                              child: CircularProgressIndicator.adaptive(),
+                            )
                           : error != null
                           ? _buildMarketPricesError()
                           : prices.isEmpty
@@ -1239,7 +1241,9 @@ class _HomePageState extends ConsumerState<HomePage> {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(32).rt,
-              child: CircularProgressIndicator(color: AppColors.primary),
+              child: CircularProgressIndicator.adaptive(
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
             ),
           );
         }

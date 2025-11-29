@@ -132,7 +132,9 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
                 children: [
                   80.verticalGap,
                   Center(
-                    child: CircularProgressIndicator(color: AppColors.primary),
+                    child: CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                    ),
                   ),
                 ],
               )
