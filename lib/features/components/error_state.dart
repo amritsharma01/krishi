@@ -63,6 +63,7 @@ class ErrorState extends StatelessWidget {
             if (subtitle != null) ...[
               12.verticalGap,
               AppText(
+                maxLines: 2,
                 subtitle!,
                 style: Get.bodyMedium.px14.copyWith(
                   color: Get.disabledColor.withValues(alpha: 0.6),

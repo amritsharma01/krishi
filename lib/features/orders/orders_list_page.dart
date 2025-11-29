@@ -17,7 +17,6 @@ import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/orders/order_detail_page.dart';
 import 'package:krishi/models/order.dart';
-import 'package:krishi/models/user_profile.dart';
 
 class OrdersListPage extends ConsumerStatefulWidget {
   final bool showSales;
@@ -31,11 +30,12 @@ class OrdersListPage extends ConsumerStatefulWidget {
 
 class _OrdersListPageState extends ConsumerState<OrdersListPage> {
   final _dateFormat = DateFormat('MMM d, yyyy • h:mm a');
-  List<Order> orders = [];
-  List<Order> filteredOrders = [];
+  // For purchases: List<Order>
+  // For sales: List<OrderItemSeller>
+  List<dynamic> orders = [];
+  List<dynamic> filteredOrders = [];
   bool isLoading = true;
   String? error;
-  final Set<int> _completingOrders = {};
   String selectedFilter = 'all';
   final ScrollController _scrollController = ScrollController();
   int _currentPage = 1;
@@ -60,9 +60,15 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     if (selectedFilter == 'all') {
       filteredOrders = orders;
     } else {
-      filteredOrders = orders
-          .where((order) => order.status.toLowerCase() == selectedFilter)
-          .toList();
+      filteredOrders = orders.where((item) {
+        if (widget.showSales) {
+          final orderItem = item as OrderItemSeller;
+          return orderItem.orderStatus.toLowerCase() == selectedFilter;
+        } else {
+          final order = item as Order;
+          return order.status.toLowerCase() == selectedFilter;
+        }
+      }).toList();
     }
   }
 
@@ -88,9 +94,11 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
           : await cacheService.getMyPurchasesCache();
 
       if (cachedOrders != null && cachedOrders.isNotEmpty) {
-        final ordersList = cachedOrders
-            .map((json) => Order.fromJson(json))
-            .toList();
+        final ordersList = widget.showSales
+            ? cachedOrders
+                  .map((json) => OrderItemSeller.fromJson(json))
+                  .toList()
+            : cachedOrders.map((json) => Order.fromJson(json)).toList();
         if (mounted) {
           setState(() {
             orders = ordersList;
@@ -128,7 +136,11 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
 
       // Save to cache (only first page)
       if (_currentPage == 1) {
-        final ordersJson = result.results.map((o) => o.toJson()).toList();
+        final ordersJson = widget.showSales
+            ? (result.results as List<OrderItemSeller>)
+                  .map((o) => o.toJson())
+                  .toList()
+            : (result.results as List<Order>).map((o) => o.toJson()).toList();
         if (widget.showSales) {
           await cacheService.saveMySalesCache(ordersJson);
         } else {
@@ -197,43 +209,12 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     }
   }
 
-  Future<void> _completeOrder(Order order) async {
-    if (_completingOrders.contains(order.id)) return;
-
-    setState(() {
-      _completingOrders.add(order.id);
-    });
-
-    try {
-      final cacheService = ref.read(cacheServiceProvider);
-      final apiService = ref.read(krishiApiServiceProvider);
-      await apiService.completeOrder(order.id);
-
-      // Clear cache to force refresh
-      if (widget.showSales) {
-        await cacheService.clearMySalesCache();
-      } else {
-        await cacheService.clearMyPurchasesCache();
-      }
-
-      if (!mounted) return;
-      Get.snackbar('order_marked_complete'.tr(context), color: Colors.green);
-      _completingOrders.remove(order.id);
-      _loadOrders(refresh: true);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _completingOrders.remove(order.id);
-      });
-      Get.snackbar('order_complete_failed'.tr(context), color: Colors.red);
-    }
-  }
-
   Widget _buildFilterChips() {
     final filters = [
       {'key': 'all', 'label': 'all'.tr(context)},
-      {'key': 'pending', 'label': 'pending'.tr(context)},
-      {'key': 'accepted', 'label': 'accepted'.tr(context)},
+      {'key': 'pending', 'label': 'awaiting_admin_approval'.tr(context)},
+      {'key': 'approved', 'label': 'approved'.tr(context)},
+      {'key': 'rejected', 'label': 'rejected'.tr(context)},
       {'key': 'in_transit', 'label': 'in_transit'.tr(context)},
       {'key': 'delivered', 'label': 'delivered'.tr(context)},
       {'key': 'completed', 'label': 'completed'.tr(context)},
@@ -260,7 +241,15 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     final isSelected = selectedFilter == filter['key'];
     final count = filter['key'] == 'all'
         ? orders.length
-        : orders.where((o) => o.status.toLowerCase() == filter['key']).length;
+        : orders.where((item) {
+            if (widget.showSales) {
+              final orderItem = item as OrderItemSeller;
+              return orderItem.orderStatus.toLowerCase() == filter['key'];
+            } else {
+              final order = item as Order;
+              return order.status.toLowerCase() == filter['key'];
+            }
+          }).length;
 
     return GestureDetector(
       onTap: () {
@@ -375,7 +364,10 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                             ),
                           );
                         }
-                        return _buildOrderCard(filteredOrders[index]);
+                        final item = filteredOrders[index];
+                        return widget.showSales
+                            ? _buildSalesOrderCard(item as OrderItemSeller)
+                            : _buildPurchaseOrderCard(item as Order);
                       },
                       separatorBuilder: (_, __) => 12.verticalGap,
                       itemCount:
@@ -388,12 +380,9 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     );
   }
 
-  Widget _buildOrderCard(Order order) {
+  Widget _buildPurchaseOrderCard(Order order) {
     final status = order.status.toLowerCase();
     final isCompleted = status == 'completed';
-    final showCompleteButton = !widget.showSales && status == 'delivered';
-    final isCompleting = _completingOrders.contains(order.id);
-    final canEditContact = _canEditContactDetails(order);
     final displayStatus =
         (order.statusDisplay != null && order.statusDisplay!.trim().isNotEmpty)
         ? order.statusDisplay!
@@ -402,10 +391,10 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
       status,
     );
     return InkWell(
-      onTap: () => _navigateToOrderDetail(order),
+      onTap: () => _navigateToOrderDetail(order.id),
       borderRadius: BorderRadius.circular(16).rt,
       child: Container(
-        padding: const EdgeInsets.all(12).rt,
+        padding: const EdgeInsets.all(16).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(20).rt,
@@ -426,21 +415,32 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
+            // Order ID
+            AppText(
+              'order_id'.tr(context) + ' #${order.id}',
+              style: Get.bodyMedium.px16.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            // Order date
+            AppText(
+              _dateFormat.format(order.createdAt.toLocal()),
+              style: Get.bodySmall.px13.w500.copyWith(
+                color: Get.disabledColor.withValues(alpha: 0.6),
+              ),
+            ),
+            12.verticalGap,
+            // Status, Items count, and Amount chips
+            Wrap(
+              spacing: 8.rt,
+              runSpacing: 8.rt,
               children: [
-                Expanded(
-                  child: AppText(
-                    order.productName,
-                    style: Get.bodyMedium.px16.w700.copyWith(
-                      color: Get.disabledColor,
-                    ),
-                    maxLines: 1,
-                  ),
-                ),
+                // Status chip
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
+                    horizontal: 12,
+                    vertical: 6,
                   ).rt,
                   decoration: BoxDecoration(
                     color: bgColor,
@@ -452,96 +452,15 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
                     style: Get.bodySmall.px12.w700.copyWith(color: textColor),
                   ),
                 ),
-              ],
-            ),
-            3.verticalGap,
-            AppText(
-              _dateFormat.format(order.createdAt.toLocal()),
-              style: Get.bodySmall.px12.w500.copyWith(
-                color: Get.disabledColor.withValues(alpha: 0.6),
-              ),
-            ),
-            12.verticalGap,
-            Wrap(
-              spacing: 8.rt,
-              runSpacing: 6.rt,
-              children: [
+                // Items count chip
+                _buildInfoChip(
+                  icon: Icons.shopping_basket,
+                  label: '${order.itemsCount} ${'items_count'.tr(context)}',
+                ),
+                // Amount chip
                 _buildInfoChip(
                   label: 'Rs. ${order.totalAmountAsDouble.toStringAsFixed(2)}',
                 ),
-                _buildInfoChip(
-                  icon: Icons.shopping_cart_rounded,
-                  label: '${order.quantity} pcs',
-                ),
-                _buildInfoChip(
-                  icon: Icons.badge_outlined,
-                  label:
-                      '${widget.showSales ? 'buyer_id_label'.tr(context) : 'seller_id_label'.tr(context)}: ${(widget.showSales ? order.buyerKrId : order.sellerKrId) ?? 'seller_id_unavailable'.tr(context)}',
-                ),
-              ],
-            ),
-
-            8.verticalGap,
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: widget.showSales || !canEditContact
-                        ? () => _navigateToOrderDetail(order)
-                        : () => _handleEditOrder(order),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12).rt,
-                      side: BorderSide(
-                        color: Get.disabledColor.withValues(alpha: 0.3),
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12).rt,
-                      ),
-                    ),
-                    child: AppText(
-                      (!widget.showSales && canEditContact)
-                          ? 'edit_order'.tr(context)
-                          : 'view_details'.tr(context),
-                      style: Get.bodyMedium.px13.w600.copyWith(
-                        color: (!widget.showSales && canEditContact)
-                            ? AppColors.primary
-                            : Get.disabledColor,
-                      ),
-                    ),
-                  ),
-                ),
-                if (showCompleteButton) ...[
-                  12.horizontalGap,
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: isCompleting
-                          ? null
-                          : () => _completeOrder(order),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12).rt,
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      child: isCompleting
-                          ? SizedBox(
-                              height: 18.st,
-                              width: 18.st,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : AppText(
-                              'mark_as_complete'.tr(context),
-                              style: Get.bodyMedium.px13.w700.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
-                  ),
-                ],
               ],
             ),
           ],
@@ -577,240 +496,113 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     );
   }
 
-  bool _canEditContactDetails(Order order) {
-    if (widget.showSales) return false;
-    final status = order.status.toLowerCase();
-    return status == 'pending' ||
-        status == 'accepted' ||
-        status == 'in_transit';
-  }
-
-  Future<void> _handleEditOrder(Order order) async {
-    final updatedOrder = await _showEditOrderSheet(order);
-    if (updatedOrder != null && mounted) {
-      setState(() {
-        final index = orders.indexWhere((o) => o.id == updatedOrder.id);
-        if (index != -1) {
-          orders[index] = updatedOrder;
-        }
-        _filterOrders();
-      });
-      Get.snackbar('contact_update_success'.tr(context), color: Colors.green);
-    }
-  }
-
-  Future<Order?> _showEditOrderSheet(Order order) {
-    final nameController = TextEditingController(text: order.buyerName);
-    final addressController = TextEditingController(text: order.buyerAddress);
-    final phoneController = TextEditingController(text: order.buyerPhoneNumber);
-    final formKey = GlobalKey<FormState>();
-
-    Future<void> prefillFromProfile() async {
-      void applyUserProfile(User user) {
-        final profile = user.profile;
-
-        if (nameController.text.trim().isEmpty) {
-          final fullName = profile?.fullName.trim();
-          if (fullName != null && fullName.isNotEmpty) {
-            nameController.text = fullName;
-          } else if (user.displayName.trim().isNotEmpty) {
-            nameController.text = user.displayName.trim();
-          }
-        }
-
-        if (addressController.text.trim().isEmpty) {
-          final address = profile?.address?.trim();
-          if (address != null && address.isNotEmpty) {
-            addressController.text = address;
-          }
-        }
-
-        if (phoneController.text.trim().isEmpty) {
-          final phone = profile?.phoneNumber?.trim();
-          if (phone != null && phone.isNotEmpty) {
-            phoneController.text = phone;
-          }
-        }
-      }
-
-      try {
-        final cacheService = ref.read(cacheServiceProvider);
-        final apiService = ref.read(krishiApiServiceProvider);
-
-        final cachedProfile = await cacheService.getUserProfileCache();
-        if (cachedProfile != null) {
-          applyUserProfile(User.fromJson(cachedProfile));
-        }
-
-        final freshUser = await apiService.getCurrentUser();
-        await cacheService.saveUserProfileCache(freshUser.toJson());
-        applyUserProfile(freshUser);
-      } catch (_) {
-        // Ignore profile prefill failures; fields remain editable.
-      }
-    }
-
-    unawaited(prefillFromProfile());
-
-    return showModalBottomSheet<Order>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Get.cardColor,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.rt)),
-      ),
-      builder: (context) {
-        bool isSaving = false;
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            Future<void> submit() async {
-              if (isSaving) return;
-              if (!(formKey.currentState?.validate() ?? false)) return;
-              setModalState(() => isSaving = true);
-              try {
-                final updatedOrder = await ref
-                    .read(krishiApiServiceProvider)
-                    .updateOrderContactDetails(
-                      orderId: order.id,
-                      buyerName: nameController.text.trim(),
-                      buyerAddress: addressController.text.trim(),
-                      buyerPhoneNumber: phoneController.text.trim(),
-                    );
-                if (context.mounted) {
-                  Navigator.of(context).pop(updatedOrder);
-                }
-              } catch (e) {
-                setModalState(() => isSaving = false);
-                Get.snackbar('contact_update_failed'.tr(context));
-              }
-            }
-
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20.wt,
-                right: 20.wt,
-                top: 24.ht,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24.ht,
-              ),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 40,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Get.disabledColor.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                    ),
-                    16.verticalGap,
-                    AppText(
-                      'update_contact_details'.tr(context),
-                      style: Get.bodyLarge.px18.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    16.verticalGap,
-                    TextFormField(
-                      controller: nameController,
-                      decoration: InputDecoration(
-                        labelText: 'buyer_name_label'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      validator: (value) =>
-                          (value == null || value.trim().isEmpty)
-                          ? 'required_field'.tr(context)
-                          : null,
-                    ),
-                    12.verticalGap,
-                    TextFormField(
-                      controller: addressController,
-                      decoration: InputDecoration(
-                        labelText: 'buyer_address_label'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      minLines: 2,
-                      maxLines: 4,
-                      validator: (value) =>
-                          (value == null || value.trim().isEmpty)
-                          ? 'required_field'.tr(context)
-                          : null,
-                    ),
-                    12.verticalGap,
-                    TextFormField(
-                      controller: phoneController,
-                      decoration: InputDecoration(
-                        labelText: 'buyer_phone_label'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) =>
-                          (value == null || value.trim().isEmpty)
-                          ? 'required_field'.tr(context)
-                          : null,
-                    ),
-                    20.verticalGap,
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isSaving ? null : submit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: EdgeInsets.symmetric(vertical: 14.ht),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12).rt,
-                          ),
-                        ),
-                        child: isSaving
-                            ? SizedBox(
-                                height: 18.st,
-                                width: 18.st,
-                                child: const CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : AppText(
-                                'save_changes'.tr(context),
-                                style: Get.bodyMedium.px14.w600.copyWith(
-                                  color: Colors.white,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _navigateToOrderDetail(Order order) {
+  void _navigateToOrderDetail(int id, {bool isItemId = false}) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            OrderDetailPage(orderId: order.id, isSeller: widget.showSales),
+        builder: (context) => OrderDetailPage(
+          orderId: isItemId ? null : id,
+          itemId: isItemId ? id : null,
+          isSeller: widget.showSales,
+        ),
       ),
     ).then((result) {
       if (result == true && mounted) {
         _loadOrders();
       }
     });
+  }
+
+  Widget _buildSalesOrderCard(OrderItemSeller orderItem) {
+    final status = orderItem.orderStatus.toLowerCase();
+    final isCompleted = status == 'completed';
+    final displayStatus = orderItem.statusDisplay;
+    final (Color bgColor, Color textColor, Color borderColor) = _statusColors(
+      status,
+    );
+    return InkWell(
+      onTap: () => _navigateToOrderDetail(orderItem.id, isItemId: true),
+      borderRadius: BorderRadius.circular(16).rt,
+      child: Container(
+        padding: const EdgeInsets.all(16).rt,
+        decoration: BoxDecoration(
+          color: Get.cardColor,
+          borderRadius: BorderRadius.circular(20).rt,
+          border: Border.all(
+            color: isCompleted
+                ? bgColor
+                : Get.disabledColor.withValues(alpha: 0.08),
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Order ID
+            AppText(
+              'order_id'.tr(context) + ' #${orderItem.orderId}',
+              style: Get.bodyMedium.px16.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            6.verticalGap,
+            // Order date
+            AppText(
+              _dateFormat.format(orderItem.orderDate.toLocal()),
+              style: Get.bodySmall.px13.w500.copyWith(
+                color: Get.disabledColor.withValues(alpha: 0.6),
+              ),
+            ),
+            12.verticalGap,
+            // Status, Product name, Base price, Quantity chips
+            Wrap(
+              spacing: 8.rt,
+              runSpacing: 8.rt,
+              children: [
+                // Status chip
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ).rt,
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(12).rt,
+                    border: Border.all(color: borderColor, width: 1),
+                  ),
+                  child: AppText(
+                    displayStatus,
+                    style: Get.bodySmall.px12.w700.copyWith(color: textColor),
+                  ),
+                ),
+                // Product name chip
+                _buildInfoChip(
+                  icon: Icons.shopping_bag,
+                  label: orderItem.productName,
+                ),
+                // Base price chip
+                _buildInfoChip(
+                  label:
+                      'Rs. ${orderItem.basePriceAsDouble.toStringAsFixed(2)}',
+                ),
+                // Quantity chip
+                _buildInfoChip(
+                  icon: Icons.production_quantity_limits,
+                  label: 'Qty: ${orderItem.quantity}',
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   (Color, Color, Color) _statusColors(String status) {
@@ -820,6 +612,18 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
           Colors.green.withValues(alpha: 0.15),
           Colors.green.shade800,
           Colors.green.withValues(alpha: 0.3),
+        );
+      case 'approved':
+        return (
+          Colors.teal.withValues(alpha: 0.15),
+          Colors.teal.shade800,
+          Colors.teal.withValues(alpha: 0.3),
+        );
+      case 'rejected':
+        return (
+          Colors.red.withValues(alpha: 0.15),
+          Colors.red.shade800,
+          Colors.red.withValues(alpha: 0.3),
         );
       case 'accepted':
       case 'in_transit':

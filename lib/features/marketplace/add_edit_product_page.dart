@@ -461,7 +461,10 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   ) {
     // Initialize selections if needed
     if (_prefillSourceProduct != null && selectedCategory == null) {
-      selectedCategory = _findCategoryById(categories, _prefillSourceProduct!.category);
+      selectedCategory = _findCategoryById(
+        categories,
+        _prefillSourceProduct!.category,
+      );
       selectedUnit = _findUnitById(units, _prefillSourceProduct!.unit);
     } else if (!isEdit && selectedCategory == null) {
       if (categories.isNotEmpty) selectedCategory = categories.first;
@@ -469,515 +472,480 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     }
 
     return Form(
-              key: _formKey,
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16).rt,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Image Selector
-                    AppText(
-                      'product_image'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
+      key: _formKey,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16).rt,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image Selector
+            AppText(
+              'product_image'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            12.verticalGap,
+            Stack(
+              children: [
+                GestureDetector(
+                  onTap: _showImageSourceDialog,
+                  child: Container(
+                    width: double.infinity,
+                    height: 200.rt,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(16).rt,
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        width: 2,
                       ),
                     ),
-                    12.verticalGap,
-                    Stack(
-                      children: [
-                        GestureDetector(
-                          onTap: _showImageSourceDialog,
-                          child: Container(
-                            width: double.infinity,
-                            height: 200.rt,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.05),
-                              borderRadius: BorderRadius.circular(16).rt,
-                              border: Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.2),
-                                width: 2,
-                              ),
+                    child: _selectedImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(14).rt,
+                            child: Image.file(
+                              _selectedImage!,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              height: double.infinity,
                             ),
-                            child: _selectedImage != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(14).rt,
-                                    child: Image.file(
-                                      _selectedImage!,
-                                      fit: BoxFit.cover,
-                                      width: double.infinity,
-                                      height: double.infinity,
-                                    ),
-                                  )
-                                : (widget.product?.image != null
-                                      ? ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            14,
-                                          ).rt,
-                                          child: Image.network(
-                                            Get.baseUrl +
-                                                widget.product!.image!,
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                            height: double.infinity,
-                                            errorBuilder:
-                                                (context, error, stackTrace) {
-                                                  return Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Icon(
-                                                        Icons
-                                                            .add_photo_alternate_outlined,
-                                                        size: 48.st,
-                                                        color: AppColors.primary
-                                                            .withValues(
-                                                              alpha: 0.5,
-                                                            ),
-                                                      ),
-                                                      12.verticalGap,
-                                                      AppText(
-                                                        'tap_to_add_image'.tr(
-                                                          context,
-                                                        ),
-                                                        style: Get
-                                                            .bodyMedium
-                                                            .px14
-                                                            .copyWith(
-                                                              color: Get
-                                                                  .disabledColor
-                                                                  .withValues(
-                                                                    alpha: 0.6,
-                                                                  ),
-                                                            ),
-                                                      ),
-                                                    ],
-                                                  );
-                                                },
-                                            loadingBuilder:
-                                                (
-                                                  context,
-                                                  child,
-                                                  loadingProgress,
-                                                ) {
-                                                  if (loadingProgress == null) {
-                                                    return child;
-                                                  }
-                                                  return Center(
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                          color:
-                                                              AppColors.primary,
-                                                        ),
-                                                  );
-                                                },
+                          )
+                        : (widget.product?.image != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(14).rt,
+                                  child: Image.network(
+                                    Get.baseUrl + widget.product!.image!,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.add_photo_alternate_outlined,
+                                            size: 48.st,
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.5,
+                                            ),
                                           ),
-                                        )
-                                      : Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              Icons
-                                                  .add_photo_alternate_outlined,
-                                              size: 48.st,
-                                              color: AppColors.primary
-                                                  .withValues(alpha: 0.5),
+                                          12.verticalGap,
+                                          AppText(
+                                            'tap_to_add_image'.tr(context),
+                                            style: Get.bodyMedium.px14.copyWith(
+                                              color: Get.disabledColor
+                                                  .withValues(alpha: 0.6),
                                             ),
-                                            12.verticalGap,
-                                            AppText(
-                                              'tap_to_add_image'.tr(context),
-                                              style: Get.bodyMedium.px14
-                                                  .copyWith(
-                                                    color: Get.disabledColor
-                                                        .withValues(alpha: 0.6),
-                                                  ),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              color: AppColors.primary,
                                             ),
-                                          ],
-                                        )),
-                          ),
-                        ),
-                        if (_selectedImage != null)
-                          Positioned(
-                            top: 8,
-                            right: 8,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedImage = null;
-                                });
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(8).rt,
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: 0.3,
+                                          );
+                                        },
+                                  ),
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.add_photo_alternate_outlined,
+                                      size: 48.st,
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.5,
                                       ),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                                    ),
+                                    12.verticalGap,
+                                    AppText(
+                                      'tap_to_add_image'.tr(context),
+                                      style: Get.bodyMedium.px14.copyWith(
+                                        color: Get.disabledColor.withValues(
+                                          alpha: 0.6,
+                                        ),
+                                      ),
                                     ),
                                   ],
-                                ),
-                                child: Icon(
-                                  Icons.close,
-                                  color: AppColors.white,
-                                  size: 18.st,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    24.verticalGap,
-
-                    // Product Name
-                    AppText(
-                      'product_name'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        hintText: 'enter_product_name'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'required_field'.tr(context);
-                        }
-                        return null;
+                                )),
+                  ),
+                ),
+                if (_selectedImage != null)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedImage = null;
+                        });
                       },
-                    ),
-                    16.verticalGap,
-
-                    // Phone Number
-                    AppText(
-                      'contact_phone'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    TextFormField(
-                      controller: _phoneController,
-                      decoration: InputDecoration(
-                        hintText: 'enter_phone'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'required_field'.tr(context);
-                        }
-                        return null;
-                      },
-                    ),
-                    16.verticalGap,
-
-                    // Address
-                    AppText(
-                      'contact_address'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    TextFormField(
-                      controller: _addressController,
-                      decoration: InputDecoration(
-                        hintText: 'enter_address'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      minLines: 1,
-                      maxLines: 2,
-                      validator: (value) {
-                        final trimmed = value?.trim() ?? '';
-                        if (trimmed.isEmpty) {
-                          return 'required_field'.tr(context);
-                        }
-                        if (trimmed.length < 5) {
-                          return 'address_min_length'.tr(context);
-                        }
-                        return null;
-                      },
-                    ),
-                    16.verticalGap,
-
-                    // Category
-                    AppText(
-                      'category'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    GestureDetector(
-                      onTap: () => _showCategoryDialog(categories),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ).rt,
+                        padding: const EdgeInsets.all(8).rt,
                         decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Get.disabledColor.withValues(alpha: 0.2),
-                            width: 1,
-                          ),
-                          borderRadius: BorderRadius.circular(12).rt,
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: AppText(
-                                selectedCategory?.name ??
-                                    'select_category'.tr(context),
-                                style: Get.bodyMedium.px15.copyWith(
-                                  color: selectedCategory != null
-                                      ? Get.disabledColor
-                                      : Get.disabledColor.withValues(
-                                          alpha: 0.5,
-                                        ),
+                        child: Icon(
+                          Icons.close,
+                          color: AppColors.white,
+                          size: 18.st,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            24.verticalGap,
+
+            // Product Name
+            AppText(
+              'product_name'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            TextFormField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                hintText: 'enter_product_name'.tr(context),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+              ),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'required_field'.tr(context);
+                }
+                return null;
+              },
+            ),
+            16.verticalGap,
+
+            // Phone Number
+            AppText(
+              'contact_phone'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            TextFormField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                hintText: 'enter_phone'.tr(context),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+              ),
+              keyboardType: TextInputType.phone,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'required_field'.tr(context);
+                }
+                return null;
+              },
+            ),
+            16.verticalGap,
+
+            // Address
+            AppText(
+              'contact_address'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            TextFormField(
+              controller: _addressController,
+              decoration: InputDecoration(
+                hintText: 'enter_address'.tr(context),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+              ),
+              minLines: 1,
+              maxLines: 2,
+              validator: (value) {
+                final trimmed = value?.trim() ?? '';
+                if (trimmed.isEmpty) {
+                  return 'required_field'.tr(context);
+                }
+                if (trimmed.length < 5) {
+                  return 'address_min_length'.tr(context);
+                }
+                return null;
+              },
+            ),
+            16.verticalGap,
+
+            // Category
+            AppText(
+              'category'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            GestureDetector(
+              onTap: () => _showCategoryDialog(categories),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ).rt,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: Get.disabledColor.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        selectedCategory?.name ?? 'select_category'.tr(context),
+                        style: Get.bodyMedium.px15.copyWith(
+                          color: selectedCategory != null
+                              ? Get.disabledColor
+                              : Get.disabledColor.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.arrow_drop_down,
+                      color: Get.disabledColor.withValues(alpha: 0.5),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            16.verticalGap,
+
+            // Price and Unit in Row
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        'base_price'.tr(context),
+                        style: Get.bodyMedium.px15.w700.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                      ),
+                      8.verticalGap,
+                      TextFormField(
+                        controller: _priceController,
+                        decoration: InputDecoration(
+                          hintText: 'enter_base_price'.tr(context),
+                          prefixText: 'Rs. ',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12).rt,
+                          ),
+                        ),
+                        keyboardType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'required'.tr(context);
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                16.horizontalGap,
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AppText(
+                        'unit'.tr(context),
+                        style: Get.bodyMedium.px15.w700.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                      ),
+                      8.verticalGap,
+                      GestureDetector(
+                        onTap: () => _showUnitDialog(units),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 16,
+                          ).rt,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Get.disabledColor.withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                            borderRadius: BorderRadius.circular(12).rt,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: AppText(
+                                  selectedUnit?.name ??
+                                      'select_unit'.tr(context),
+                                  style: Get.bodyMedium.px15.copyWith(
+                                    color: selectedUnit != null
+                                        ? Get.disabledColor
+                                        : Get.disabledColor.withValues(
+                                            alpha: 0.5,
+                                          ),
+                                  ),
                                 ),
                               ),
+                              Icon(
+                                Icons.arrow_drop_down,
+                                color: Get.disabledColor.withValues(alpha: 0.5),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            16.verticalGap,
+
+            // Description
+            AppText(
+              'description'.tr(context),
+              style: Get.bodyMedium.px15.w700.copyWith(
+                color: Get.disabledColor,
+              ),
+            ),
+            8.verticalGap,
+            TextFormField(
+              controller: _descriptionController,
+              decoration: InputDecoration(
+                hintText: 'enter_description'.tr(context),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+              ),
+              maxLines: 4,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'required_field'.tr(context);
+                }
+                return null;
+              },
+            ),
+            24.verticalGap,
+
+            // Availability Toggle
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16).rt,
+              decoration: BoxDecoration(
+                color: Get.cardColor,
+                borderRadius: BorderRadius.circular(14).rt,
+                border: Border.all(
+                  color: Get.disabledColor.withValues(alpha: 0.15),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AppText(
+                              'available_for_sale'.tr(context),
+                              style: Get.bodyMedium.px15.w700.copyWith(
+                                color: Get.disabledColor,
+                              ),
                             ),
-                            Icon(
-                              Icons.arrow_drop_down,
-                              color: Get.disabledColor.withValues(alpha: 0.5),
+                            4.verticalGap,
+                            AppText(
+                              'available_for_sale_hint'.tr(context),
+                              style: Get.bodySmall.copyWith(
+                                color: Get.disabledColor.withValues(alpha: 0.7),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                    16.verticalGap,
+                      ValueListenableBuilder<bool>(
+                        valueListenable: _isAvailable,
+                        builder: (context, isAvailable, _) => Switch.adaptive(
+                          value: isAvailable,
+                          onChanged: (value) => _isAvailable.value = value,
+                          activeColor: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            24.verticalGap,
 
-                    // Price and Unit in Row
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppText(
-                                'base_price'.tr(context),
-                                style: Get.bodyMedium.px15.w700.copyWith(
-                                  color: Get.disabledColor,
-                                ),
-                              ),
-                              8.verticalGap,
-                              TextFormField(
-                                controller: _priceController,
-                                decoration: InputDecoration(
-                                  hintText: 'enter_base_price'.tr(context),
-                                  prefixText: 'Rs. ',
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12).rt,
-                                  ),
-                                ),
-                                keyboardType: TextInputType.numberWithOptions(
-                                  decimal: true,
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'required'.tr(context);
-                                  }
-                                  return null;
-                                },
-                              ),
-                            ],
+            // Save Button
+            ValueListenableBuilder<bool>(
+              valueListenable: isSaving,
+              builder: (context, saving, _) => SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: saving ? null : _saveProduct,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 14).rt,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12).rt,
+                    ),
+                  ),
+                  child: saving
+                      ? SizedBox(
+                          height: 20.st,
+                          width: 20.st,
+                          child: CircularProgressIndicator(
+                            color: AppColors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : AppText(
+                          isEdit ? 'update'.tr(context) : 'save'.tr(context),
+                          style: Get.bodyMedium.px16.w700.copyWith(
+                            color: AppColors.white,
                           ),
                         ),
-                        16.horizontalGap,
-                        Expanded(
-                          flex: 1,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppText(
-                                'unit'.tr(context),
-                                style: Get.bodyMedium.px15.w700.copyWith(
-                                  color: Get.disabledColor,
-                                ),
-                              ),
-                              8.verticalGap,
-                              GestureDetector(
-                                onTap: () => _showUnitDialog(units),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 16,
-                                  ).rt,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                      color: Get.disabledColor.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      width: 1,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12).rt,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: AppText(
-                                          selectedUnit?.name ??
-                                              'select_unit'.tr(context),
-                                          style: Get.bodyMedium.px15.copyWith(
-                                            color: selectedUnit != null
-                                                ? Get.disabledColor
-                                                : Get.disabledColor.withValues(
-                                                    alpha: 0.5,
-                                                  ),
-                                          ),
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.arrow_drop_down,
-                                        color: Get.disabledColor.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    16.verticalGap,
-
-                    // Description
-                    AppText(
-                      'description'.tr(context),
-                      style: Get.bodyMedium.px15.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                    ),
-                    8.verticalGap,
-                    TextFormField(
-                      controller: _descriptionController,
-                      decoration: InputDecoration(
-                        hintText: 'enter_description'.tr(context),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12).rt,
-                        ),
-                      ),
-                      maxLines: 4,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'required_field'.tr(context);
-                        }
-                        return null;
-                      },
-                    ),
-                    24.verticalGap,
-
-                    // Availability Toggle
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16).rt,
-                      decoration: BoxDecoration(
-                        color: Get.cardColor,
-                        borderRadius: BorderRadius.circular(14).rt,
-                        border: Border.all(
-                          color: Get.disabledColor.withValues(alpha: 0.15),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    AppText(
-                                      'available_for_sale'.tr(context),
-                                      style: Get.bodyMedium.px15.w700.copyWith(
-                                        color: Get.disabledColor,
-                                      ),
-                                    ),
-                                    4.verticalGap,
-                                    AppText(
-                                      'available_for_sale_hint'.tr(context),
-                                      style: Get.bodySmall.copyWith(
-                                        color: Get.disabledColor.withValues(
-                                          alpha: 0.7,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              ValueListenableBuilder<bool>(
-                                valueListenable: _isAvailable,
-                                builder: (context, isAvailable, _) =>
-                                    Switch.adaptive(
-                                  value: isAvailable,
-                                  onChanged: (value) => _isAvailable.value = value,
-                                  activeColor: AppColors.primary,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    24.verticalGap,
-
-                    // Save Button
-                    ValueListenableBuilder<bool>(
-                      valueListenable: isSaving,
-                      builder: (context, saving, _) => SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: saving ? null : _saveProduct,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            padding:
-                                const EdgeInsets.symmetric(vertical: 14).rt,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12).rt,
-                            ),
-                          ),
-                          child: saving
-                              ? SizedBox(
-                                  height: 20.st,
-                                  width: 20.st,
-                                  child: CircularProgressIndicator(
-                                    color: AppColors.white,
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : AppText(
-                                  isEdit ? 'update'.tr(context) : 'save'.tr(context),
-                                  style: Get.bodyMedium.px16.w700.copyWith(
-                                    color: AppColors.white,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ),
-                    20.verticalGap,
-                  ],
                 ),
               ),
-            );
+            ),
+            20.verticalGap,
+          ],
+        ),
+      ),
+    );
   }
 }

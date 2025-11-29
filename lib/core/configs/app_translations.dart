@@ -296,6 +296,10 @@ class AppTranslations {
 
     // Add/Edit Product
     'product_name': {'en': 'Product Name', 'ne': 'उत्पादन नाम'},
+    'product_information': {
+      'en': 'Product Information',
+      'ne': 'उत्पादन जानकारी',
+    },
     'product_price': {'en': 'Product Price', 'ne': 'उत्पादन मूल्य'},
     'product_description': {'en': 'Product Description', 'ne': 'उत्पादन विवरण'},
     'product_category': {'en': 'Category', 'ne': 'श्रेणी'},
@@ -713,7 +717,10 @@ class AppTranslations {
       'ne':
           'तपाईंले कुनै अर्डर राख्नुभएको छैन। बजारमा किनमेल सुरु गर्नुहोस् र यहाँ अर्डरहरू देख्नुहोस्।',
     },
-    'pending': {'en': 'Pending', 'ne': 'बाँकी'},
+    'pending': {
+      'en': 'Pending (Awaiting Admin Approval)',
+      'ne': 'पेन्डिङ (प्रशासक स्वीकृति पर्खिँदै)',
+    },
     'completed': {'en': 'Completed', 'ne': 'पूरा भयो'},
     'add_phone_hint': {'en': 'Add phone number', 'ne': 'फोन नम्बर थप्नुहोस्'},
     'add_address_hint': {'en': 'Add address', 'ne': 'ठेगाना थप्नुहोस्'},
@@ -855,6 +862,25 @@ class AppTranslations {
     'in_transit': {'en': 'In Transit', 'ne': 'ट्रान्जिटमा'},
     'delivered': {'en': 'Delivered', 'ne': 'डेलिभर भयो'},
     'cancelled': {'en': 'Cancelled', 'ne': 'रद्द गरियो'},
+
+    // New order-related translations
+    'awaiting_admin_approval': {
+      'en': 'Awaiting admin approval',
+      'ne': 'प्रशासक स्वीकृतिको प्रतीक्षामा',
+    },
+    'order_awaiting_approval': {
+      'en': 'Your order is awaiting admin approval',
+      'ne': 'तपाईंको अर्डर प्रशासक स्वीकृतिको प्रतीक्षामा छ',
+    },
+    'delivery_charges': {'en': 'Delivery Charges', 'ne': 'डेलिभरी शुल्क'},
+    'items_count': {'en': 'Items', 'ne': 'वस्तुहरू'},
+    'order_edit_cancel_info': {
+      'en':
+          'For editing or canceling the order, please contact the admin through the Contact Us page.',
+      'ne':
+          'अर्डर सम्पादन वा रद्द गर्नको लागि, कृपया सम्पर्क हामी पृष्ठ मार्फत प्रशासकसँग सम्पर्क गर्नुहोस्।',
+    },
+    'order_items': {'en': 'Order Items', 'ne': 'अर्डर वस्तुहरू'},
 
     // Contact Actions
     'call_buyer': {'en': 'Call Buyer', 'ne': 'खरीददारलाई कल गर्नुहोस्'},
