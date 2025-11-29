@@ -39,17 +39,18 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  List<Product> trendingProducts = [];
-  int receivedOrdersCount = 0;
-  int placedOrdersCount = 0;
-  List<MarketPrice> marketPrices = [];
-  User? currentUser;
-  bool isLoadingProducts = true;
-  bool isLoadingOrders = true;
-  bool isLoadingMarketPrices = true;
-  String? productsError;
-  String? ordersError;
-  String? marketPricesError;
+  // ValueNotifiers for reactive state management
+  final ValueNotifier<List<Product>> trendingProducts = ValueNotifier([]);
+  final ValueNotifier<int> receivedOrdersCount = ValueNotifier(0);
+  final ValueNotifier<int> placedOrdersCount = ValueNotifier(0);
+  final ValueNotifier<List<MarketPrice>> marketPrices = ValueNotifier([]);
+  final ValueNotifier<User?> currentUser = ValueNotifier(null);
+  final ValueNotifier<bool> isLoadingProducts = ValueNotifier(true);
+  final ValueNotifier<bool> isLoadingOrders = ValueNotifier(true);
+  final ValueNotifier<bool> isLoadingMarketPrices = ValueNotifier(true);
+  final ValueNotifier<String?> productsError = ValueNotifier(null);
+  final ValueNotifier<String?> ordersError = ValueNotifier(null);
+  final ValueNotifier<String?> marketPricesError = ValueNotifier(null);
 
   @override
   void initState() {
@@ -59,6 +60,22 @@ class _HomePageState extends ConsumerState<HomePage> {
         _loadData();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    trendingProducts.dispose();
+    receivedOrdersCount.dispose();
+    placedOrdersCount.dispose();
+    marketPrices.dispose();
+    currentUser.dispose();
+    isLoadingProducts.dispose();
+    isLoadingOrders.dispose();
+    isLoadingMarketPrices.dispose();
+    productsError.dispose();
+    ordersError.dispose();
+    marketPricesError.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
@@ -76,9 +93,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       final apiService = ref.read(krishiApiServiceProvider);
       final user = await apiService.getCurrentUser();
       if (mounted) {
-        setState(() {
-          currentUser = user;
-        });
+        currentUser.value = user;
       }
     } catch (_) {
       // ignore profile fetch errors silently
@@ -86,37 +101,29 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Future<void> _loadOrdersCounts() async {
-    setState(() {
-      isLoadingOrders = true;
-      ordersError = null;
-    });
+    isLoadingOrders.value = true;
+    ordersError.value = null;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final counts = await apiService.getOrdersCounts();
 
       if (mounted) {
-        setState(() {
-          receivedOrdersCount = counts.salesCount;
-          placedOrdersCount = counts.purchasesCount;
-          isLoadingOrders = false;
-        });
+        receivedOrdersCount.value = counts.salesCount;
+        placedOrdersCount.value = counts.purchasesCount;
+        isLoadingOrders.value = false;
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          ordersError = e.toString();
-          isLoadingOrders = false;
-        });
+        ordersError.value = e.toString();
+        isLoadingOrders.value = false;
       }
     }
   }
 
   Future<void> _loadTrendingProducts() async {
-    setState(() {
-      isLoadingProducts = true;
-      productsError = null;
-    });
+    isLoadingProducts.value = true;
+    productsError.value = null;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
@@ -125,26 +132,20 @@ class _HomePageState extends ConsumerState<HomePage> {
           .where((product) => product.isAvailable)
           .toList();
       if (mounted) {
-        setState(() {
-          trendingProducts = filtered.take(5).toList();
-          isLoadingProducts = false;
-        });
+        trendingProducts.value = filtered.take(5).toList();
+        isLoadingProducts.value = false;
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          productsError = e.toString();
-          isLoadingProducts = false;
-        });
+        productsError.value = e.toString();
+        isLoadingProducts.value = false;
       }
     }
   }
 
   Future<void> _loadMarketPrices() async {
-    setState(() {
-      isLoadingMarketPrices = true;
-      marketPricesError = null;
-    });
+    isLoadingMarketPrices.value = true;
+    marketPricesError.value = null;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
@@ -153,17 +154,13 @@ class _HomePageState extends ConsumerState<HomePage> {
         ordering: '-updated_at',
       );
       if (mounted) {
-        setState(() {
-          marketPrices = response.results.take(4).toList();
-          isLoadingMarketPrices = false;
-        });
+        marketPrices.value = response.results.take(4).toList();
+        isLoadingMarketPrices.value = false;
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          marketPricesError = e.toString();
-          isLoadingMarketPrices = false;
-        });
+        marketPricesError.value = e.toString();
+        isLoadingMarketPrices.value = false;
       }
     }
   }
@@ -256,8 +253,11 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildWelcomeCard() {
-    final userName = (currentUser?.displayName ?? '').trim();
-    return Container(
+    return ValueListenableBuilder<User?>(
+      valueListenable: currentUser,
+      builder: (context, user, child) {
+        final userName = (user?.displayName ?? '').trim();
+        return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         image: DecorationImage(
@@ -349,45 +349,62 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
+        );
+      },
     );
   }
 
   Widget _buildOrdersTiles() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildOrderCard(
-            title: 'received_orders',
-            subtitle: 'orders_as_seller',
-            count: receivedOrdersCount,
-            icon: Icons.inventory_2_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLoadingOrders,
+      builder: (context, loading, child) {
+        return Row(
+          children: [
+            Expanded(
+              child: ValueListenableBuilder<int>(
+                valueListenable: receivedOrdersCount,
+                builder: (context, count, child) {
+                  return _buildOrderCard(
+                    title: 'received_orders',
+                    subtitle: 'orders_as_seller',
+                    count: count,
+                    icon: Icons.inventory_2_rounded,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
+                    ),
+                    onTap: () {
+                      Get.to(const OrdersListPage.sales());
+                    },
+                    isLoading: loading,
+                  );
+                },
+              ),
             ),
-            onTap: () {
-              Get.to(const OrdersListPage.sales());
-            },
-            isLoading: isLoadingOrders,
-          ),
-        ),
-        12.horizontalGap,
-        Expanded(
-          child: _buildOrderCard(
-            title: 'placed_orders',
-            subtitle: 'orders_as_buyer',
-            count: placedOrdersCount,
-            icon: Icons.shopping_bag_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+            12.horizontalGap,
+            Expanded(
+              child: ValueListenableBuilder<int>(
+                valueListenable: placedOrdersCount,
+                builder: (context, count, child) {
+                  return _buildOrderCard(
+                    title: 'placed_orders',
+                    subtitle: 'orders_as_buyer',
+                    count: count,
+                    icon: Icons.shopping_bag_rounded,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+                    ),
+                    onTap: () {
+                      // Navigate to placed orders (my purchases)
+                      Get.to(const OrdersListPage.purchases());
+                    },
+                    isLoading: loading,
+                  );
+                },
+              ),
             ),
-            onTap: () {
-              // Navigate to placed orders (my purchases)
-              Get.to(const OrdersListPage.purchases());
-            },
-            isLoading: isLoadingOrders,
-          ),
-        ),
-      ],
+          ],
+        );
+      },
     );
   }
 
@@ -998,38 +1015,53 @@ class _HomePageState extends ConsumerState<HomePage> {
           ],
         ),
         12.verticalGap,
-        Container(
-          padding: const EdgeInsets.all(16).rt,
-          decoration: BoxDecoration(
-            color: Get.cardColor,
-            borderRadius: BorderRadius.circular(16).rt,
-            border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: isLoadingMarketPrices
-              ? const Center(child: CircularProgressIndicator())
-              : marketPricesError != null
-              ? _buildMarketPricesError()
-              : marketPrices.isEmpty
-              ? _buildMarketPricesEmpty()
-              : Column(
-                  children: [
-                    for (int i = 0; i < marketPrices.length; i++) ...[
-                      _buildMarketPriceRow(marketPrices[i]),
-                      if (i != marketPrices.length - 1)
-                        Divider(
-                          color: Get.disabledColor.withValues(alpha: 0.1),
-                          height: 20,
-                        ),
-                    ],
-                  ],
-                ),
+        ValueListenableBuilder<bool>(
+          valueListenable: isLoadingMarketPrices,
+          builder: (context, loading, child) {
+            return ValueListenableBuilder<String?>(
+              valueListenable: marketPricesError,
+              builder: (context, error, child) {
+                return ValueListenableBuilder<List<MarketPrice>>(
+                  valueListenable: marketPrices,
+                  builder: (context, prices, child) {
+                    return Container(
+                      padding: const EdgeInsets.all(16).rt,
+                      decoration: BoxDecoration(
+                        color: Get.cardColor,
+                        borderRadius: BorderRadius.circular(16).rt,
+                        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: loading
+                          ? const Center(child: CircularProgressIndicator())
+                          : error != null
+                          ? _buildMarketPricesError()
+                          : prices.isEmpty
+                          ? _buildMarketPricesEmpty()
+                          : Column(
+                              children: [
+                                for (int i = 0; i < prices.length; i++) ...[
+                                  _buildMarketPriceRow(prices[i]),
+                                  if (i != prices.length - 1)
+                                    Divider(
+                                      color: Get.disabledColor.withValues(alpha: 0.1),
+                                      height: 20,
+                                    ),
+                                ],
+                              ],
+                            ),
+                    );
+                  },
+                );
+              },
+            );
+          },
         ),
       ],
     );
@@ -1211,37 +1243,52 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   // ignore: unused_element
   Widget _buildTrendingProductsList() {
-    if (isLoadingProducts) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32).rt,
-          child: CircularProgressIndicator(color: AppColors.primary),
-        ),
-      );
-    }
+    return ValueListenableBuilder<bool>(
+      valueListenable: isLoadingProducts,
+      builder: (context, loading, child) {
+        if (loading) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32).rt,
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          );
+        }
 
-    if (productsError != null) {
-      return ErrorState(
-        subtitle: 'error_loading_products_subtitle'.tr(context),
-        onRetry: _loadTrendingProducts,
-      );
-    }
+        return ValueListenableBuilder<String?>(
+          valueListenable: productsError,
+          builder: (context, error, child) {
+            if (error != null) {
+              return ErrorState(
+                subtitle: 'error_loading_products_subtitle'.tr(context),
+                onRetry: _loadTrendingProducts,
+              );
+            }
 
-    if (trendingProducts.isEmpty) {
-      return EmptyState(
-        title: 'no_products_available'.tr(context),
-        subtitle: 'no_products_subtitle'.tr(context),
-        icon: Icons.shopping_bag_outlined,
-      );
-    }
+            return ValueListenableBuilder<List<Product>>(
+              valueListenable: trendingProducts,
+              builder: (context, products, child) {
+                if (products.isEmpty) {
+                  return EmptyState(
+                    title: 'no_products_available'.tr(context),
+                    subtitle: 'no_products_subtitle'.tr(context),
+                    icon: Icons.shopping_bag_outlined,
+                  );
+                }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: trendingProducts.length,
-      itemBuilder: (context, index) {
-        final product = trendingProducts[index];
-        return _buildProductCard(product);
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    return _buildProductCard(product);
+                  },
+                );
+              },
+            );
+          },
+        );
       },
     );
   }

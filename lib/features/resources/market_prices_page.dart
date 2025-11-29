@@ -25,12 +25,12 @@ class _MarketPricesPageState extends ConsumerState<MarketPricesPage> {
   final TextEditingController _searchController = TextEditingController();
   Timer? _searchDebounce;
 
-  bool _isInitialLoading = true;
-  bool _isLoadingMore = false;
+  final ValueNotifier<bool> _isInitialLoading = ValueNotifier(true);
+  final ValueNotifier<bool> _isLoadingMore = ValueNotifier(false);
   bool _hasMore = true;
   int _currentPage = 1;
   String _searchQuery = '';
-  String _selectedCategory = 'all';
+  final ValueNotifier<String> _selectedCategory = ValueNotifier('all');
 
   @override
   void initState() {
@@ -42,58 +42,55 @@ class _MarketPricesPageState extends ConsumerState<MarketPricesPage> {
   void dispose() {
     _searchController.dispose();
     _searchDebounce?.cancel();
+    _isInitialLoading.dispose();
+    _isLoadingMore.dispose();
+    _selectedCategory.dispose();
     super.dispose();
   }
 
   Future<void> _loadPrices({bool refresh = false}) async {
-    if (_isLoadingMore && !refresh) return;
+    if (_isLoadingMore.value && !refresh) return;
     if (!_hasMore && !refresh && _currentPage > 1) return;
 
     if (refresh) {
-      setState(() {
-        _currentPage = 1;
-        _hasMore = true;
-      });
+      _currentPage = 1;
+      _hasMore = true;
     }
 
     if (_currentPage == 1) {
-      setState(() => _isInitialLoading = true);
+      _isInitialLoading.value = true;
     } else {
-      setState(() => _isLoadingMore = true);
+      _isLoadingMore.value = true;
     }
 
     try {
       final response = await ref.read(krishiApiServiceProvider).getMarketPrices(
             page: _currentPage,
             search: _searchQuery.isEmpty ? null : _searchQuery,
-            category: _selectedCategory == 'all' ? null : _selectedCategory,
+            category: _selectedCategory.value == 'all' ? null : _selectedCategory.value,
             ordering: '-updated_at',
           );
       if (!mounted) return;
-      setState(() {
-        if (_currentPage == 1) {
-          _prices
-            ..clear()
-            ..addAll(response.results);
-        } else {
-          _prices.addAll(response.results);
+      if (_currentPage == 1) {
+        _prices
+          ..clear()
+          ..addAll(response.results);
+      } else {
+        _prices.addAll(response.results);
+      }
+      for (final price in response.results) {
+        if (price.category.isNotEmpty) {
+          _categories[price.category] = price.categoryDisplay;
         }
-        for (final price in response.results) {
-          if (price.category.isNotEmpty) {
-            _categories[price.category] = price.categoryDisplay;
-          }
-        }
-        _hasMore = response.next != null;
-        _currentPage += 1;
-        _isInitialLoading = false;
-        _isLoadingMore = false;
-      });
+      }
+      _hasMore = response.next != null;
+      _currentPage += 1;
+      _isInitialLoading.value = false;
+      _isLoadingMore.value = false;
     } catch (e) {
       if (!mounted) return;
-      setState(() {
-        _isInitialLoading = false;
-        _isLoadingMore = false;
-      });
+      _isInitialLoading.value = false;
+      _isLoadingMore.value = false;
       Get.snackbar('failed_to_load_market_prices'.tr(context));
     }
   }
@@ -113,8 +110,8 @@ class _MarketPricesPageState extends ConsumerState<MarketPricesPage> {
   }
 
   void _selectCategory(String category) {
-    if (_selectedCategory == category) return;
-    setState(() => _selectedCategory = category);
+    if (_selectedCategory.value == category) return;
+    _selectedCategory.value = category;
     _loadPrices(refresh: true);
   }
 
@@ -137,11 +134,16 @@ class _MarketPricesPageState extends ConsumerState<MarketPricesPage> {
           _buildHeader(context),
           _buildCategoryChips(context),
           Expanded(
-            child: _isInitialLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _prices.isEmpty
-                    ? _buildEmptyState(context)
-                    : _buildPricesList(),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _isInitialLoading,
+              builder: (context, isInitialLoading, _) {
+                return isInitialLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _prices.isEmpty
+                        ? _buildEmptyState(context)
+                        : _buildPricesList();
+              },
+            ),
           ),
         ],
       ),
@@ -217,14 +219,17 @@ class _MarketPricesPageState extends ConsumerState<MarketPricesPage> {
       ..._categories.entries,
     ];
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: entries.map((entry) {
-            final isSelected = entry.key == _selectedCategory;
+    return ValueListenableBuilder<String>(
+      valueListenable: _selectedCategory,
+      builder: (context, selectedCategory, _) {
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: entries.map((entry) {
+                final isSelected = entry.key == selectedCategory;
             return Padding(
               padding: EdgeInsets.only(right: 8.wt),
               child: GestureDetector(
@@ -263,9 +268,11 @@ class _MarketPricesPageState extends ConsumerState<MarketPricesPage> {
                 ),
               ),
             );
-          }).toList(),
-        ),
-      ),
+              }).toList(),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -288,31 +295,36 @@ class _MarketPricesPageState extends ConsumerState<MarketPricesPage> {
   Widget _buildLoadMoreButton() {
     if (!_hasMore) return const SizedBox.shrink();
 
-    return Padding(
-      padding: EdgeInsets.only(top: 8.ht),
-      child: ElevatedButton(
-        onPressed: _isLoadingMore ? null : () => _loadPrices(),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Get.primaryColor,
-          minimumSize: const Size(double.infinity, 48),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16).rt,
-          ),
-        ),
-        child: _isLoadingMore
-            ? SizedBox(
-                height: 18.st,
-                width: 18.st,
-                child: const CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : AppText(
-                'load_more'.tr(context),
-                style: Get.bodyMedium.copyWith(color: Colors.white),
+    return ValueListenableBuilder<bool>(
+      valueListenable: _isLoadingMore,
+      builder: (context, isLoadingMore, _) {
+        return Padding(
+          padding: EdgeInsets.only(top: 8.ht),
+          child: ElevatedButton(
+            onPressed: isLoadingMore ? null : () => _loadPrices(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Get.primaryColor,
+              minimumSize: const Size(double.infinity, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16).rt,
               ),
-      ),
+            ),
+            child: isLoadingMore
+                ? SizedBox(
+                    height: 18.st,
+                    width: 18.st,
+                    child: const CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : AppText(
+                    'load_more'.tr(context),
+                    style: Get.bodyMedium.copyWith(color: Colors.white),
+                  ),
+          ),
+        );
+      },
     );
   }
 

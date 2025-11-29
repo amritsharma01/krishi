@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
-import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -10,89 +9,54 @@ import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/error_state.dart';
+import 'package:krishi/features/knowledge/providers/knowledge_providers.dart';
 import 'package:krishi/models/article.dart';
 
-class ArticleDetailPage extends ConsumerStatefulWidget {
+class ArticleDetailPage extends ConsumerWidget {
   final int articleId;
 
   const ArticleDetailPage({super.key, required this.articleId});
 
   @override
-  ConsumerState<ArticleDetailPage> createState() => _ArticleDetailPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final articleAsync = ref.watch(articleDetailProvider(articleId));
 
-class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
-  Article? article;
-  bool isLoading = true;
-  bool hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadArticle();
-  }
-
-  Future<void> _loadArticle() async {
-    setState(() {
-      isLoading = true;
-      hasError = false;
-    });
-
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final articleData = await apiService.getArticle(widget.articleId);
-      if (mounted) {
-        setState(() {
-          article = articleData;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          hasError = true;
-          isLoading = false;
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (isLoading) {
-      return Scaffold(
+    return articleAsync.when(
+      data: (articleData) => _buildArticleContent(context, articleData),
+      loading: () => Scaffold(
         backgroundColor: Get.scaffoldBackgroundColor,
         appBar: AppBar(
           backgroundColor: Get.scaffoldBackgroundColor,
           elevation: 0,
-          leading: _buildBackButton(),
+          leading: _buildBackButton(context),
         ),
         body: Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
-      );
-    }
-
-    if (hasError || article == null) {
-      return Scaffold(
+      ),
+      error: (error, stack) => Scaffold(
         backgroundColor: Get.scaffoldBackgroundColor,
         appBar: AppBar(
           backgroundColor: Get.scaffoldBackgroundColor,
           elevation: 0,
-          leading: _buildBackButton(),
+          leading: _buildBackButton(context),
         ),
         body: ErrorState(
           subtitle: 'error_loading_article'.tr(context),
-          onRetry: _loadArticle,
+          onRetry: () {
+            ref.invalidate(articleDetailProvider(articleId));
+          },
         ),
-      );
-    }
+      ),
+    );
+  }
 
+  Widget _buildArticleContent(BuildContext context, Article articleData) {
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
-          _buildAppBar(),
+          _buildAppBar(articleData),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20).rt,
@@ -100,7 +64,7 @@ class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
-                    article!.title,
+                    articleData.title,
                     style: Get.bodyLarge.px22.w700.copyWith(
                       color: Get.bodyLarge.color ??
                           (Get.isDark ? Colors.white : Colors.black87),
@@ -116,11 +80,11 @@ class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
                     children: [
                       _buildMetaChip(
                         icon: Icons.person_outline,
-                        label: article!.authorName,
+                        label: articleData.authorName,
                       ),
                       _buildMetaChip(
                         icon: Icons.calendar_today_outlined,
-                        label: _formatDate(article!.createdAt),
+                        label: _formatDate(articleData.createdAt, context),
                       ),
                     ],
                   ),
@@ -140,7 +104,7 @@ class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
                       ),
                     ),
                     child: AppText(
-                      article!.content,
+                      articleData.content,
                       style: Get.bodyMedium.px15.w400.copyWith(
                         color: Get.bodyMedium.color ??
                             (Get.isDark ? Colors.white : Colors.black87),
@@ -160,7 +124,7 @@ class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(Article articleData) {
     return SliverAppBar(
       expandedHeight: 240.rt,
       pinned: true,
@@ -192,9 +156,9 @@ class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            article?.image != null
+            articleData.image != null
                 ? Image.network(
-                    Get.imageUrl(article!.image),
+                    Get.imageUrl(articleData.image),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
                         _buildHeroPlaceholder(),
@@ -266,7 +230,7 @@ class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
     );
   }
 
-  Widget _buildBackButton() {
+  Widget _buildBackButton(BuildContext context) {
     return Padding(
       padding: EdgeInsets.only(left: 8.rt),
       child: IconButton(
@@ -276,7 +240,7 @@ class _ArticleDetailPageState extends ConsumerState<ArticleDetailPage> {
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime date, BuildContext context) {
     final now = DateTime.now();
     final difference = now.difference(date);
 

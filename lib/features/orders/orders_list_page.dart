@@ -16,7 +16,6 @@ import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/orders/order_detail_page.dart';
-import 'package:krishi/features/seller/seller_public_listings_page.dart';
 import 'package:krishi/models/order.dart';
 import 'package:krishi/models/user_profile.dart';
 
@@ -42,7 +41,6 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
   int _currentPage = 1;
   bool _hasMore = true;
   bool _isLoadingMore = false;
-  String? _loadingPublicListingsId;
 
   @override
   void initState() {
@@ -228,40 +226,6 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
         _completingOrders.remove(order.id);
       });
       Get.snackbar('order_complete_failed'.tr(context), color: Colors.red);
-    }
-  }
-
-  Future<void> _openPublicListings(String? krId, String titleKey) async {
-    if (krId == null || krId.isEmpty) {
-      Get.snackbar('seller_id_unavailable'.tr(context), color: Colors.red);
-      return;
-    }
-    setState(() => _loadingPublicListingsId = krId);
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final profile = await apiService.getSellerPublicProfile(krId);
-      if (!mounted) return;
-      if (profile.sellerProducts.isEmpty) {
-        Get.snackbar(
-          'seller_no_listings'.tr(context),
-          color: Colors.orange.shade700,
-        );
-        return;
-      }
-      Get.to(
-        SellerPublicListingsPage(
-          userKrId: krId,
-          initialListings: profile.sellerProducts,
-          titleKey: titleKey,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      Get.snackbar('error_loading_seller'.tr(context), color: Colors.red);
-    } finally {
-      if (mounted) {
-        setState(() => _loadingPublicListingsId = null);
-      }
     }
   }
 
@@ -611,12 +575,6 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
         ],
       ),
     );
-  }
-
-  bool _showQuickAction(Order order) {
-    final status = order.status.toLowerCase();
-    // Show view details button for all active orders
-    return status != 'completed' && status != 'cancelled';
   }
 
   bool _canEditContactDetails(Order order) {

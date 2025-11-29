@@ -21,9 +21,9 @@ class FAQsPage extends ConsumerStatefulWidget {
 
 class _FAQsPageState extends ConsumerState<FAQsPage> {
   List<FAQ> _faqs = [];
-  bool _isLoading = true;
-  String? _error;
-  int? _expandedIndex;
+  final ValueNotifier<bool> _isLoading = ValueNotifier(true);
+  final ValueNotifier<String?> _error = ValueNotifier(null);
+  final ValueNotifier<int?> _expandedIndex = ValueNotifier(null);
 
   @override
   void initState() {
@@ -31,24 +31,30 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
     _loadFAQs();
   }
 
+  @override
+  void dispose() {
+    _isLoading.dispose();
+    _error.dispose();
+    _expandedIndex.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadFAQs() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
+    _isLoading.value = true;
+    _error.value = null;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final faqs = await apiService.getFAQs();
-      setState(() {
+      if (mounted) {
         _faqs = faqs;
-        _isLoading = false;
-      });
+        _isLoading.value = false;
+      }
     } catch (e) {
-      setState(() {
-        _error = e.toString();
-        _isLoading = false;
-      });
+      if (mounted) {
+        _error.value = e.toString();
+        _isLoading.value = false;
+      }
     }
   }
 
@@ -64,27 +70,44 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
         backgroundColor: Get.primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-          ? ErrorState(title: _error!, onRetry: _loadFAQs)
-          : _faqs.isEmpty
-          ? EmptyState(
-              title: 'no_faqs_found'.tr(context),
-              icon: Icons.help_outline_rounded,
-            )
-          : RefreshIndicator(
-              onRefresh: _loadFAQs,
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _faqs.length,
-                itemBuilder: (context, index) {
-                  final faq = _faqs[index];
-                  final isExpanded = _expandedIndex == index;
-                  return _buildFAQCard(faq, index, isExpanded);
+      body: ValueListenableBuilder<bool>(
+        valueListenable: _isLoading,
+        builder: (context, isLoading, _) {
+          if (isLoading) return const Center(child: CircularProgressIndicator());
+
+          return ValueListenableBuilder<String?>(
+            valueListenable: _error,
+            builder: (context, error, _) {
+              if (error != null) return ErrorState(title: error, onRetry: _loadFAQs);
+
+              if (_faqs.isEmpty) {
+                return EmptyState(
+                  title: 'no_faqs_found'.tr(context),
+                  icon: Icons.help_outline_rounded,
+                );
+              }
+
+              return ValueListenableBuilder<int?>(
+                valueListenable: _expandedIndex,
+                builder: (context, expandedIndex, _) {
+                  return RefreshIndicator(
+                    onRefresh: _loadFAQs,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: _faqs.length,
+                      itemBuilder: (context, index) {
+                        final faq = _faqs[index];
+                        final isExpanded = expandedIndex == index;
+                        return _buildFAQCard(faq, index, isExpanded);
+                      },
+                    ),
+                  );
                 },
-              ),
-            ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 
@@ -95,9 +118,7 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
       elevation: 2,
       child: InkWell(
         onTap: () {
-          setState(() {
-            _expandedIndex = isExpanded ? null : index;
-          });
+          _expandedIndex.value = isExpanded ? null : index;
         },
         borderRadius: BorderRadius.circular(14).rt,
         child: Padding(

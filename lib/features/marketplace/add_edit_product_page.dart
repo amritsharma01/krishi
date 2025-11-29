@@ -11,6 +11,7 @@ import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/selection_dialog.dart';
+import 'package:krishi/features/marketplace/providers/marketplace_providers.dart';
 import 'package:krishi/models/category.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/models/unit.dart';
@@ -41,12 +42,8 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   Category? selectedCategory;
   Unit? selectedUnit;
 
-  List<Category> categories = [];
-  List<Unit> units = [];
-  bool isLoadingCategories = true;
-  bool isLoadingUnits = true;
-  bool isSaving = false;
-  bool _isAvailable = true;
+  final ValueNotifier<bool> isSaving = ValueNotifier(false);
+  final ValueNotifier<bool> _isAvailable = ValueNotifier(true);
   Product? _prefillSourceProduct;
 
   @override
@@ -55,73 +52,33 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     _initializeForm();
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _priceController.dispose();
+    _descriptionController.dispose();
+    _phoneController.dispose();
+    _addressController.dispose();
+    isSaving.dispose();
+    _isAvailable.dispose();
+    super.dispose();
+  }
+
   Future<void> _initializeForm() async {
     if (widget.product != null) {
       _prefillSourceProduct = widget.product;
       _applyProductTextFields(widget.product!);
-      _isAvailable = widget.product!.isAvailable;
+      _isAvailable.value = widget.product!.isAvailable;
     } else {
-      _isAvailable = true;
-    }
-
-    await _loadData();
-
-    if (_prefillSourceProduct != null) {
-      _applyCategoryAndUnitSelections(_prefillSourceProduct!);
-    } else {
-      _ensureDefaultsForNewProduct();
+      _isAvailable.value = true;
     }
 
     if (widget.product != null) {
       await _prefillFromProductDetail();
     }
-
-    if (mounted) {
-      setState(() {});
-    }
   }
 
-  Future<void> _loadData() async {
-    await Future.wait([_loadCategories(), _loadUnits()]);
-
-    if (_prefillSourceProduct != null) {
-      _applyCategoryAndUnitSelections(_prefillSourceProduct!);
-    } else {
-      _ensureDefaultsForNewProduct();
-    }
-  }
-
-  Future<void> _loadCategories() async {
-    setState(() => isLoadingCategories = true);
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final cats = await apiService.getCategories();
-      if (mounted) {
-        setState(() {
-          categories = cats;
-          isLoadingCategories = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading categories: $e');
-      if (mounted) {
-        setState(() {
-          // Set default "general" category when loading fails
-          categories = [
-            Category(id: 0, name: 'general', createdAt: DateTime.now()),
-          ];
-          selectedCategory = categories.first;
-          isLoadingCategories = false;
-        });
-        Get.snackbar(
-          'error_loading_categories'.tr(Get.context),
-          color: Colors.red,
-        );
-      }
-    }
-  }
-
-  Category? _findCategoryById(int id) {
+  Category? _findCategoryById(List<Category> categories, int id) {
     try {
       return categories.firstWhere((cat) => cat.id == id);
     } catch (_) {
@@ -129,7 +86,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     }
   }
 
-  Unit? _findUnitById(int id) {
+  Unit? _findUnitById(List<Unit> units, int id) {
     try {
       return units.firstWhere((unit) => unit.id == id);
     } catch (_) {
@@ -145,30 +102,6 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     _addressController.text = product.sellerAddress ?? '';
   }
 
-  void _applyCategoryAndUnitSelections(Product product) {
-    if (!mounted) return;
-    final category = _findCategoryById(product.category);
-    final unit = _findUnitById(product.unit);
-
-    setState(() {
-      if (category != null) selectedCategory = category;
-      if (unit != null) selectedUnit = unit;
-      _isAvailable = product.isAvailable;
-    });
-  }
-
-  void _ensureDefaultsForNewProduct() {
-    if (widget.product != null || !mounted) return;
-    setState(() {
-      if (selectedCategory == null && categories.isNotEmpty) {
-        selectedCategory = categories.first;
-      }
-      if (selectedUnit == null && units.isNotEmpty) {
-        selectedUnit = units.first;
-      }
-    });
-  }
-
   Future<void> _prefillFromProductDetail() async {
     if (widget.product == null) return;
     try {
@@ -178,47 +111,11 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
 
       _prefillSourceProduct = latest;
       _applyProductTextFields(latest);
-      _applyCategoryAndUnitSelections(latest);
     } catch (e) {
       if (kDebugMode) {
         debugPrint('Failed to preload product detail: $e');
       }
     }
-  }
-
-  Future<void> _loadUnits() async {
-    setState(() => isLoadingUnits = true);
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final uts = await apiService.getUnits();
-      if (mounted) {
-        setState(() {
-          units = uts;
-          isLoadingUnits = false;
-        });
-      }
-    } catch (e) {
-      print('Error loading units: $e');
-      if (mounted) {
-        setState(() {
-          // Set default "general" unit when loading fails
-          units = [Unit(id: 0, name: 'general', createdAt: DateTime.now())];
-          selectedUnit = units.first;
-          isLoadingUnits = false;
-        });
-        Get.snackbar('error_loading_units'.tr(Get.context), color: Colors.red);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _priceController.dispose();
-    _descriptionController.dispose();
-    _phoneController.dispose();
-    _addressController.dispose();
-    super.dispose();
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -355,7 +252,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     );
   }
 
-  void _showCategoryDialog() {
+  void _showCategoryDialog(List<Category> categories) {
     SelectionDialog.show<Category>(
       context: context,
       title: 'select_category'.tr(context),
@@ -371,7 +268,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     );
   }
 
-  void _showUnitDialog() {
+  void _showUnitDialog(List<Unit> units) {
     SelectionDialog.show<Unit>(
       context: context,
       title: 'select_unit'.tr(context),
@@ -399,7 +296,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         return;
       }
 
-      setState(() => isSaving = true);
+      isSaving.value = true;
 
       try {
         final apiService = ref.read(krishiApiServiceProvider);
@@ -414,7 +311,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             basePrice: _priceController.text.trim(),
             description: _descriptionController.text.trim(),
             unit: selectedUnit!.id,
-            isAvailable: _isAvailable,
+            isAvailable: _isAvailable.value,
             imagePath: _selectedImage?.path,
           );
         } else {
@@ -428,14 +325,14 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             basePrice: _priceController.text.trim(),
             description: _descriptionController.text.trim(),
             unit: selectedUnit!.id,
-            isAvailable: _isAvailable,
+            isAvailable: _isAvailable.value,
 
             imagePath: _selectedImage?.path,
           );
         }
 
         if (mounted) {
-          setState(() => isSaving = false);
+          isSaving.value = false;
 
           // Show success message
           Get.snackbar(
@@ -455,7 +352,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
       } catch (e) {
         print('Error saving product: $e');
         if (mounted) {
-          setState(() => isSaving = false);
+          isSaving.value = false;
           Get.snackbar(
             'error_saving_product'.tr(Get.context),
             color: Colors.red,
@@ -507,6 +404,8 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.product != null;
+    final categoriesAsync = ref.watch(categoriesProvider);
+    final unitsAsync = ref.watch(unitsProvider);
 
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
@@ -523,9 +422,53 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
           onPressed: () => Get.pop(),
         ),
       ),
-      body: isLoadingCategories || isLoadingUnits
+      body: categoriesAsync.isLoading || unitsAsync.isLoading
           ? Center(child: CircularProgressIndicator(color: AppColors.primary))
-          : Form(
+          : categoriesAsync.hasError || unitsAsync.hasError
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AppText(
+                    'error_loading_data'.tr(context),
+                    style: Get.bodyMedium.copyWith(color: Colors.red),
+                  ),
+                  16.verticalGap,
+                  ElevatedButton(
+                    onPressed: () {
+                      ref.invalidate(categoriesProvider);
+                      ref.invalidate(unitsProvider);
+                    },
+                    child: AppText('retry'.tr(context)),
+                  ),
+                ],
+              ),
+            )
+          : _buildForm(
+              context,
+              isEdit,
+              categoriesAsync.value ?? [],
+              unitsAsync.value ?? [],
+            ),
+    );
+  }
+
+  Widget _buildForm(
+    BuildContext context,
+    bool isEdit,
+    List<Category> categories,
+    List<Unit> units,
+  ) {
+    // Initialize selections if needed
+    if (_prefillSourceProduct != null && selectedCategory == null) {
+      selectedCategory = _findCategoryById(categories, _prefillSourceProduct!.category);
+      selectedUnit = _findUnitById(units, _prefillSourceProduct!.unit);
+    } else if (!isEdit && selectedCategory == null) {
+      if (categories.isNotEmpty) selectedCategory = categories.first;
+      if (units.isNotEmpty) selectedUnit = units.first;
+    }
+
+    return Form(
               key: _formKey,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16).rt,
@@ -782,7 +725,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                     ),
                     8.verticalGap,
                     GestureDetector(
-                      onTap: () => _showCategoryDialog(),
+                      onTap: () => _showCategoryDialog(categories),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
@@ -871,7 +814,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                               ),
                               8.verticalGap,
                               GestureDetector(
-                                onTap: () => _showUnitDialog(),
+                                onTap: () => _showUnitDialog(units),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 16,
@@ -982,11 +925,14 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                   ],
                                 ),
                               ),
-                              Switch.adaptive(
-                                value: _isAvailable,
-                                onChanged: (value) =>
-                                    setState(() => _isAvailable = value),
-                                activeColor: AppColors.primary,
+                              ValueListenableBuilder<bool>(
+                                valueListenable: _isAvailable,
+                                builder: (context, isAvailable, _) =>
+                                    Switch.adaptive(
+                                  value: isAvailable,
+                                  onChanged: (value) => _isAvailable.value = value,
+                                  activeColor: AppColors.primary,
+                                ),
                               ),
                             ],
                           ),
@@ -996,41 +942,42 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                     24.verticalGap,
 
                     // Save Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: isSaving ? null : _saveProduct,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14).rt,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12).rt,
+                    ValueListenableBuilder<bool>(
+                      valueListenable: isSaving,
+                      builder: (context, saving, _) => SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: saving ? null : _saveProduct,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding:
+                                const EdgeInsets.symmetric(vertical: 14).rt,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12).rt,
+                            ),
                           ),
+                          child: saving
+                              ? SizedBox(
+                                  height: 20.st,
+                                  width: 20.st,
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : AppText(
+                                  isEdit ? 'update'.tr(context) : 'save'.tr(context),
+                                  style: Get.bodyMedium.px16.w700.copyWith(
+                                    color: AppColors.white,
+                                  ),
+                                ),
                         ),
-                        child: isSaving
-                            ? SizedBox(
-                                height: 20.st,
-                                width: 20.st,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : AppText(
-                                isEdit
-                                    ? 'update'.tr(context)
-                                    : 'save'.tr(context),
-                                style: Get.bodyMedium.px16.w700.copyWith(
-                                  color: AppColors.white,
-                                ),
-                              ),
                       ),
                     ),
                     20.verticalGap,
                   ],
                 ),
               ),
-            ),
-    );
+            );
   }
 }

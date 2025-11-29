@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
-import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -12,53 +11,16 @@ import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/knowledge/article_detail_page.dart';
+import 'package:krishi/features/knowledge/providers/knowledge_providers.dart';
 import 'package:krishi/models/article.dart';
 
-class ArticlesPage extends ConsumerStatefulWidget {
+class ArticlesPage extends ConsumerWidget {
   const ArticlesPage({super.key});
 
   @override
-  ConsumerState<ArticlesPage> createState() => _ArticlesPageState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final articlesAsync = ref.watch(articlesProvider);
 
-class _ArticlesPageState extends ConsumerState<ArticlesPage> {
-  List<Article> articles = [];
-  bool isLoading = true;
-  bool hasError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadArticles();
-  }
-
-  Future<void> _loadArticles() async {
-    setState(() {
-      isLoading = true;
-      hasError = false;
-    });
-
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final response = await apiService.getArticles(page: 1);
-      if (mounted) {
-        setState(() {
-          articles = response.results;
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          hasError = true;
-          isLoading = false;
-        });
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -73,43 +35,43 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
           style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
         ),
       ),
-      body: _buildBody(),
-    );
-  }
+      body: articlesAsync.when(
+        data: (articlesList) {
+          if (articlesList.isEmpty) {
+            return EmptyState(
+              title: 'no_articles_available'.tr(context),
+              subtitle: 'no_articles_subtitle'.tr(context),
+              icon: Icons.article_outlined,
+            );
+          }
 
-  Widget _buildBody() {
-    if (isLoading) {
-      return Center(child: CircularProgressIndicator(color: AppColors.primary));
-    }
-
-    if (hasError) {
-      return ErrorState(
-        subtitle: 'error_loading_articles_subtitle'.tr(context),
-        onRetry: _loadArticles,
-      );
-    }
-
-    if (articles.isEmpty) {
-      return EmptyState(
-        title: 'no_articles_available'.tr(context),
-        subtitle: 'no_articles_subtitle'.tr(context),
-        icon: Icons.article_outlined,
-      );
-    }
-
-    return RefreshIndicator(
-      onRefresh: _loadArticles,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16).rt,
-        itemCount: articles.length,
-        itemBuilder: (context, index) {
-          return _buildArticleCard(articles[index]);
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(articlesProvider);
+            },
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16).rt,
+              itemCount: articlesList.length,
+              itemBuilder: (context, index) {
+                return _buildArticleCard(context, articlesList[index]);
+              },
+            ),
+          );
         },
+        loading: () => Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+        error: (error, stack) => ErrorState(
+          subtitle: 'error_loading_articles_subtitle'.tr(context),
+          onRetry: () {
+            ref.invalidate(articlesProvider);
+          },
+        ),
       ),
     );
   }
 
-  Widget _buildArticleCard(Article article) {
+  Widget _buildArticleCard(BuildContext context, Article article) {
     return GestureDetector(
       onTap: () {
         Get.to(ArticleDetailPage(articleId: article.id));
@@ -219,7 +181,7 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
                       ),
                       6.horizontalGap,
                       AppText(
-                        _formatDate(article.createdAt),
+                        _formatDate(article.createdAt, context),
                         style: Get.bodySmall.px12.copyWith(
                           color: Get.disabledColor.withValues(alpha: 0.6),
                         ),
@@ -235,7 +197,7 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatDate(DateTime date, BuildContext context) {
     final now = DateTime.now();
     final difference = now.difference(date);
 

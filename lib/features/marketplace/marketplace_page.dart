@@ -970,38 +970,6 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     );
   }
 
-  Widget _buildStatusBadge(String? status) {
-    final normalized = (status ?? 'pending').toLowerCase();
-    MaterialColor baseColor;
-    String labelKey;
-
-    switch (normalized) {
-      case 'approved':
-        baseColor = Colors.green;
-        labelKey = 'approved';
-        break;
-      case 'rejected':
-        baseColor = Colors.red;
-        labelKey = 'rejected';
-        break;
-      default:
-        baseColor = Colors.orange;
-        labelKey = 'pending';
-    }
-
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.rt, vertical: 4.rt),
-      decoration: BoxDecoration(
-        color: baseColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(20).rt,
-      ),
-      child: AppText(
-        labelKey.tr(context),
-        style: Get.bodySmall.w700.copyWith(color: baseColor.shade700),
-      ),
-    );
-  }
-
   Widget _buildProductCard(Product product, bool isNepali) {
     return Container(
       decoration: BoxDecoration(

@@ -24,8 +24,8 @@ class MainNavigation extends ConsumerStatefulWidget {
 }
 
 class _MainNavigationState extends ConsumerState<MainNavigation> {
-  int _currentIndex = 0;
-  bool _isInitialized = false;
+  final ValueNotifier<int> _currentIndex = ValueNotifier(0);
+  final ValueNotifier<bool> _isInitialized = ValueNotifier(false);
 
   final List<Widget> _pages = const [
     HomePage(),
@@ -40,14 +40,19 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     _loadSavedTabIndex();
   }
 
+  @override
+  void dispose() {
+    _currentIndex.dispose();
+    _isInitialized.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadSavedTabIndex() async {
     final storage = ref.read(storageServiceProvider);
     final savedIndex = await storage.get(StorageKeys.currentTabIndex) ?? 0;
     if (mounted) {
-      setState(() {
-        _currentIndex = savedIndex;
-        _isInitialized = true;
-      });
+      _currentIndex.value = savedIndex;
+      _isInitialized.value = true;
     }
   }
 
@@ -58,19 +63,29 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    // Show a minimal loading state while initializing
-    if (!_isInitialized) {
-      return Scaffold(
-        backgroundColor: Get.scaffoldBackgroundColor,
-        body: SafeArea(
-          child: _buildInitialSkeleton(),
-        ),
-      );
-    }
+    return ValueListenableBuilder<bool>(
+      valueListenable: _isInitialized,
+      builder: (context, isInitialized, _) {
+        // Show a minimal loading state while initializing
+        if (!isInitialized) {
+          return Scaffold(
+            backgroundColor: Get.scaffoldBackgroundColor,
+            body: SafeArea(
+              child: _buildInitialSkeleton(),
+            ),
+          );
+        }
 
-    return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+        return ValueListenableBuilder<int>(
+          valueListenable: _currentIndex,
+          builder: (context, currentIndex, _) {
+            return Scaffold(
+              body: IndexedStack(index: currentIndex, children: _pages),
+              bottomNavigationBar: _buildBottomNavigationBar(currentIndex),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -133,7 +148,7 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
+  Widget _buildBottomNavigationBar(int currentIndex) {
     return Container(
       decoration: BoxDecoration(
         color: Get.cardColor,
@@ -151,21 +166,24 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(index: 0, icon: Icons.home_rounded, label: 'home'),
+              _buildNavItem(index: 0, icon: Icons.home_rounded, label: 'home', currentIndex: currentIndex),
               _buildNavItem(
                 index: 1,
                 icon: Icons.store_rounded,
                 label: 'market',
+                currentIndex: currentIndex,
               ),
               _buildNavItem(
                 index: 2,
                 icon: Icons.support_agent_rounded,
                 label: 'support',
+                currentIndex: currentIndex,
               ),
               _buildNavItem(
                 index: 3,
                 icon: Icons.person_rounded,
                 label: 'account',
+                currentIndex: currentIndex,
               ),
             ],
           ),
@@ -178,15 +196,14 @@ class _MainNavigationState extends ConsumerState<MainNavigation> {
     required int index,
     required IconData icon,
     required String label,
+    required int currentIndex,
   }) {
-    final isActive = _currentIndex == index;
+    final isActive = currentIndex == index;
 
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          setState(() {
-            _currentIndex = index;
-          });
+          _currentIndex.value = index;
           _saveTabIndex(index);
         },
         behavior: HitTestBehavior.opaque,
