@@ -9,6 +9,7 @@ import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
+import 'package:krishi/core/services/cache_service.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/selection_dialog.dart';
@@ -16,6 +17,7 @@ import 'package:krishi/features/marketplace/providers/marketplace_providers.dart
 import 'package:krishi/models/category.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/models/unit.dart';
+import 'package:krishi/models/user_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -70,12 +72,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
       _prefillSourceProduct = widget.product;
       _applyProductTextFields(widget.product!);
       _isAvailable.value = widget.product!.isAvailable;
+      // When editing, prefill from product details
+      await _prefillFromProductDetail();
     } else {
       _isAvailable.value = true;
-    }
-
-    if (widget.product != null) {
-      await _prefillFromProductDetail();
+      // When adding, prefill from account details
+      await _prefillFromAccountDetails();
     }
   }
 
@@ -117,6 +119,56 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         debugPrint('Failed to preload product detail: $e');
       }
     }
+  }
+
+  Future<void> _prefillFromAccountDetails() async {
+    try {
+      final cacheService = ref.read(cacheServiceProvider);
+      final apiService = ref.read(krishiApiServiceProvider);
+
+      // Try to load from cache first
+      final cachedProfile = await cacheService.getUserProfileCache();
+      if (cachedProfile != null) {
+        final user = User.fromJson(cachedProfile);
+        _applyAccountDetails(user);
+      }
+
+      // Fetch fresh data from API
+      final user = await apiService.getCurrentUser();
+      await cacheService.saveUserProfileCache(user.toJson());
+
+      if (!mounted) return;
+      _applyAccountDetails(user);
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint('Failed to prefill from account details: $e');
+      }
+    }
+  }
+
+  void _applyAccountDetails(User user) {
+    if (!mounted) return;
+
+    final profile = user.profile;
+
+    // Fill phone number from account if empty
+    if (_phoneController.text.isEmpty) {
+      final phone = profile?.phoneNumber?.trim();
+      if (phone != null && phone.isNotEmpty) {
+        _phoneController.text = phone;
+      }
+    }
+
+    // Fill address from account if empty
+    if (_addressController.text.isEmpty) {
+      final address = profile?.address?.trim();
+      if (address != null && address.isNotEmpty) {
+        _addressController.text = address;
+      }
+    }
+
+    // Note: Price is not available in account details, so we leave it empty
+    // User will need to enter the price manually
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -416,7 +468,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         elevation: 0,
         title: AppText(
           isEdit ? 'edit_product'.tr(context) : 'add_new_product'.tr(context),
-          style: Get.bodyLarge.px22.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Get.disabledColor),
@@ -486,11 +538,11 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             // Image Selector
             AppText(
               'product_image'.tr(context),
-              style: Get.bodyMedium.px15.w700.copyWith(
+              style: Get.bodyMedium.px14.w600.copyWith(
                 color: Get.disabledColor,
               ),
             ),
-            12.verticalGap,
+            7.verticalGap,
             Stack(
               children: [
                 GestureDetector(
@@ -620,12 +672,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                   ),
               ],
             ),
-            24.verticalGap,
+            10.verticalGap,
 
             // Product Name
             AppText(
               'product_name'.tr(context),
-              style: Get.bodyMedium.px15.w700.copyWith(
+              style: Get.bodyMedium.px14.w600.copyWith(
                 color: Get.disabledColor,
               ),
             ),
@@ -645,12 +697,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 return null;
               },
             ),
-            16.verticalGap,
+            8.verticalGap,
 
             // Phone Number
             AppText(
               'contact_phone'.tr(context),
-              style: Get.bodyMedium.px15.w700.copyWith(
+              style: Get.bodyMedium.px14.w600.copyWith(
                 color: Get.disabledColor,
               ),
             ),
@@ -671,12 +723,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 return null;
               },
             ),
-            16.verticalGap,
+            8.verticalGap,
 
             // Address
             AppText(
               'contact_address'.tr(context),
-              style: Get.bodyMedium.px15.w700.copyWith(
+              style: Get.bodyMedium.px14.w600.copyWith(
                 color: Get.disabledColor,
               ),
             ),
@@ -702,12 +754,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 return null;
               },
             ),
-            16.verticalGap,
+            8.verticalGap,
 
             // Category
             AppText(
               'category'.tr(context),
-              style: Get.bodyMedium.px15.w700.copyWith(
+              style: Get.bodyMedium.px14.w600.copyWith(
                 color: Get.disabledColor,
               ),
             ),
@@ -731,7 +783,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                     Expanded(
                       child: AppText(
                         selectedCategory?.name ?? 'select_category'.tr(context),
-                        style: Get.bodyMedium.px15.copyWith(
+                        style: Get.bodyMedium.px13.w500.copyWith(
                           color: selectedCategory != null
                               ? Get.disabledColor
                               : Get.disabledColor.withValues(alpha: 0.5),
@@ -746,7 +798,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 ),
               ),
             ),
-            16.verticalGap,
+            8.verticalGap,
 
             // Price and Unit in Row
             Row(
@@ -758,7 +810,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                     children: [
                       AppText(
                         'base_price'.tr(context),
-                        style: Get.bodyMedium.px15.w700.copyWith(
+                        style: Get.bodyMedium.px14.w600.copyWith(
                           color: Get.disabledColor,
                         ),
                       ),
@@ -785,7 +837,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                     ],
                   ),
                 ),
-                16.horizontalGap,
+                8.horizontalGap,
                 Expanded(
                   flex: 1,
                   child: Column(
@@ -793,7 +845,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                     children: [
                       AppText(
                         'unit'.tr(context),
-                        style: Get.bodyMedium.px15.w700.copyWith(
+                        style: Get.bodyMedium.px14.w600.copyWith(
                           color: Get.disabledColor,
                         ),
                       ),
@@ -818,7 +870,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                 child: AppText(
                                   selectedUnit?.name ??
                                       'select_unit'.tr(context),
-                                  style: Get.bodyMedium.px15.copyWith(
+                                  style: Get.bodyMedium.px13.w500.copyWith(
                                     color: selectedUnit != null
                                         ? Get.disabledColor
                                         : Get.disabledColor.withValues(
@@ -840,12 +892,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 ),
               ],
             ),
-            16.verticalGap,
+            8.verticalGap,
 
             // Description
             AppText(
               'description'.tr(context),
-              style: Get.bodyMedium.px15.w700.copyWith(
+              style: Get.bodyMedium.px14.w600.copyWith(
                 color: Get.disabledColor,
               ),
             ),
@@ -866,7 +918,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 return null;
               },
             ),
-            24.verticalGap,
+            8.verticalGap,
 
             // Rejection Reason (only show when editing a rejected product)
             if (widget.product != null &&
@@ -918,7 +970,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 widget.product!.approvalStatus?.toLowerCase() == 'rejected' &&
                 widget.product!.rejectionReason != null &&
                 widget.product!.rejectionReason!.isNotEmpty)
-              16.verticalGap,
+              8.verticalGap,
 
             // Availability Toggle
             Container(
@@ -944,7 +996,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                             AppText(
                               maxLines: 2,
                               'available_for_sale'.tr(context),
-                              style: Get.bodyMedium.px15.w700.copyWith(
+                              style: Get.bodyMedium.px14.w600.copyWith(
                                 color: Get.disabledColor,
                               ),
                             ),
@@ -972,7 +1024,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 ],
               ),
             ),
-            24.verticalGap,
+            8.verticalGap,
 
             // Save Button
             ValueListenableBuilder<bool>(

@@ -623,7 +623,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         AppText(
           overflow: TextOverflow.ellipsis,
           'main_services'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
         ),
         7.verticalGap,
         _buildMainServiceCard(
@@ -666,7 +666,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       children: [
         AppText(
           'services_directory'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
         ),
         5.verticalGap,
         Row(
@@ -716,7 +716,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       children: [
         AppText(
           'knowledge_base'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
         ),
         5.verticalGap,
         Column(
@@ -792,7 +792,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
-          borderRadius: BorderRadius.circular(50).rt,
+          borderRadius: BorderRadius.circular(20).rt,
           border: Border.all(color: accentColor.withValues(alpha: 0.15)),
           boxShadow: [
             BoxShadow(
@@ -966,7 +966,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           children: [
             AppText(
               'market_prices'.tr(context),
-              style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+              style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
             ),
             GestureDetector(
               onTap: () => Get.to(const MarketPricesPage()),
@@ -999,7 +999,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
           ],
         ),
-        12.verticalGap,
+        6.verticalGap,
         ValueListenableBuilder<bool>(
           valueListenable: isLoadingMarketPrices,
           builder: (context, loading, child) {
@@ -1010,6 +1010,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   valueListenable: marketPrices,
                   builder: (context, prices, child) {
                     return Container(
+                      width: double.infinity,
                       padding: const EdgeInsets.all(16).rt,
                       decoration: BoxDecoration(
                         color: Get.cardColor,
@@ -1175,7 +1176,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         4.verticalGap,
         AppText(
           'market_prices_empty_state_subtitle'.tr(context),
-          style: Get.bodySmall.copyWith(
+          style: Get.bodySmall.px10.copyWith(
             color: Get.disabledColor.withValues(alpha: 0.7),
           ),
           textAlign: TextAlign.center,

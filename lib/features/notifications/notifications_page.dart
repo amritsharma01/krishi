@@ -238,7 +238,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
       ),
       builder: (context) {
         return Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.wt, vertical: 24.ht),
+          padding: EdgeInsets.symmetric(horizontal: 15.wt, vertical: 10.ht),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,18 +268,20 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                     DateFormat(
                       'MMM d, yyyy • h:mm a',
                     ).format(notification.createdAt),
-                    style: Get.bodySmall.copyWith(
+                    style: Get.bodySmall.px10.copyWith(
                       color: Get.disabledColor.withValues(alpha: 0.7),
                     ),
                   ),
                 ],
               ),
               16.verticalGap,
-              AppText(notification.title, style: Get.bodyLarge.px18.w700),
-              12.verticalGap,
+              AppText(notification.title, style: Get.bodyLarge.px14.w700),
+              6.verticalGap,
               AppText(
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
                 notification.message,
-                style: Get.bodyMedium.px14.copyWith(
+                style: Get.bodyMedium.px12.copyWith(
                   color: Get.disabledColor.withValues(alpha: 0.8),
                   height: 1.5,
                 ),
@@ -417,7 +419,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
     final typeColor = _getTypeColor(notification.notificationType);
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 8.ht),
+      padding: EdgeInsets.symmetric(horizontal: 10.wt, vertical: 5.ht),
       child: Container(
         decoration: BoxDecoration(
           color: Get.cardColor,
@@ -431,10 +433,10 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
           ],
         ),
         child: InkWell(
-          borderRadius: BorderRadius.circular(20).rt,
+          borderRadius: BorderRadius.circular(50).rt,
           onTap: () => _showNotificationDetails(notification),
           child: Padding(
-            padding: EdgeInsets.all(16.rt),
+            padding: EdgeInsets.all(10.rt),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -442,8 +444,8 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      height: 42.st,
-                      width: 42.st,
+                      height: 30.st,
+                      width: 30.st,
                       decoration: BoxDecoration(
                         color: typeColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(14).rt,
@@ -453,23 +455,23 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                         color: typeColor,
                       ),
                     ),
-                    12.horizontalGap,
+                    14.horizontalGap,
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppText(
                             notification.title,
-                            style: Get.bodyLarge.px15.w600.copyWith(
+                            style: Get.bodyLarge.px12.w600.copyWith(
                               color: Get.disabledColor,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
-                          6.verticalGap,
+                          2.verticalGap,
                           AppText(
                             notification.message,
-                            style: Get.bodyMedium.copyWith(
+                            style: Get.bodyMedium.px10.copyWith(
                               color: Get.disabledColor.withValues(alpha: 0.8),
                             ),
                             maxLines: 3,
@@ -485,6 +487,7 @@ class _NotificationsPageState extends ConsumerState<NotificationsPage> {
                         AppText(
                           DateFormat('MMM d').format(notification.createdAt),
                           style: Get.bodySmall.copyWith(
+                            fontSize: 10.st,
                             color: Get.disabledColor.withValues(alpha: 0.7),
                           ),
                         ),
