@@ -176,6 +176,10 @@ class CacheService {
   Future<void> saveUserProfileCache(Map<String, dynamic> data) async {
     await _saveCache(_keyUserProfile, jsonEncode(data));
   }
+
+  Future<void> clearUserProfileCache() async {
+    await clearCache(_keyUserProfile);
+  }
 }
 
 final cacheServiceProvider = Provider<CacheService>((ref) {

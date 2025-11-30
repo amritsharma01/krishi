@@ -47,10 +47,6 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
     _fullNameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
-    // Reset selected image when leaving the page
-    Future.microtask(() {
-      ref.read(selectedProfileImageProvider.notifier).state = null;
-    });
     super.dispose();
   }
 
@@ -77,6 +73,10 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             : _addressController.text.trim(),
       );
 
+      // Reset selected image before navigating back
+      ref.read(selectedProfileImageProvider.notifier).state = null;
+      
+      // Refresh profile data
       await ref.read(userProfileProvider.notifier).refresh();
 
       if (!mounted) return;
@@ -94,7 +94,13 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
   Widget build(BuildContext context) {
     final isSaving = ref.watch(isUpdatingProfileProvider);
 
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        // Reset selected image when user presses back button
+        ref.read(selectedProfileImageProvider.notifier).state = null;
+        return true;
+      },
+      child: Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
@@ -166,6 +172,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -24,8 +24,9 @@ void main() async {
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
 
-  // Prevent google_fonts from making HTTP requests
-  GoogleFonts.config.allowRuntimeFetching = false;
+  // Allow google_fonts to fetch fonts at runtime
+  // Set to false only if you bundle fonts as assets in pubspec.yaml
+  GoogleFonts.config.allowRuntimeFetching = true;
 
   try {
     final box = await Get.box.init();

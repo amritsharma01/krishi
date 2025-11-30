@@ -1,5 +1,4 @@
 import 'package:krishi/core/configs/app_colors.dart';
-import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/color_extensions.dart';
 import 'package:krishi/core/extensions/int.dart';
@@ -7,14 +6,13 @@ import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
-import 'package:krishi/features/auth/login_page.dart';
+import 'package:krishi/features/auth/logout_notifier.dart';
 import 'package:krishi/features/account/edit_profile_page.dart';
 import 'package:krishi/features/account/about_page.dart';
 import 'package:krishi/features/account/providers/user_profile_providers.dart';
 import 'package:krishi/features/account/widgets/profile_card.dart';
 import 'package:krishi/features/account/widgets/settings_section.dart';
 import 'package:krishi/features/components/app_text.dart';
-import 'package:krishi/features/components/button.dart';
 import 'package:krishi/features/components/dialog_box.dart';
 import 'package:krishi/features/components/language_switcher.dart';
 import 'package:krishi/features/components/platform_switcher.dart';
@@ -165,8 +163,12 @@ class AccountPage extends ConsumerWidget {
         ),
         onTap: () async {
           final updated = await Get.to(EditProfilePage(user: user));
-          if (updated == true) {
-            ref.read(userProfileProvider.notifier).refresh();
+          if (updated == true && context.mounted) {
+            // Use a small delay to ensure navigation completes before refresh
+            await Future.delayed(const Duration(milliseconds: 100));
+            if (context.mounted) {
+              ref.read(userProfileProvider.notifier).refresh();
+            }
           }
         },
       ),
@@ -184,26 +186,47 @@ class AccountPage extends ConsumerWidget {
   }
 
   Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
-    return AppButton(
-      onTap: () {
-        AppDialog.showConfirmation(
-          title: 'logout'.tr(context),
-          content: 'logout_confirmation'.tr(context),
-          confirmText: 'logout'.tr(context),
-          confirmColor: Colors.red,
-          onConfirm: () async {
-            await ref.read(authServiceProvider).logout();
-            if (context.mounted) {
-              Get.offAll(const LoginPage());
-            }
-          },
-        );
-      },
-      text: 'logout'.tr(context),
-      bgcolor: Colors.red,
-      textColor: AppColors.white,
+    final logoutState = ref.watch(logoutProvider);
+    
+    return SizedBox(
+      width: double.infinity,
       height: 40.ht,
-      radius: 12,
+      child: ElevatedButton(
+        onPressed: logoutState.isLoading
+            ? null
+            : () {
+                AppDialog.showConfirmation(
+                  title: 'logout'.tr(context),
+                  content: 'logout_confirmation'.tr(context),
+                  confirmText: 'logout'.tr(context),
+                  confirmColor: Colors.red,
+                  onConfirm: () async {
+                    await ref.read(logoutProvider.notifier).signOut(context);
+                  },
+                );
+              },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          disabledBackgroundColor: Colors.red.withOpacity(0.6),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12).rt,
+          ),
+          elevation: 0,
+        ),
+        child: logoutState.isLoading
+            ? SizedBox(
+                height: 20.st,
+                width: 20.st,
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                  strokeWidth: 2,
+                ),
+              )
+            : AppText(
+                'logout'.tr(context),
+                style: Get.bodyMedium.px14.w600.copyWith(color: AppColors.white),
+              ),
+      ),
     );
   }
 }
