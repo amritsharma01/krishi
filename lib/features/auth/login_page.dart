@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:krishi/features/auth/login_notifier.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -22,39 +23,11 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  bool _isLoading = false;
-
-  Future<void> _handleGoogleSignIn() async {
-    setState(() => _isLoading = true);
-
-    try {
-      final authService = ref.read(authServiceProvider);
-      final success = await authService.signInWithGoogle();
-
-      if (success && mounted) {
-        // Authentication successful, navigate to home
-        Get.offAll(const MainNavigation());
-
-        // Show success message
-        Get.snackbar('signin_success'.tr(context), color: AppColors.primary);
-      } else if (mounted) {
-        // User cancelled or authentication failed
-        Get.snackbar('google_signin_cancelled'.tr(context));
-      }
-    } catch (e) {
-      if (mounted) {
-        Get.snackbar('${'google_signin_failed'.tr(context)}: ${e.toString()}');
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final loginState = ref.watch(loginProvider);
+    final loginNotifier = ref.read(loginProvider.notifier);
 
     return PlatformScaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
@@ -76,7 +49,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             child: SingleChildScrollView(
               physics: Get.scrollPhysics,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32).rt,
+                padding: const EdgeInsets.symmetric(horizontal: 20).rt,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -172,7 +145,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: _isLoading ? null : _handleGoogleSignIn,
+                        onTap: loginState.isLoading
+                            ? null
+                            : () => loginNotifier.signInWithGoogle(context),
                         borderRadius: BorderRadius.circular(12).rt,
                         splashColor: isDark
                             ? Colors.white.withValues(alpha: 0.1)
@@ -211,7 +186,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               ),
                             ],
                           ),
-                          child: _isLoading
+                          child: loginState.isLoading
                               ? Center(
                                   child: SizedBox(
                                     height: 24.st,
@@ -274,12 +249,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         Flexible(
                           child: AppText(
                             'auth_info'.tr(context),
-                            style: Get.bodySmall.px11.copyWith(
+                            style: Get.bodySmall.px10.copyWith(
                               color: Get.disabledColor.o5,
-                              height: 1.4,
+                              height: 1.2,
                             ),
                             textAlign: TextAlign.center,
-                            maxLines: 2,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
