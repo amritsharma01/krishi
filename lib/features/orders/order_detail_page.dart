@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
-import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
@@ -12,10 +11,8 @@ import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/seller/seller_public_listings_page.dart';
 import 'package:krishi/features/orders/providers/order_detail_provider.dart';
-import 'package:krishi/features/orders/widgets/order_detail_widgets.dart';
 import 'package:krishi/features/orders/widgets/purchase_order_view.dart';
 import 'package:krishi/features/orders/widgets/sales_order_view.dart';
-import 'package:krishi/models/order.dart';
 
 class OrderDetailPage extends ConsumerStatefulWidget {
   final int? orderId;
@@ -225,6 +222,4 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
     }
   }
 
-  String _capitalize(String value) =>
-      value.isEmpty ? value : '${value[0].toUpperCase()}${value.substring(1)}';
 }

@@ -1,21 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:krishi/core/configs/app_colors.dart';
-import 'package:krishi/core/extensions/int.dart';
-import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
-import 'package:krishi/features/components/empty_state.dart';
-import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/orders/order_detail_page.dart';
 import 'package:krishi/features/orders/providers/orders_list_provider.dart';
 import 'package:krishi/features/orders/widgets/filter_chips.dart';
-import 'package:krishi/features/orders/widgets/order_card.dart';
 import 'package:krishi/features/orders/widgets/orders_list_content.dart';
-import 'package:krishi/models/order.dart';
-
 class OrdersListPage extends ConsumerStatefulWidget {
   final bool showSales;
 
