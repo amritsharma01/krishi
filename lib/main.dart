@@ -12,6 +12,7 @@ import 'core/configs/app_colors.dart';
 import 'core/configs/app_theme_provider.dart';
 import 'core/configs/language_provider.dart';
 import 'core/core_service_providers.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,9 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarColor: Colors.transparent),
   );
+
+  // Prevent google_fonts from making HTTP requests
+  GoogleFonts.config.allowRuntimeFetching = false;
 
   try {
     final box = await Get.box.init();
