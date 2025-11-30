@@ -36,17 +36,30 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   final ScrollController _sellScrollController = ScrollController();
   int? _currentUserId;
   String? _currentSellerKrId;
+  bool _hasLoadedBuyProducts = false;
+  bool _hasLoadedSellProducts = false;
 
   @override
   void initState() {
     super.initState();
     _buyScrollController.addListener(_onBuyScroll);
     _sellScrollController.addListener(_onSellScroll);
-    _loadBuyProducts();
-    _loadUserListings();
+    // Initial load based on current tab
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final isBuyTab = ref.read(isMarketplaceBuyTabProvider);
+      if (isBuyTab) {
+        _loadBuyProducts();
+      } else {
+        _loadUserListings();
+      }
+    });
   }
 
   Future<void> _loadBuyProducts() async {
+    if (_hasLoadedBuyProducts && ref.read(buyProductsProvider).isNotEmpty) {
+      return; // Already loaded
+    }
+
     ref.read(isLoadingBuyProductsProvider.notifier).state = true;
     ref.read(buyCurrentPageProvider.notifier).state = 1;
     ref.read(buyHasMoreProvider.notifier).state = true;
@@ -70,6 +83,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
         ref.read(isLoadingBuyProductsProvider.notifier).state = false;
         ref.read(buyHasMoreProvider.notifier).state = response.next != null;
         ref.read(buyCurrentPageProvider.notifier).state = 2;
+        _hasLoadedBuyProducts = true;
       }
     } catch (e) {
       if (mounted) {
@@ -119,6 +133,10 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
   }
 
   Future<void> _loadUserListings() async {
+    if (_hasLoadedSellProducts && ref.read(userListingsProvider).isNotEmpty) {
+      return; // Already loaded
+    }
+
     ref.read(isLoadingUserListingsProvider.notifier).state = true;
     ref.read(sellCurrentPageProvider.notifier).state = 1;
     ref.read(sellHasMoreProvider.notifier).state = true;
@@ -142,6 +160,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
         ref.read(isLoadingUserListingsProvider.notifier).state = false;
         ref.read(sellHasMoreProvider.notifier).state = response.next != null;
         ref.read(sellCurrentPageProvider.notifier).state = 2;
+        _hasLoadedSellProducts = true;
       }
     } catch (e) {
       if (mounted) {
@@ -222,6 +241,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     if (currentCategoryId == categoryId) return;
     
     ref.read(selectedCategoryIdProvider.notifier).state = categoryId;
+    _hasLoadedBuyProducts = false; // Force reload
     _loadBuyProducts();
   }
 
@@ -230,7 +250,16 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     if (currentStatus == status) return;
     
     ref.read(sellStatusFilterProvider.notifier).state = status;
+    _hasLoadedSellProducts = false; // Force reload
     _loadUserListings();
+  }
+
+  void _onTabChanged(bool isBuyTab) {
+    if (isBuyTab) {
+      _loadBuyProducts();
+    } else {
+      _loadUserListings();
+    }
   }
 
   @override
@@ -322,7 +351,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             Expanded(
               child: GestureDetector(
                 onTap: () {
+                  if (isBuyTab) return;
                   ref.read(isMarketplaceBuyTabProvider.notifier).state = true;
+                  _onTabChanged(true);
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 400),
@@ -356,7 +387,9 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
             Expanded(
               child: GestureDetector(
                 onTap: () {
+                  if (!isBuyTab) return;
                   ref.read(isMarketplaceBuyTabProvider.notifier).state = false;
+                  _onTabChanged(false);
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 400),

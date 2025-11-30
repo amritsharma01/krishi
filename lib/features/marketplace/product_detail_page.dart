@@ -370,10 +370,4 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       ),
     );
   }
-
-  double _calculateAverageRating(List<Review> reviews) {
-    if (reviews.isEmpty) return 0.0;
-    return reviews.map((r) => r.rating).reduce((a, b) => a + b) /
-        reviews.length;
-  }
 }
