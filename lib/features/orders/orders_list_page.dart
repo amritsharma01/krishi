@@ -7,7 +7,9 @@ import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/orders/order_detail_page.dart';
 import 'package:krishi/features/orders/providers/orders_list_provider.dart';
 import 'package:krishi/features/orders/widgets/filter_chips.dart';
+
 import 'package:krishi/features/orders/widgets/orders_list_content.dart';
+
 class OrdersListPage extends ConsumerStatefulWidget {
   final bool showSales;
 
@@ -38,20 +40,24 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
   }
 
   void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    // Read state and notifier once
+    final notifier = ref.read(ordersListProvider(widget.showSales).notifier);
     final state = ref.read(ordersListProvider(widget.showSales));
-    if (!_scrollController.hasClients || state.isLoadingMore || !state.hasMore) {
-      return;
-    }
+
+    if (state.isLoadingMore || !state.hasMore) return;
 
     final threshold = _scrollController.position.maxScrollExtent - 200;
     if (_scrollController.position.pixels >= threshold) {
-      ref.read(ordersListProvider(widget.showSales).notifier).loadMoreOrders();
+      notifier.loadMoreOrders();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(ordersListProvider(widget.showSales));
+    final notifier = ref.read(ordersListProvider(widget.showSales).notifier);
     final title = widget.showSales
         ? 'received_orders'.tr(context)
         : 'placed_orders'.tr(context);
@@ -75,22 +81,16 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
           OrderFilterChips(
             state: state,
             showSales: widget.showSales,
-            onFilterSelected: (filter) => ref
-                .read(ordersListProvider(widget.showSales).notifier)
-                .setFilter(filter),
+            onFilterSelected: (filter) => notifier.setFilter(filter),
           ),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: () => ref
-                  .read(ordersListProvider(widget.showSales).notifier)
-                  .loadOrders(refresh: true),
+              onRefresh: () => notifier.loadOrders(refresh: true),
               child: OrdersListContent(
                 state: state,
                 showSales: widget.showSales,
                 scrollController: _scrollController,
-                onRetry: () => ref
-                    .read(ordersListProvider(widget.showSales).notifier)
-                    .loadOrders(),
+                onRetry: () => notifier.loadOrders(),
                 onNavigateToDetail: _navigateToOrderDetail,
               ),
             ),
@@ -100,8 +100,8 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
     );
   }
 
-  void _navigateToOrderDetail(int id, {bool isItemId = false}) {
-    Navigator.push(
+  void _navigateToOrderDetail(int id, {bool isItemId = false}) async {
+    final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
         builder: (context) => OrderDetailPage(
@@ -110,10 +110,10 @@ class _OrdersListPageState extends ConsumerState<OrdersListPage> {
           isSeller: widget.showSales,
         ),
       ),
-    ).then((result) {
-      if (result == true && mounted) {
-        ref.read(ordersListProvider(widget.showSales).notifier).loadOrders(refresh: true);
-      }
-    });
+    );
+
+    if (result == true && mounted) {
+      ref.read(ordersListProvider(widget.showSales).notifier).loadOrders(refresh: true);
+    }
   }
 }

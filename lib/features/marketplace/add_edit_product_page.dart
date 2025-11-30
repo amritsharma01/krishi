@@ -1,6 +1,10 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart' show debugPrint, kDebugMode;
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
@@ -9,7 +13,6 @@ import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
-import 'package:krishi/core/services/cache_service.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/selection_dialog.dart';
@@ -18,10 +21,6 @@ import 'package:krishi/models/category.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/models/unit.dart';
 import 'package:krishi/models/user_profile.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 
 class AddEditProductPage extends ConsumerStatefulWidget {
   final Product? product; // null for add, existing product for edit
@@ -41,12 +40,6 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   final _addressController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
-  File? _selectedImage;
-  Category? selectedCategory;
-  Unit? selectedUnit;
-
-  final ValueNotifier<bool> isSaving = ValueNotifier(false);
-  final ValueNotifier<bool> _isAvailable = ValueNotifier(true);
   Product? _prefillSourceProduct;
 
   @override
@@ -62,8 +55,6 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     _descriptionController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
-    isSaving.dispose();
-    _isAvailable.dispose();
     super.dispose();
   }
 
@@ -71,12 +62,10 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     if (widget.product != null) {
       _prefillSourceProduct = widget.product;
       _applyProductTextFields(widget.product!);
-      _isAvailable.value = widget.product!.isAvailable;
-      // When editing, prefill from product details
+      ref.read(isAvailableProvider.notifier).state = widget.product!.isAvailable;
       await _prefillFromProductDetail();
     } else {
-      _isAvailable.value = true;
-      // When adding, prefill from account details
+      ref.read(isAvailableProvider.notifier).state = true;
       await _prefillFromAccountDetails();
     }
   }
@@ -123,19 +112,10 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
 
   Future<void> _prefillFromAccountDetails() async {
     try {
-      final cacheService = ref.read(cacheServiceProvider);
       final apiService = ref.read(krishiApiServiceProvider);
-
-      // Try to load from cache first
-      final cachedProfile = await cacheService.getUserProfileCache();
-      if (cachedProfile != null) {
-        final user = User.fromJson(cachedProfile);
-        _applyAccountDetails(user);
-      }
 
       // Fetch fresh data from API
       final user = await apiService.getCurrentUser();
-      await cacheService.saveUserProfileCache(user.toJson());
 
       if (!mounted) return;
       _applyAccountDetails(user);
@@ -182,9 +162,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
 
       if (pickedFile != null) {
         final compressedFile = await _compressImage(File(pickedFile.path));
-        setState(() {
-          _selectedImage = compressedFile;
-        });
+        ref.read(selectedImageProvider.notifier).state = compressedFile;
       }
     } catch (e) {
       Get.snackbar('error_picking_image'.tr(Get.context), color: Colors.red);
@@ -306,6 +284,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
   }
 
   void _showCategoryDialog(List<Category> categories) {
+    final selectedCategory = ref.read(selectedCategoryProvider);
     SelectionDialog.show<Category>(
       context: context,
       title: 'select_category'.tr(context),
@@ -314,14 +293,13 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
       getItemName: (category) => category.name,
       getItemId: (category) => category.id,
       onItemSelected: (category) {
-        setState(() {
-          selectedCategory = category;
-        });
+        ref.read(selectedCategoryProvider.notifier).state = category;
       },
     );
   }
 
   void _showUnitDialog(List<Unit> units) {
+    final selectedUnit = ref.read(selectedUnitProvider);
     SelectionDialog.show<Unit>(
       context: context,
       title: 'select_unit'.tr(context),
@@ -330,15 +308,16 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
       getItemName: (unit) => unit.name,
       getItemId: (unit) => unit.id,
       onItemSelected: (unit) {
-        setState(() {
-          selectedUnit = unit;
-        });
+        ref.read(selectedUnitProvider.notifier).state = unit;
       },
     );
   }
 
   Future<void> _saveProduct() async {
     if (_formKey.currentState!.validate()) {
+      final selectedCategory = ref.read(selectedCategoryProvider);
+      final selectedUnit = ref.read(selectedUnitProvider);
+      
       if (selectedCategory == null) {
         Get.snackbar('select_category'.tr(context));
         return;
@@ -349,10 +328,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
         return;
       }
 
-      isSaving.value = true;
+      ref.read(isSavingProductProvider.notifier).state = true;
 
       try {
         final apiService = ref.read(krishiApiServiceProvider);
+        final selectedImage = ref.read(selectedImageProvider);
+        final isAvailable = ref.read(isAvailableProvider);
 
         if (widget.product == null) {
           // Create new product
@@ -360,12 +341,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             name: _nameController.text.trim(),
             sellerPhoneNumber: _phoneController.text.trim(),
             sellerAddress: _addressController.text.trim(),
-            category: selectedCategory!.id,
+            category: selectedCategory.id,
             basePrice: _priceController.text.trim(),
             description: _descriptionController.text.trim(),
-            unit: selectedUnit!.id,
-            isAvailable: _isAvailable.value,
-            imagePath: _selectedImage?.path,
+            unit: selectedUnit.id,
+            isAvailable: isAvailable,
+            imagePath: selectedImage?.path,
           );
         } else {
           // Update existing product
@@ -374,19 +355,17 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             name: _nameController.text.trim(),
             sellerPhoneNumber: _phoneController.text.trim(),
             sellerAddress: _addressController.text.trim(),
-            category: selectedCategory!.id,
+            category: selectedCategory.id,
             basePrice: _priceController.text.trim(),
             description: _descriptionController.text.trim(),
-            unit: selectedUnit!.id,
-            isAvailable: _isAvailable.value,
-
-            imagePath: _selectedImage?.path,
+            unit: selectedUnit.id,
+            isAvailable: isAvailable,
+            imagePath: selectedImage?.path,
           );
         }
 
         if (mounted) {
-          isSaving.value = false;
-
+          ref.read(isSavingProductProvider.notifier).state = false;
           // Show success message
           Get.snackbar(
             widget.product == null
@@ -405,7 +384,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
       } catch (e) {
         print('Error saving product: $e');
         if (mounted) {
-          isSaving.value = false;
+          ref.read(isSavingProductProvider.notifier).state = false;
           Get.snackbar(
             'error_saving_product'.tr(Get.context),
             color: Colors.red,
@@ -516,16 +495,33 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     List<Category> categories,
     List<Unit> units,
   ) {
+    final selectedCategory = ref.watch(selectedCategoryProvider);
+    final selectedUnit = ref.watch(selectedUnitProvider);
+    final selectedImage = ref.watch(selectedImageProvider);
+    final isAvailable = ref.watch(isAvailableProvider);
+    final isSaving = ref.watch(isSavingProductProvider);
+
     // Initialize selections if needed
     if (_prefillSourceProduct != null && selectedCategory == null) {
-      selectedCategory = _findCategoryById(
-        categories,
-        _prefillSourceProduct!.category,
-      );
-      selectedUnit = _findUnitById(units, _prefillSourceProduct!.unit);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(selectedCategoryProvider.notifier).state = _findCategoryById(
+          categories,
+          _prefillSourceProduct!.category,
+        );
+        ref.read(selectedUnitProvider.notifier).state = _findUnitById(
+          units,
+          _prefillSourceProduct!.unit,
+        );
+      });
     } else if (!isEdit && selectedCategory == null) {
-      if (categories.isNotEmpty) selectedCategory = categories.first;
-      if (units.isNotEmpty) selectedUnit = units.first;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (categories.isNotEmpty) {
+          ref.read(selectedCategoryProvider.notifier).state = categories.first;
+        }
+        if (units.isNotEmpty) {
+          ref.read(selectedUnitProvider.notifier).state = units.first;
+        }
+      });
     }
 
     return Form(
@@ -538,9 +534,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             // Image Selector
             AppText(
               'product_image'.tr(context),
-              style: Get.bodyMedium.px14.w600.copyWith(
-                color: Get.disabledColor,
-              ),
+              style: Get.bodyMedium.px14.w600.copyWith(color: Get.disabledColor),
             ),
             7.verticalGap,
             Stack(
@@ -558,11 +552,11 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                         width: 2,
                       ),
                     ),
-                    child: _selectedImage != null
+                    child: selectedImage != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(14).rt,
                             child: Image.file(
-                              _selectedImage!,
+                              selectedImage,
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
@@ -578,42 +572,31 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                     height: double.infinity,
                                     errorBuilder: (context, error, stackTrace) {
                                       return Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
                                           Icon(
                                             Icons.add_photo_alternate_outlined,
                                             size: 48.st,
-                                            color: AppColors.primary.withValues(
-                                              alpha: 0.5,
-                                            ),
+                                            color: AppColors.primary.withValues(alpha: 0.5),
                                           ),
                                           12.verticalGap,
                                           AppText(
                                             'tap_to_add_image'.tr(context),
                                             style: Get.bodyMedium.px14.copyWith(
-                                              color: Get.disabledColor
-                                                  .withValues(alpha: 0.6),
+                                              color: Get.disabledColor.withValues(alpha: 0.6),
                                             ),
                                           ),
                                         ],
                                       );
                                     },
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-                                          return Center(
-                                            child:
-                                                CircularProgressIndicator.adaptive(
-                                                  valueColor:
-                                                      AlwaysStoppedAnimation<
-                                                        Color
-                                                      >(AppColors.primary),
-                                                ),
-                                          );
-                                        },
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Center(
+                                        child: CircularProgressIndicator.adaptive(
+                                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                                        ),
+                                      );
+                                    },
                                   ),
                                 )
                               : Column(
@@ -622,32 +605,26 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                     Icon(
                                       Icons.add_photo_alternate_outlined,
                                       size: 48.st,
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.5,
-                                      ),
+                                      color: AppColors.primary.withValues(alpha: 0.5),
                                     ),
                                     12.verticalGap,
                                     AppText(
                                       'tap_to_add_image'.tr(context),
                                       style: Get.bodyMedium.px14.copyWith(
-                                        color: Get.disabledColor.withValues(
-                                          alpha: 0.6,
-                                        ),
+                                        color: Get.disabledColor.withValues(alpha: 0.6),
                                       ),
                                     ),
                                   ],
                                 )),
                   ),
                 ),
-                if (_selectedImage != null)
+                if (selectedImage != null)
                   Positioned(
                     top: 8,
                     right: 8,
                     child: GestureDetector(
                       onTap: () {
-                        setState(() {
-                          _selectedImage = null;
-                        });
+                        ref.read(selectedImageProvider.notifier).state = null;
                       },
                       child: Container(
                         padding: const EdgeInsets.all(8).rt,
@@ -662,11 +639,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                             ),
                           ],
                         ),
-                        child: Icon(
-                          Icons.close,
-                          color: AppColors.white,
-                          size: 18.st,
-                        ),
+                        child: Icon(Icons.close, color: AppColors.white, size: 18.st),
                       ),
                     ),
                   ),
@@ -1011,13 +984,12 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                           ],
                         ),
                       ),
-                      ValueListenableBuilder<bool>(
-                        valueListenable: _isAvailable,
-                        builder: (context, isAvailable, _) => Switch.adaptive(
-                          value: isAvailable,
-                          onChanged: (value) => _isAvailable.value = value,
-                          activeColor: AppColors.primary,
-                        ),
+                      Switch.adaptive(
+                        value: isAvailable,
+                        onChanged: (value) {
+                          ref.read(isAvailableProvider.notifier).state = value;
+                        },
+                        activeColor: AppColors.primary,
                       ),
                     ],
                   ),
@@ -1027,37 +999,30 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             8.verticalGap,
 
             // Save Button
-            ValueListenableBuilder<bool>(
-              valueListenable: isSaving,
-              builder: (context, saving, _) => SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: saving ? null : _saveProduct,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 14).rt,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12).rt,
-                    ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: isSaving ? null : _saveProduct,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 14).rt,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12).rt,
                   ),
-                  child: saving
-                      ? SizedBox(
-                          height: 20.st,
-                          width: 20.st,
-                          child: CircularProgressIndicator.adaptive(
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              AppColors.white,
-                            ),
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : AppText(
-                          isEdit ? 'update'.tr(context) : 'save'.tr(context),
-                          style: Get.bodyMedium.px16.w700.copyWith(
-                            color: AppColors.white,
-                          ),
-                        ),
                 ),
+                child: isSaving
+                    ? SizedBox(
+                        height: 20.st,
+                        width: 20.st,
+                        child: CircularProgressIndicator.adaptive(
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : AppText(
+                        isEdit ? 'update'.tr(context) : 'save'.tr(context),
+                        style: Get.bodyMedium.px16.w700.copyWith(color: AppColors.white),
+                      ),
               ),
             ),
             20.verticalGap,

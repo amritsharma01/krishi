@@ -11,6 +11,7 @@ import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/seller/seller_public_listings_page.dart';
 import 'package:krishi/features/orders/providers/order_detail_provider.dart';
+import 'package:krishi/features/orders/providers/order_detail_ui_provider.dart';
 import 'package:krishi/features/orders/widgets/purchase_order_view.dart';
 import 'package:krishi/features/orders/widgets/sales_order_view.dart';
 
@@ -31,8 +32,6 @@ class OrderDetailPage extends ConsumerStatefulWidget {
 }
 
 class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
-  String? _loadingPublicListingsId;
-
   @override
   void initState() {
     super.initState();
@@ -53,6 +52,10 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
       orderId: widget.orderId,
       itemId: widget.itemId,
       isSeller: widget.isSeller,
+    )));
+    final uiState = ref.watch(orderDetailUIProvider((
+      orderId: widget.orderId,
+      itemId: widget.itemId,
     )));
 
     return Scaffold(
@@ -77,12 +80,12 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
               isSeller: widget.isSeller,
             )).notifier)
             .loadOrderDetails(),
-        child: _buildBody(state),
+        child: _buildBody(state, uiState),
       ),
     );
   }
 
-  Widget _buildBody(OrderDetailState state) {
+  Widget _buildBody(OrderDetailState state, OrderDetailUIState uiState) {
     if (state.isLoading) {
       return Center(
         child: CircularProgressIndicator.adaptive(
@@ -118,7 +121,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
             order: state.order!,
             isSeller: widget.isSeller,
             isProcessing: state.isProcessing,
-            loadingPublicListingsId: _loadingPublicListingsId,
+            loadingPublicListingsId: uiState.loadingPublicListingsId,
             onDeleteOrder: _deleteOrder,
             onOpenPublicListings: _openPublicListings,
           );
@@ -129,7 +132,15 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
       Get.snackbar('seller_id_unavailable'.tr(context), color: Colors.red);
       return;
     }
-    setState(() => _loadingPublicListingsId = krId);
+    
+    // Store notifier reference before async gap
+    final uiNotifier = ref.read(orderDetailUIProvider((
+      orderId: widget.orderId,
+      itemId: widget.itemId,
+    )).notifier);
+    
+    uiNotifier.setLoadingPublicListingsId(krId);
+    
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final profile = await apiService.getSellerPublicProfile(krId);
@@ -152,9 +163,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
       if (!mounted) return;
       Get.snackbar('error_loading_seller'.tr(context), color: Colors.red);
     } finally {
-      if (mounted) {
-        setState(() => _loadingPublicListingsId = null);
-      }
+      // Use stored notifier reference
+      uiNotifier.setLoadingPublicListingsId(null);
     }
   }
 
