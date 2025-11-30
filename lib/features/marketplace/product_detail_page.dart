@@ -126,19 +126,27 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
 
   Future<void> _submitComment() async {
     final text = _commentController.text.trim();
+    if (text.isEmpty) return;
+    
     final isSubmitting = ref.read(isSubmittingCommentProvider);
-    if (text.isEmpty || isSubmitting) return;
+    if (isSubmitting) return;
 
     ref.read(isSubmittingCommentProvider.notifier).state = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.addComment(widget.product.id, text);
+      
       _commentController.clear();
       ref.invalidate(productCommentsProvider(widget.product.id));
-      Get.snackbar('comment_added'.tr(context), color: Colors.green);
+      
+      if (mounted) {
+        Get.snackbar('comment_added'.tr(context), color: Colors.green);
+      }
     } catch (e) {
-      Get.snackbar('error_adding_comment'.tr(context), color: Colors.red);
+      if (mounted) {
+        Get.snackbar('error_adding_comment'.tr(context), color: Colors.red);
+      }
     } finally {
       if (mounted) {
         ref.read(isSubmittingCommentProvider.notifier).state = false;
