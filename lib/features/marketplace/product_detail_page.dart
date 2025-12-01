@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
@@ -30,7 +31,8 @@ class ProductDetailPage extends ConsumerStatefulWidget {
 class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     with SingleTickerProviderStateMixin {
   final TextEditingController _commentController = TextEditingController();
-  final TextEditingController _reviewCommentController = TextEditingController();
+  final TextEditingController _reviewCommentController =
+      TextEditingController();
   late AnimationController _animationController;
 
   @override
@@ -56,7 +58,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final latestProduct = await apiService.getProduct(widget.product.id);
-      final sellerKrId = latestProduct.sellerId ?? widget.product.sellerId ?? '';
+      final sellerKrId =
+          latestProduct.sellerId ?? widget.product.sellerId ?? '';
       if (sellerKrId.isEmpty) {
         Get.snackbar('seller_id_unavailable'.tr(context), color: Colors.red);
         return;
@@ -64,13 +67,18 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       final publicProfile = await apiService.getSellerPublicProfile(sellerKrId);
       if (!mounted) return;
       if (publicProfile.sellerProducts.isEmpty) {
-        Get.snackbar('seller_no_listings'.tr(context), color: Colors.orange.shade700);
+        Get.snackbar(
+          'seller_no_listings'.tr(context),
+          color: Colors.orange.shade700,
+        );
         return;
       }
-      Get.to(SellerPublicListingsPage(
-        userKrId: sellerKrId,
-        initialListings: publicProfile.sellerProducts,
-      ));
+      Get.to(
+        SellerPublicListingsPage(
+          userKrId: sellerKrId,
+          initialListings: publicProfile.sellerProducts,
+        ),
+      );
     } catch (e) {
       Get.snackbar('error_loading_seller'.tr(context), color: Colors.red);
     } finally {
@@ -91,13 +99,15 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       await apiService.addToCart(productId: widget.product.id, quantity: 1);
       if (mounted) {
         ref.read(isInCartProvider(widget.product.id).notifier).state = true;
-        ref.read(isAddingToCartProvider(widget.product.id).notifier).state = false;
+        ref.read(isAddingToCartProvider(widget.product.id).notifier).state =
+            false;
         _animationController.forward();
         Get.snackbar('added_to_cart'.tr(context), color: Colors.green);
       }
     } catch (e) {
       if (mounted) {
-        ref.read(isAddingToCartProvider(widget.product.id).notifier).state = false;
+        ref.read(isAddingToCartProvider(widget.product.id).notifier).state =
+            false;
       }
       Get.snackbar('error_adding_to_cart'.tr(context), color: Colors.red);
     }
@@ -113,12 +123,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       final cart = await apiService.getCart();
       if (mounted) {
         ref.read(isInCartProvider(widget.product.id).notifier).state = true;
-        ref.read(isAddingToCartProvider(widget.product.id).notifier).state = false;
+        ref.read(isAddingToCartProvider(widget.product.id).notifier).state =
+            false;
         Get.to(CheckoutPage(cart: cart));
       }
     } catch (e) {
       if (mounted) {
-        ref.read(isAddingToCartProvider(widget.product.id).notifier).state = false;
+        ref.read(isAddingToCartProvider(widget.product.id).notifier).state =
+            false;
       }
       Get.snackbar('error_adding_to_cart'.tr(context), color: Colors.red);
     }
@@ -127,7 +139,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   Future<void> _submitComment() async {
     final text = _commentController.text.trim();
     if (text.isEmpty) return;
-    
+
     final isSubmitting = ref.read(isSubmittingCommentProvider);
     if (isSubmitting) return;
 
@@ -136,10 +148,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.addComment(widget.product.id, text);
-      
+
       _commentController.clear();
       ref.invalidate(productCommentsProvider(widget.product.id));
-      
+
       if (mounted) {
         Get.snackbar('comment_added'.tr(context), color: Colors.green);
       }
@@ -175,12 +187,67 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       Get.pop();
       Get.snackbar('review_added'.tr(context), color: Colors.green);
     } catch (e) {
-      Get.snackbar(
-        e.toString().contains('purchase')
-            ? 'must_purchase_to_review'.tr(context)
-            : 'error_adding_review'.tr(context),
-        color: Colors.red,
-      );
+      String errorMessage;
+
+      // Check if it's a DioException to extract status code
+      if (e is DioException) {
+        final statusCode = e.response?.statusCode;
+        switch (statusCode) {
+          case 400:
+            // Bad Request - could be validation error
+            final errorData = e.response?.data;
+            if (errorData is Map<String, dynamic>) {
+              // Try to extract specific error message from response
+              final detail =
+                  errorData['detail'] ??
+                  errorData['error'] ??
+                  errorData['message'] ??
+                  'invalid_review_data'.tr(context);
+              errorMessage = detail.toString();
+            } else {
+              errorMessage = 'invalid_review_data'.tr(context);
+            }
+            break;
+          case 401:
+            errorMessage = 'authentication_required'.tr(context);
+            break;
+          case 403:
+            errorMessage = 'must_purchase_to_review'.tr(context);
+            break;
+          case 404:
+            errorMessage = 'product_not_found'.tr(context);
+            break;
+          default:
+            // For other errors, try to extract message or use generic
+            final errorData = e.response?.data;
+            if (errorData is Map<String, dynamic>) {
+              final detail =
+                  errorData['detail'] ??
+                  errorData['error'] ??
+                  errorData['message'];
+              errorMessage =
+                  detail?.toString() ?? 'error_adding_review'.tr(context);
+            } else {
+              errorMessage = 'error_adding_review'.tr(context);
+            }
+        }
+      } else {
+        // Fallback for non-DioException errors
+        final errorString = e.toString().toLowerCase();
+        if (errorString.contains('purchase') || errorString.contains('403')) {
+          errorMessage = 'must_purchase_to_review'.tr(context);
+        } else if (errorString.contains('401') ||
+            errorString.contains('unauthorized')) {
+          errorMessage = 'authentication_required'.tr(context);
+        } else if (errorString.contains('404') ||
+            errorString.contains('not found')) {
+          errorMessage = 'product_not_found'.tr(context);
+        } else {
+          errorMessage = 'error_adding_review'.tr(context);
+        }
+      }
+
+      Get.snackbar(errorMessage, color: Colors.red);
     }
   }
 
@@ -247,14 +314,18 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
             children: [
               AppText(
                 'reviews'.tr(context),
-                style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+                style: Get.bodyLarge.px18.w700.copyWith(
+                  color: Get.disabledColor,
+                ),
               ),
               TextButton.icon(
                 onPressed: _showAddReviewDialog,
                 icon: Icon(Icons.add, size: 18.st, color: AppColors.primary),
                 label: AppText(
                   'add_review'.tr(context),
-                  style: Get.bodySmall.px13.w600.copyWith(color: AppColors.primary),
+                  style: Get.bodySmall.px13.w600.copyWith(
+                    color: AppColors.primary,
+                  ),
                 ),
               ),
             ],
@@ -294,7 +365,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         decoration: BoxDecoration(
           color: Get.scaffoldBackgroundColor,
           borderRadius: BorderRadius.only(
@@ -310,12 +383,16 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
             children: [
               AppText(
                 'add_review'.tr(this.context),
-                style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
+                style: Get.bodyLarge.px20.w700.copyWith(
+                  color: Get.disabledColor,
+                ),
               ),
               20.verticalGap,
               AppText(
                 'rating'.tr(this.context),
-                style: Get.bodyMedium.px14.w600.copyWith(color: Get.disabledColor),
+                style: Get.bodyMedium.px14.w600.copyWith(
+                  color: Get.disabledColor,
+                ),
               ),
               12.verticalGap,
               Consumer(
@@ -326,7 +403,8 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                       5,
                       (index) => GestureDetector(
                         onTap: () {
-                          ref.read(reviewRatingProvider.notifier).state = index + 1;
+                          ref.read(reviewRatingProvider.notifier).state =
+                              index + 1;
                         },
                         child: Icon(
                           index < rating ? Icons.star : Icons.star_border,
@@ -367,7 +445,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                   child: Center(
                     child: AppText(
                       'submit_review'.tr(this.context),
-                      style: Get.bodyMedium.px16.w700.copyWith(color: Colors.white),
+                      style: Get.bodyMedium.px16.w700.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

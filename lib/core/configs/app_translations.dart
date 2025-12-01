@@ -295,6 +295,18 @@ class AppTranslations {
       'en': 'Failed to add review',
       'ne': 'समीक्षा थप्दा त्रुटि भयो',
     },
+    'invalid_review_data': {
+      'en': 'Invalid review data. Please check your input.',
+      'ne': 'अवैध समीक्षा डाटा। कृपया आफ्नो इनपुट जाँच गर्नुहोस्।',
+    },
+    'authentication_required': {
+      'en': 'Authentication required. Please log in.',
+      'ne': 'प्रमाणीकरण आवश्यक छ। कृपया लग इन गर्नुहोस्।',
+    },
+    'product_not_found': {
+      'en': 'Product not found',
+      'ne': 'उत्पादन फेला परेन',
+    },
 
     // Add/Edit Product
     'product_name': {'en': 'Product Name', 'ne': 'उत्पादन नाम'},
