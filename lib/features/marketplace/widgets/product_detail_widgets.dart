@@ -142,11 +142,7 @@ class ProductMetaChip extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const ProductMetaChip({
-    super.key,
-    required this.icon,
-    required this.label,
-  });
+  const ProductMetaChip({super.key, required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +155,11 @@ class ProductMetaChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14.st, color: Get.disabledColor.withValues(alpha: 0.7)),
+          Icon(
+            icon,
+            size: 14.st,
+            color: Get.disabledColor.withValues(alpha: 0.7),
+          ),
           6.horizontalGap,
           AppText(
             label,
@@ -190,8 +190,8 @@ class ProductFeatureChip extends StatelessWidget {
     final textColor = color == Colors.amber
         ? Colors.amber.shade700
         : color == Colors.green
-            ? Colors.green.shade700
-            : color;
+        ? Colors.green.shade700
+        : color;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6).rt,
@@ -205,7 +205,10 @@ class ProductFeatureChip extends StatelessWidget {
         children: [
           Icon(icon, size: 14.st, color: textColor),
           6.horizontalGap,
-          AppText(label, style: Get.bodySmall.px11.w600.copyWith(color: textColor)),
+          AppText(
+            label,
+            style: Get.bodySmall.px11.w600.copyWith(color: textColor),
+          ),
         ],
       ),
     );
@@ -225,12 +228,18 @@ class ProductInfoCard extends ConsumerWidget {
       orElse: () => <Review>[],
     );
     final averageRating = _calculateAverageRating(reviews);
-    
+
     final chips = <Widget>[
       if (product.categoryName.trim().isNotEmpty)
-        ProductMetaChip(icon: Icons.category_outlined, label: product.categoryName),
+        ProductMetaChip(
+          icon: Icons.category_outlined,
+          label: product.categoryName,
+        ),
       if (product.unitName.trim().isNotEmpty)
-        ProductMetaChip(icon: Icons.monitor_weight_outlined, label: product.unitName),
+        ProductMetaChip(
+          icon: Icons.monitor_weight_outlined,
+          label: product.unitName,
+        ),
       if (product.freeDelivery == true)
         ProductFeatureChip(
           icon: Icons.local_shipping,
@@ -238,7 +247,11 @@ class ProductInfoCard extends ConsumerWidget {
           color: Colors.green,
         ),
       if (product.recommend == true)
-        ProductFeatureChip(icon: Icons.star, label: 'recommended'.tr(context), color: Colors.amber),
+        ProductFeatureChip(
+          icon: Icons.star,
+          label: 'recommended'.tr(context),
+          color: Colors.amber,
+        ),
     ];
 
     return ProductSectionCard(
@@ -247,14 +260,19 @@ class ProductInfoCard extends ConsumerWidget {
         children: [
           AppText(
             product.name,
-            style: Get.bodyLarge.px22.w800.copyWith(color: Get.disabledColor, height: 1.2),
+            style: Get.bodyLarge.px22.w800.copyWith(
+              color: Get.disabledColor,
+              height: 1.2,
+            ),
           ),
           5.verticalGap,
           Row(
             children: [
               AppText(
                 'Rs. ${product.price}',
-                style: Get.bodyLarge.px16.w900.copyWith(color: AppColors.primary),
+                style: Get.bodyLarge.px16.w900.copyWith(
+                  color: AppColors.primary,
+                ),
               ),
               6.horizontalGap,
               AppText(
@@ -271,7 +289,9 @@ class ProductInfoCard extends ConsumerWidget {
                     4.horizontalGap,
                     AppText(
                       averageRating.toStringAsFixed(1),
-                      style: Get.bodyMedium.px14.w700.copyWith(color: Get.disabledColor),
+                      style: Get.bodyMedium.px14.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
                     ),
                     4.horizontalGap,
                     AppText(
@@ -293,7 +313,8 @@ class ProductInfoCard extends ConsumerWidget {
 
   double _calculateAverageRating(List<Review> reviews) {
     if (reviews.isEmpty) return 0.0;
-    return reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length;
+    return reviews.map((r) => r.rating).reduce((a, b) => a + b) /
+        reviews.length;
   }
 }
 
@@ -301,11 +322,7 @@ class SellerInfoCard extends ConsumerWidget {
   final Product product;
   final VoidCallback onTap;
 
-  const SellerInfoCard({
-    super.key,
-    required this.product,
-    required this.onTap,
-  });
+  const SellerInfoCard({super.key, required this.product, required this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -346,7 +363,9 @@ class SellerInfoCard extends ConsumerWidget {
                     4.verticalGap,
                     AppText(
                       sellerKrId,
-                      style: Get.bodyMedium.px15.w700.copyWith(color: Get.disabledColor),
+                      style: Get.bodyMedium.px15.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
                     ),
                     if (product.sellerDescription != null &&
                         product.sellerDescription!.trim().isNotEmpty) ...[
@@ -370,7 +389,9 @@ class SellerInfoCard extends ConsumerWidget {
                       height: 18.st,
                       child: CircularProgressIndicator.adaptive(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primary,
+                        ),
                       ),
                     )
                   : Icon(
@@ -403,6 +424,7 @@ class ProductDescriptionCard extends StatelessWidget {
             style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
           ),
           AppText(
+            maxLines: 10,
             product.description,
             style: Get.bodyMedium.px12.w400.copyWith(
               color: Get.disabledColor.withValues(alpha: 0.8),
@@ -437,7 +459,11 @@ class ReviewCard extends StatelessWidget {
               CircleAvatar(
                 radius: 18.rt,
                 backgroundColor: Colors.amber.withValues(alpha: 0.15),
-                child: Icon(Icons.person, color: Colors.amber.shade700, size: 16.st),
+                child: Icon(
+                  Icons.person,
+                  color: Colors.amber.shade700,
+                  size: 16.st,
+                ),
               ),
               10.horizontalGap,
               Expanded(
@@ -448,7 +474,9 @@ class ReviewCard extends StatelessWidget {
                       review.userName?.trim().isNotEmpty == true
                           ? review.userName!
                           : review.userEmail,
-                      style: Get.bodyMedium.px14.w600.copyWith(color: Get.disabledColor),
+                      style: Get.bodyMedium.px14.w600.copyWith(
+                        color: Get.disabledColor,
+                      ),
                     ),
                     2.verticalGap,
                     Row(
@@ -502,7 +530,11 @@ class CommentCard extends StatelessWidget {
           CircleAvatar(
             radius: 16.rt,
             backgroundColor: AppColors.primary.withValues(alpha: 0.08),
-            child: Icon(Icons.person_outline, color: AppColors.primary, size: 16.st),
+            child: Icon(
+              Icons.person_outline,
+              color: AppColors.primary,
+              size: 16.st,
+            ),
           ),
           12.horizontalGap,
           Expanded(
@@ -513,7 +545,9 @@ class CommentCard extends StatelessWidget {
                   comment.userName?.trim().isNotEmpty == true
                       ? comment.userName!
                       : comment.userEmail,
-                  style: Get.bodyMedium.px13.w600.copyWith(color: Get.disabledColor),
+                  style: Get.bodyMedium.px13.w600.copyWith(
+                    color: Get.disabledColor,
+                  ),
                 ),
                 4.verticalGap,
                 AppText(
@@ -572,7 +606,9 @@ class CommentComposer extends ConsumerWidget {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10).rt),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10).rt,
+              ),
             ),
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
@@ -594,7 +630,9 @@ class CommentComposer extends ConsumerWidget {
                         6.horizontalGap,
                         AppText(
                           'add_comment'.tr(context),
-                          style: Get.bodySmall.px12.w600.copyWith(color: Colors.white),
+                          style: Get.bodySmall.px12.w600.copyWith(
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ),

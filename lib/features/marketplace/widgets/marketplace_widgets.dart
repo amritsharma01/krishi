@@ -229,7 +229,7 @@ class ListingCard extends StatelessWidget {
                 4.verticalGap,
                 AppText(
                   maxLines: 2,
-                  'Rs. ${listing.price}/${listing.localizedUnitName(isNepali)}',
+                  'Rs. ${listing.basePrice}/${listing.localizedUnitName(isNepali)}',
                   style: Get.bodyMedium.px10.w700.copyWith(color: AppColors.primary),
                 ),
               ],
