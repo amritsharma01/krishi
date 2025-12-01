@@ -19,8 +19,6 @@ import 'package:krishi/features/marketplace/widgets/marketplace_widgets.dart';
 import 'package:krishi/features/marketplace/widgets/marketplace_filter_widgets.dart';
 import 'package:krishi/features/marketplace/widgets/marketplace_skeleton_widgets.dart';
 import 'package:krishi/models/product.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class MarketplacePage extends ConsumerStatefulWidget {
@@ -55,8 +53,8 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     });
   }
 
-  Future<void> _loadBuyProducts() async {
-    if (_hasLoadedBuyProducts && ref.read(buyProductsProvider).isNotEmpty) {
+  Future<void> _loadBuyProducts({bool force = false}) async {
+    if (!force && _hasLoadedBuyProducts && ref.read(buyProductsProvider).isNotEmpty) {
       return; // Already loaded
     }
 
@@ -132,8 +130,8 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     }
   }
 
-  Future<void> _loadUserListings() async {
-    if (_hasLoadedSellProducts && ref.read(userListingsProvider).isNotEmpty) {
+  Future<void> _loadUserListings({bool force = false}) async {
+    if (!force && _hasLoadedSellProducts && ref.read(userListingsProvider).isNotEmpty) {
       return; // Already loaded
     }
 
@@ -242,7 +240,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     
     ref.read(selectedCategoryIdProvider.notifier).state = categoryId;
     _hasLoadedBuyProducts = false; // Force reload
-    _loadBuyProducts();
+    _loadBuyProducts(force: true);
   }
 
   void _onSellStatusChanged(String status) {
@@ -251,7 +249,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     
     ref.read(sellStatusFilterProvider.notifier).state = status;
     _hasLoadedSellProducts = false; // Force reload
-    _loadUserListings();
+    _loadUserListings(force: true);
   }
 
   void _onTabChanged(bool isBuyTab) {
@@ -432,7 +430,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     final isLoadingMore = ref.watch(isLoadingMoreBuyProductsProvider);
     
     return RefreshIndicator(
-      onRefresh: _loadBuyProducts,
+      onRefresh: () => _loadBuyProducts(force: true),
       child: SingleChildScrollView(
         controller: _buyScrollController,
         physics: Get.scrollPhysics,
@@ -504,7 +502,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
     final isLoadingMore = ref.watch(isLoadingMoreUserListingsProvider);
     
     return RefreshIndicator(
-      onRefresh: _loadUserListings,
+      onRefresh: () => _loadUserListings(force: true),
       child: SingleChildScrollView(
         controller: _sellScrollController,
         physics: Get.scrollPhysics,

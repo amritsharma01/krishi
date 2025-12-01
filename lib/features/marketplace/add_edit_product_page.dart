@@ -62,10 +62,19 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     if (widget.product != null) {
       _prefillSourceProduct = widget.product;
       _applyProductTextFields(widget.product!);
-      ref.read(isAvailableProvider.notifier).state = widget.product!.isAvailable;
+      // Delay provider write to avoid modifying state during widget build
+      Future.microtask(() {
+        if (!mounted) return;
+        ref.read(isAvailableProvider.notifier).state =
+            widget.product!.isAvailable;
+      });
       await _prefillFromProductDetail();
     } else {
-      ref.read(isAvailableProvider.notifier).state = true;
+      // Default value is already true in the provider, but ensure it's set
+      Future.microtask(() {
+        if (!mounted) return;
+        ref.read(isAvailableProvider.notifier).state = true;
+      });
       await _prefillFromAccountDetails();
     }
   }
@@ -317,7 +326,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
     if (_formKey.currentState!.validate()) {
       final selectedCategory = ref.read(selectedCategoryProvider);
       final selectedUnit = ref.read(selectedUnitProvider);
-      
+
       if (selectedCategory == null) {
         Get.snackbar('select_category'.tr(context));
         return;
@@ -534,7 +543,9 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
             // Image Selector
             AppText(
               'product_image'.tr(context),
-              style: Get.bodyMedium.px14.w600.copyWith(color: Get.disabledColor),
+              style: Get.bodyMedium.px14.w600.copyWith(
+                color: Get.disabledColor,
+              ),
             ),
             7.verticalGap,
             Stack(
@@ -572,31 +583,41 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                     height: double.infinity,
                                     errorBuilder: (context, error, stackTrace) {
                                       return Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Icon(
                                             Icons.add_photo_alternate_outlined,
                                             size: 48.st,
-                                            color: AppColors.primary.withValues(alpha: 0.5),
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.5,
+                                            ),
                                           ),
                                           12.verticalGap,
                                           AppText(
                                             'tap_to_add_image'.tr(context),
                                             style: Get.bodyMedium.px14.copyWith(
-                                              color: Get.disabledColor.withValues(alpha: 0.6),
+                                              color: Get.disabledColor
+                                                  .withValues(alpha: 0.6),
                                             ),
                                           ),
                                         ],
                                       );
                                     },
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return Center(
-                                        child: CircularProgressIndicator.adaptive(
-                                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                                        ),
-                                      );
-                                    },
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Center(
+                                            child:
+                                                CircularProgressIndicator.adaptive(
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                        Color
+                                                      >(AppColors.primary),
+                                                ),
+                                          );
+                                        },
                                   ),
                                 )
                               : Column(
@@ -605,13 +626,17 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                                     Icon(
                                       Icons.add_photo_alternate_outlined,
                                       size: 48.st,
-                                      color: AppColors.primary.withValues(alpha: 0.5),
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.5,
+                                      ),
                                     ),
                                     12.verticalGap,
                                     AppText(
                                       'tap_to_add_image'.tr(context),
                                       style: Get.bodyMedium.px14.copyWith(
-                                        color: Get.disabledColor.withValues(alpha: 0.6),
+                                        color: Get.disabledColor.withValues(
+                                          alpha: 0.6,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -639,7 +664,11 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                             ),
                           ],
                         ),
-                        child: Icon(Icons.close, color: AppColors.white, size: 18.st),
+                        child: Icon(
+                          Icons.close,
+                          color: AppColors.white,
+                          size: 18.st,
+                        ),
                       ),
                     ),
                   ),
@@ -1015,13 +1044,17 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                         height: 20.st,
                         width: 20.st,
                         child: CircularProgressIndicator.adaptive(
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.white,
+                          ),
                           strokeWidth: 2,
                         ),
                       )
                     : AppText(
                         isEdit ? 'update'.tr(context) : 'save'.tr(context),
-                        style: Get.bodyMedium.px16.w700.copyWith(color: AppColors.white),
+                        style: Get.bodyMedium.px16.w700.copyWith(
+                          color: AppColors.white,
+                        ),
                       ),
               ),
             ),
