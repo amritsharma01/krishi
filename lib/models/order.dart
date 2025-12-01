@@ -362,11 +362,11 @@ class OrderItemSeller {
   String get statusDisplay {
     switch (orderStatus.toLowerCase()) {
       case 'pending':
-        return 'Pending (Waiting for Admin Approval)';
+        return 'Pending';
       case 'approved':
-        return 'Approved by Admin';
+        return 'Approved';
       case 'rejected':
-        return 'Rejected by Admin';
+        return 'Rejected';
       case 'in_transit':
         return 'In Transit';
       case 'delivered':

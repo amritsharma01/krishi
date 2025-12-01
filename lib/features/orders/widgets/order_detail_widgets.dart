@@ -37,8 +37,11 @@ class OrderStatusCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12).rt,
             decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-            child: Icon(_getStatusIcon(status.toLowerCase()),
-                color: textColor, size: 24.st),
+            child: Icon(
+              _getStatusIcon(status.toLowerCase()),
+              color: textColor,
+              size: 24.st,
+            ),
           ),
           16.horizontalGap,
           Expanded(
@@ -54,7 +57,7 @@ class OrderStatusCard extends StatelessWidget {
                 4.verticalGap,
                 AppText(
                   displayStatus,
-                  style: Get.bodyLarge.px18.w700.copyWith(color: textColor),
+                  style: Get.bodyLarge.px16.w700.copyWith(color: textColor),
                 ),
               ],
             ),
@@ -164,7 +167,8 @@ class OrderProductCard extends StatelessWidget {
             style: Get.bodyMedium.px16.w700.copyWith(color: Get.disabledColor),
           ),
           12.verticalGap,
-          if (order.items.isEmpty)
+          // Use overall order status to align messages with status card
+          if (order.items.isEmpty && order.status.toLowerCase() == 'pending')
             Padding(
               padding: EdgeInsets.symmetric(vertical: 16.rt),
               child: Center(
@@ -182,15 +186,20 @@ class OrderProductCard extends StatelessWidget {
           if (order.items.isNotEmpty) 16.verticalGap,
           Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
           12.verticalGap,
-          PriceRow(label: 'subtotal'.tr(context), amount: order.subtotalAsDouble),
-          if (order.approvedByAdmin && order.hasDeliveryCharges) ...[
+          PriceRow(
+            label: 'subtotal'.tr(context),
+            amount: order.subtotalAsDouble,
+          ),
+          // Show delivery charges for all non-pending statuses
+          if (order.hasDeliveryCharges &&
+              order.status.toLowerCase() != 'pending') ...[
             8.verticalGap,
             PriceRow(
               label: 'delivery_charges'.tr(context),
               amount: order.deliveryChargesAsDouble,
             ),
           ],
-          if (!order.approvedByAdmin) ...[
+          if (order.status.toLowerCase() == 'pending') ...[
             8.verticalGap,
             AppText(
               'awaiting_admin_approval'.tr(context),
@@ -280,11 +289,7 @@ class OrderItemRow extends StatelessWidget {
       width: 60.st,
       height: 60.st,
       color: Get.disabledColor.withValues(alpha: 0.1),
-      child: Icon(
-        Icons.shopping_bag,
-        color: Get.disabledColor,
-        size: 20.st,
-      ),
+      child: Icon(Icons.shopping_bag, color: Get.disabledColor, size: 20.st),
     );
   }
 }
@@ -541,6 +546,7 @@ class ContactAdminInfo extends StatelessWidget {
           8.horizontalGap,
           Expanded(
             child: AppText(
+              maxLines: 3,
               'order_edit_cancel_info'.tr(context),
               style: Get.bodySmall.px12.w500.copyWith(
                 color: Colors.blue.shade800,
@@ -631,14 +637,20 @@ class SalesProductCard extends StatelessWidget {
             style: Get.bodyMedium.px16.w700.copyWith(color: Get.disabledColor),
           ),
           12.verticalGap,
-          InfoRow(label: 'product_name'.tr(context), value: orderItem.productName),
+          InfoRow(
+            label: 'product_name'.tr(context),
+            value: orderItem.productName,
+          ),
           8.verticalGap,
           InfoRow(
             label: 'base_price'.tr(context),
             value: 'Rs. ${orderItem.basePriceAsDouble.toStringAsFixed(2)}',
           ),
           8.verticalGap,
-          InfoRow(label: 'quantity'.tr(context), value: '${orderItem.quantity}'),
+          InfoRow(
+            label: 'quantity'.tr(context),
+            value: '${orderItem.quantity}',
+          ),
           12.verticalGap,
           Divider(
             color: Get.disabledColor.withValues(alpha: 0.2),
@@ -686,7 +698,10 @@ class SalesOrderInfoCard extends StatelessWidget {
             style: Get.bodyMedium.px16.w700.copyWith(color: Get.disabledColor),
           ),
           12.verticalGap,
-          InfoRow(label: 'order_id'.tr(context), value: '#${orderItem.orderId}'),
+          InfoRow(
+            label: 'order_id'.tr(context),
+            value: '#${orderItem.orderId}',
+          ),
           8.verticalGap,
           InfoRow(
             label: 'order_date'.tr(context),

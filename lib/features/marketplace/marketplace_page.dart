@@ -135,6 +135,11 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       return; // Already loaded
     }
 
+    // Reset flag when forcing refresh
+    if (force) {
+      _hasLoadedSellProducts = false;
+    }
+
     ref.read(isLoadingUserListingsProvider.notifier).state = true;
     ref.read(sellCurrentPageProvider.notifier).state = 1;
     ref.read(sellHasMoreProvider.notifier).state = true;
