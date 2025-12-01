@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
-import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
-import 'package:krishi/core/services/cache_service.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/form_field.dart';
 import 'package:krishi/models/cart.dart';
 import 'package:krishi/models/user_profile.dart';
+import 'package:krishi/features/cart/providers/checkout_providers.dart';
 
 class CheckoutPage extends ConsumerStatefulWidget {
   final Cart cart;
@@ -29,7 +28,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   final _addressController = TextEditingController();
   final _phoneController = TextEditingController();
   final _messageController = TextEditingController();
-  bool _isProcessing = false;
+  bool _hasPrefilled = false;
 
   void _showFieldValidationError(String message) {
     Get.snackbar(message, color: Colors.red);
@@ -67,7 +66,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   @override
   void initState() {
     super.initState();
-    _prefillContactInfo();
+    // Prefill will be handled by watching the provider
   }
 
   @override
@@ -77,24 +76,6 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     _phoneController.dispose();
     _messageController.dispose();
     super.dispose();
-  }
-
-  Future<void> _prefillContactInfo() async {
-    final cacheService = ref.read(cacheServiceProvider);
-    final apiService = ref.read(krishiApiServiceProvider);
-
-    try {
-      final cachedProfile = await cacheService.getUserProfileCache();
-      if (cachedProfile != null) {
-        _applyUserProfile(User.fromJson(cachedProfile));
-      }
-
-      final freshUser = await apiService.getCurrentUser();
-      await cacheService.saveUserProfileCache(freshUser.toJson());
-      _applyUserProfile(freshUser);
-    } catch (_) {
-      // Silently ignore profile failures; form remains editable.
-    }
   }
 
   void _applyUserProfile(User user) {
@@ -137,13 +118,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       return;
     }
 
-    setState(() {
-      _isProcessing = true;
-    });
+    final checkoutNotifier = ref.read(checkoutStateProvider.notifier);
 
     try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      await apiService.checkout(
+      await checkoutNotifier.processCheckout(
         buyerName: _nameController.text.trim(),
         buyerAddress: _addressController.text.trim(),
         buyerPhoneNumber: _phoneController.text.trim(),
@@ -166,17 +144,41 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       Get.pop();
     } catch (e) {
       Get.snackbar('checkout_error'.tr(Get.context), color: Colors.red);
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final checkoutState = ref.watch(checkoutStateProvider);
+    final isProcessing = checkoutState.isLoading;
+    final userProfileAsync = ref.watch(checkoutUserProfileProvider);
+
+    // Prefill form when user profile is available (only once)
+    if (!_hasPrefilled) {
+      userProfileAsync.whenData((user) {
+        if (user != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && !_hasPrefilled) {
+              _applyUserProfile(user);
+              _hasPrefilled = true;
+            }
+          });
+        }
+      });
+    }
+
+    // Listen to user profile changes for updates
+    ref.listen<AsyncValue<User?>>(checkoutUserProfileProvider, (
+      previous,
+      next,
+    ) {
+      next.whenData((user) {
+        if (user != null && mounted) {
+          _applyUserProfile(user);
+        }
+      });
+    });
+
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -220,7 +222,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               8.verticalGap,
 
               // Confirm Button
-              _buildConfirmButton(),
+              _buildConfirmButton(isProcessing),
               8.verticalGap,
             ],
           ),
@@ -484,15 +486,15 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     );
   }
 
-  Widget _buildConfirmButton() {
+  Widget _buildConfirmButton(bool isProcessing) {
     return GestureDetector(
-      onTap: _isProcessing ? null : _processCheckout,
+      onTap: isProcessing ? null : _processCheckout,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16).rt,
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: _isProcessing
+            colors: isProcessing
                 ? [
                     AppColors.primary.withValues(alpha: 0.5),
                     AppColors.primary.withValues(alpha: 0.4),
@@ -512,7 +514,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
           ],
         ),
         child: Center(
-          child: _isProcessing
+          child: isProcessing
               ? SizedBox(
                   width: 24.st,
                   height: 24.st,

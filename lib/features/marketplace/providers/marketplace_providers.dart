@@ -45,6 +45,7 @@ final productDetailProvider = FutureProvider.autoDispose.family<Product, int>((
 });
 
 // Product detail page providers
+// Note: isInCartProvider is kept for backward compatibility but should use isProductInCartProvider from cart_providers
 final isInCartProvider = StateProvider.autoDispose.family<bool, int>((ref, productId) => false);
 final isAddingToCartProvider = StateProvider.autoDispose.family<bool, int>((ref, productId) => false);
 final isFetchingSellerListingsProvider = StateProvider.autoDispose<bool>((ref) => false);

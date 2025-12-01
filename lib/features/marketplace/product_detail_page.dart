@@ -13,6 +13,7 @@ import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/cart/cart_page.dart';
 import 'package:krishi/features/cart/checkout_page.dart';
 import 'package:krishi/features/marketplace/providers/marketplace_providers.dart';
+import 'package:krishi/features/cart/providers/cart_providers.dart';
 import 'package:krishi/features/seller/seller_public_listings_page.dart';
 import 'package:krishi/models/product.dart';
 import 'package:krishi/features/marketplace/widgets/product_detail_widgets.dart';
@@ -89,16 +90,15 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   }
 
   Future<void> _addToCart() async {
-    final isInCart = ref.read(isInCartProvider(widget.product.id));
+    final isInCart = ref.read(isProductInCartProvider(widget.product.id));
     if (isInCart) return;
 
     ref.read(isAddingToCartProvider(widget.product.id).notifier).state = true;
 
     try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      await apiService.addToCart(productId: widget.product.id, quantity: 1);
+      final cartNotifier = ref.read(cartProvider.notifier);
+      await cartNotifier.addItem(widget.product.id, 1);
       if (mounted) {
-        ref.read(isInCartProvider(widget.product.id).notifier).state = true;
         ref.read(isAddingToCartProvider(widget.product.id).notifier).state =
             false;
         _animationController.forward();
@@ -119,10 +119,11 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       await apiService.clearCart();
-      await apiService.addToCart(productId: widget.product.id, quantity: 1);
-      final cart = await apiService.getCart();
-      if (mounted) {
-        ref.read(isInCartProvider(widget.product.id).notifier).state = true;
+      final cartNotifier = ref.read(cartProvider.notifier);
+      await cartNotifier.addItem(widget.product.id, 1);
+      final cartAsync = ref.read(cartProvider);
+      final cart = cartAsync.valueOrNull;
+      if (mounted && cart != null) {
         ref.read(isAddingToCartProvider(widget.product.id).notifier).state =
             false;
         Get.to(CheckoutPage(cart: cart));

@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
-import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/marketplace/providers/marketplace_providers.dart';
+import 'package:krishi/features/cart/providers/cart_providers.dart';
 
 class AddToCartBottomBar extends ConsumerWidget {
   final int productId;
@@ -25,7 +25,7 @@ class AddToCartBottomBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final adding = ref.watch(isAddingToCartProvider(productId));
-    final inCart = ref.watch(isInCartProvider(productId));
+    final inCart = ref.watch(isProductInCartProvider(productId));
     
     return SafeArea(
       top: false,

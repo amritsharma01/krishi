@@ -11,6 +11,8 @@ import 'package:krishi/features/auth/login_page.dart';
 import 'package:krishi/features/account/providers/user_profile_providers.dart';
 import 'package:krishi/features/notifications/providers/notifications_providers.dart';
 import 'package:krishi/features/marketplace/providers/marketplace_providers.dart';
+import 'package:krishi/features/cart/providers/cart_providers.dart';
+import 'package:krishi/features/cart/providers/checkout_providers.dart';
 
 class LogoutState {
   final bool isLoading;
@@ -63,6 +65,15 @@ class LogoutNotifier extends StateNotifier<LogoutState> {
     ref.invalidate(sellCurrentPageProvider);
     ref.invalidate(sellHasMoreProvider);
     ref.invalidate(isLoadingMoreUserListingsProvider);
+
+    // Cart providers
+    ref.invalidate(cartProvider);
+    ref.invalidate(updatingItemIdsProvider);
+    ref.invalidate(deletingItemIdsProvider);
+
+    // Checkout providers
+    ref.invalidate(checkoutStateProvider);
+    ref.invalidate(checkoutUserProfileProvider);
   }
 
   Future<void> signOut(BuildContext context) async {
