@@ -114,7 +114,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   }
 
   Future<void> _checkoutDirectly() async {
-    ref.read(isAddingToCartProvider(widget.product.id).notifier).state = true;
+    ref.read(isCheckingOutProvider(widget.product.id).notifier).state = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
@@ -124,13 +124,13 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       final cartAsync = ref.read(cartProvider);
       final cart = cartAsync.valueOrNull;
       if (mounted && cart != null) {
-        ref.read(isAddingToCartProvider(widget.product.id).notifier).state =
+        ref.read(isCheckingOutProvider(widget.product.id).notifier).state =
             false;
         Get.to(CheckoutPage(cart: cart));
       }
     } catch (e) {
       if (mounted) {
-        ref.read(isAddingToCartProvider(widget.product.id).notifier).state =
+        ref.read(isCheckingOutProvider(widget.product.id).notifier).state =
             false;
       }
       Get.snackbar('error_adding_to_cart'.tr(context), color: Colors.red);
@@ -168,12 +168,17 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
   }
 
   Future<void> _submitReview() async {
+    final isSubmitting = ref.read(isSubmittingReviewProvider);
+    if (isSubmitting) return;
+    
     final comment = _reviewCommentController.text.trim();
     if (comment.isEmpty) {
       Get.snackbar('review_too_short'.tr(context), color: Colors.red);
       return;
     }
     final rating = ref.read(reviewRatingProvider).clamp(1, 5);
+
+    ref.read(isSubmittingReviewProvider.notifier).state = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
@@ -182,12 +187,14 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         rating: rating,
         comment: comment,
       );
+      if (!mounted) return;
       _reviewCommentController.clear();
       ref.read(reviewRatingProvider.notifier).state = 5;
       ref.invalidate(productReviewsProvider(widget.product.id));
       Get.pop();
       Get.snackbar('review_added'.tr(context), color: Colors.green);
     } catch (e) {
+      if (!mounted) return;
       String errorMessage;
 
       // Check if it's a DioException to extract status code
@@ -249,6 +256,10 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       }
 
       Get.snackbar(errorMessage, color: Colors.red);
+    } finally {
+      if (mounted) {
+        ref.read(isSubmittingReviewProvider.notifier).state = false;
+      }
     }
   }
 
@@ -429,29 +440,48 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
                 maxLines: 5,
               ),
               20.verticalGap,
-              GestureDetector(
-                onTap: _submitReview,
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14).rt,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primary,
-                        AppColors.primary.withValues(alpha: 0.85),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(12).rt,
-                  ),
-                  child: Center(
-                    child: AppText(
-                      'submit_review'.tr(this.context),
-                      style: Get.bodyMedium.px16.w700.copyWith(
-                        color: Colors.white,
+              Consumer(
+                builder: (context, ref, child) {
+                  final isSubmitting = ref.watch(isSubmittingReviewProvider);
+                  return GestureDetector(
+                    onTap: isSubmitting ? null : _submitReview,
+                    child: Opacity(
+                      opacity: isSubmitting ? 0.7 : 1.0,
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 14).rt,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppColors.primary,
+                              AppColors.primary.withValues(alpha: 0.85),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(12).rt,
+                        ),
+                        child: Center(
+                          child: isSubmitting
+                              ? SizedBox(
+                                  width: 24.st,
+                                  height: 24.st,
+                                  child: CircularProgressIndicator.adaptive(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                    strokeWidth: 2.5,
+                                  ),
+                                )
+                              : AppText(
+                                  'submit_review'.tr(this.context),
+                                  style: Get.bodyMedium.px16.w700.copyWith(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ],
           ),

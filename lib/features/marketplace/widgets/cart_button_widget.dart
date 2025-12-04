@@ -25,6 +25,7 @@ class AddToCartBottomBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final adding = ref.watch(isAddingToCartProvider(productId));
+    final checkingOut = ref.watch(isCheckingOutProvider(productId));
     final inCart = ref.watch(isProductInCartProvider(productId));
     
     return SafeArea(
@@ -48,14 +49,14 @@ class AddToCartBottomBar extends ConsumerWidget {
               child: _AddToCartButton(
                 adding: adding,
                 inCart: inCart,
-                onPressed: adding ? null : onAddToCart,
+                onPressed: (adding || checkingOut) ? null : onAddToCart,
               ),
             ),
             12.horizontalGap,
             Expanded(
               child: _CheckoutButton(
-                adding: adding,
-                onPressed: adding ? null : onCheckout,
+                checkingOut: checkingOut,
+                onPressed: (adding || checkingOut) ? null : onCheckout,
               ),
             ),
           ],
@@ -143,11 +144,11 @@ class _AddToCartButton extends StatelessWidget {
 }
 
 class _CheckoutButton extends StatelessWidget {
-  final bool adding;
+  final bool checkingOut;
   final VoidCallback? onPressed;
 
   const _CheckoutButton({
-    required this.adding,
+    required this.checkingOut,
     required this.onPressed,
   });
 
@@ -165,7 +166,7 @@ class _CheckoutButton extends StatelessWidget {
         elevation: 3,
         shadowColor: AppColors.primary.withValues(alpha: 0.3),
       ),
-      child: adding
+      child: checkingOut
           ? SizedBox(
               height: 20.st,
               width: 20.st,

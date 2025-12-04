@@ -48,8 +48,10 @@ final productDetailProvider = FutureProvider.autoDispose.family<Product, int>((
 // Note: isInCartProvider is kept for backward compatibility but should use isProductInCartProvider from cart_providers
 final isInCartProvider = StateProvider.autoDispose.family<bool, int>((ref, productId) => false);
 final isAddingToCartProvider = StateProvider.autoDispose.family<bool, int>((ref, productId) => false);
+final isCheckingOutProvider = StateProvider.autoDispose.family<bool, int>((ref, productId) => false);
 final isFetchingSellerListingsProvider = StateProvider.autoDispose<bool>((ref) => false);
 final isSubmittingCommentProvider = StateProvider.autoDispose<bool>((ref) => false);
+final isSubmittingReviewProvider = StateProvider.autoDispose<bool>((ref) => false);
 final feedbackTabIndexProvider = StateProvider.autoDispose<int>((ref) => 0);
 final reviewRatingProvider = StateProvider.autoDispose<int>((ref) => 5);
 
