@@ -4,7 +4,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class TokenStorage {
   final _secureStorage = const FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+    ),
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock_this_device,
+    ),
   );
   TokenStorage(Ref ref);
 
@@ -61,7 +66,22 @@ class TokenStorage {
   }
 
   Future<String?> getRefreshToken() async {
-    return await _secureStorage.read(key: 'refresh_token');
+    try {
+      final token = await _secureStorage.read(key: 'refresh_token');
+      if (kDebugMode) {
+        if (token != null) {
+          print('[TokenStorage] ✅ Refresh token retrieved: length=${token.length}');
+        } else {
+          print('[TokenStorage] ⚠️ No refresh token found in storage');
+        }
+      }
+      return token;
+    } catch (e) {
+      if (kDebugMode) {
+        print('[TokenStorage] ❌ Error reading refresh token: $e');
+      }
+      return null;
+    }
   }
 
   Future<void> clearTokens() async {

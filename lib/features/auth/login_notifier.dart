@@ -6,6 +6,7 @@ import 'package:krishi/core/services/storage_services/hive_keys.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/features/auth/logout_notifier.dart';
 import 'package:krishi/features/navigation/main_navigation.dart';
+import 'package:krishi/features/account/providers/user_profile_providers.dart';
 import 'package:flutter/material.dart';
 
 class LoginState {
@@ -49,6 +50,12 @@ class LoginNotifier extends StateNotifier<LoginState> {
         } catch (e) {
           debugPrint('Error resetting logout state: $e');
         }
+
+        // Invalidate user-related providers to ensure fresh data is loaded for the new account
+        // This is critical when switching accounts
+        ref.invalidate(userProfileProvider);
+        ref.invalidate(isUpdatingProfileProvider);
+        ref.invalidate(selectedProfileImageProvider);
 
         // Ensure tab index is set to 0 (homepage) on login
         final storage = ref.read(storageServiceProvider);

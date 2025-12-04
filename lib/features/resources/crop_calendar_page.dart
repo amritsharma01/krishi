@@ -238,42 +238,54 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
             );
           },
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildCropHeader(crop, color, icon),
-              Padding(
-                padding: EdgeInsets.all(16.rt),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTypeBadge(crop.cropTypeDisplay, color),
-                    12.verticalGap,
-                    AppText(
-                      crop.cropName,
-                      style: Get.bodyLarge.px16.w700.copyWith(
-                        color: Get.disabledColor,
+              Flexible(
+                child: Padding(
+                  padding: EdgeInsets.all(16.rt),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        child: _buildTypeBadge(crop.cropTypeDisplay, color),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    10.verticalGap,
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.schedule_rounded,
-                          size: 12.st,
-                          color: Colors.grey.shade600,
+                      12.verticalGap,
+                      Flexible(
+                        child: AppText(
+                          crop.cropName,
+                          style: Get.bodyLarge.px16.w700.copyWith(
+                            color: Get.disabledColor,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        6.horizontalGap,
-                        AppText(
-                          '${crop.durationDays} days',
-                          style: Get.bodyMedium.px10.copyWith(
+                      ),
+                      10.verticalGap,
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.schedule_rounded,
+                            size: 12.st,
                             color: Colors.grey.shade600,
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          6.horizontalGap,
+                          Flexible(
+                            child: AppText(
+                              '${crop.durationDays} days',
+                              style: Get.bodyMedium.px10.copyWith(
+                                color: Colors.grey.shade600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -333,6 +345,8 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
       child: AppText(
         text,
         style: Get.bodySmall.px12.w600.copyWith(color: color),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }

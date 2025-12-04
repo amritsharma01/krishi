@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/models/user_profile.dart';
@@ -47,7 +49,19 @@ class UserProfileNotifier extends StateNotifier<AsyncValue<User>> {
       }
     } catch (e, stack) {
       if (mounted) {
-        // Auto-retry on error (useful when logging in with new account)
+        // Don't retry on 401 errors (unauthorized) - token is expired/invalid
+        final is401Error = e is DioException && e.response?.statusCode == 401;
+        
+        if (is401Error) {
+          if (kDebugMode) {
+            print('[UserProfileProvider] 401 Unauthorized - stopping retries');
+          }
+          state = AsyncValue.error(e, stack);
+          _retryCount = 0;
+          return;
+        }
+        
+        // Auto-retry on other errors (useful when logging in with new account)
         if (_retryCount < _maxRetries) {
           _retryCount++;
           // Retry after a delay, with exponential backoff

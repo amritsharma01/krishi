@@ -24,6 +24,7 @@ class ProductCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      constraints: BoxConstraints(minHeight: 0),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(20).rt,
@@ -60,49 +61,61 @@ class ProductCard extends StatelessWidget {
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12).rt,
-            child: GestureDetector(
-              onTap: () => Get.to(ProductDetailPage(product: product)),
-              behavior: HitTestBehavior.opaque,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    product.name,
-                    style: Get.bodyLarge.px16.w800.copyWith(
-                      color: Get.disabledColor,
-                      height: 1.2,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  4.verticalGap,
-                  Row(
-                    children: [
-                      Expanded(
-                        child: AppText(
-                          'Rs. ${product.price}/${product.localizedUnitName(isNepali)}',
-                          style: Get.bodyMedium.px12.w700.copyWith(color: AppColors.primary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+          Flexible(
+            child: Padding(
+              padding: const EdgeInsets.all(12).rt,
+              child: GestureDetector(
+                onTap: () => Get.to(ProductDetailPage(product: product)),
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Flexible(
+                      child: AppText(
+                        product.name,
+                        style: Get.bodyLarge.px16.w800.copyWith(
+                          color: Get.disabledColor,
+                          height: 1.2,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      if (product.rating != null && product.rating!.isNotEmpty)
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.star, size: 14.st, color: Colors.amber),
-                            4.horizontalGap,
-                            AppText(
-                              product.rating!,
-                              style: Get.bodySmall.px11.w600.copyWith(color: Get.disabledColor),
-                            ),
-                          ],
+                    ),
+                    4.verticalGap,
+                    Row(
+                      children: [
+                        Expanded(
+                          child: AppText(
+                            'Rs. ${product.price}/${product.localizedUnitName(isNepali)}',
+                            style: Get.bodyMedium.px12.w700.copyWith(color: AppColors.primary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                    ],
-                  ),
-                ],
+                        if (product.rating != null && product.rating!.isNotEmpty) ...[
+                          4.horizontalGap,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.star, size: 14.st, color: Colors.amber),
+                              2.horizontalGap,
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: AppText(
+                                  product.rating!,
+                                  style: Get.bodySmall.px11.w600.copyWith(color: Get.disabledColor),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -220,17 +233,25 @@ class ListingCard extends StatelessWidget {
           16.horizontalGap,
           Expanded(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  listing.name,
-                  style: Get.bodyMedium.px14.w700.copyWith(color: Get.disabledColor),
+                Flexible(
+                  child: AppText(
+                    listing.name,
+                    style: Get.bodyMedium.px14.w700.copyWith(color: Get.disabledColor),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 4.verticalGap,
-                AppText(
-                  maxLines: 2,
-                  'Rs. ${listing.basePrice}/${listing.localizedUnitName(isNepali)}',
-                  style: Get.bodyMedium.px10.w700.copyWith(color: AppColors.primary),
+                Flexible(
+                  child: AppText(
+                    'Rs. ${listing.basePrice}/${listing.localizedUnitName(isNepali)}',
+                    style: Get.bodyMedium.px10.w700.copyWith(color: AppColors.primary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

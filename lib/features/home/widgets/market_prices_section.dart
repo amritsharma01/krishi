@@ -32,10 +32,15 @@ class MarketPricesSection extends ConsumerWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            AppText(
-              'market_prices'.tr(context),
-              style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
+            Flexible(
+              child: AppText(
+                'market_prices'.tr(context),
+                style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
+            8.horizontalGap,
             GestureDetector(
               onTap: () => Get.to(const MarketPricesPage()),
               child: Container(
@@ -48,12 +53,15 @@ class MarketPricesSection extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20).rt,
                 ),
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     AppText(
                       'view_all'.tr(context),
                       style: Get.bodyMedium.px12.w600.copyWith(
                         color: AppColors.primary,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     4.horizontalGap,
                     Icon(
@@ -142,12 +150,17 @@ class _MarketPriceRow extends StatelessWidget {
         12.horizontalGap,
         Expanded(
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AppText(
-                price.name,
-                style: Get.bodyMedium.px15.w700.copyWith(
-                  color: Get.disabledColor,
+              Flexible(
+                child: AppText(
+                  price.name,
+                  style: Get.bodyMedium.px15.w700.copyWith(
+                    color: Get.disabledColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               4.verticalGap,
@@ -159,12 +172,16 @@ class _MarketPriceRow extends StatelessWidget {
                     color: Get.disabledColor.withValues(alpha: 0.7),
                   ),
                   4.horizontalGap,
-                  AppText(
-                    price.categoryDisplay.isNotEmpty
-                        ? price.categoryDisplay
-                        : 'market_category_other'.tr(context),
-                    style: Get.bodySmall.px11.w500.copyWith(
-                      color: Get.disabledColor.withValues(alpha: 0.7),
+                  Flexible(
+                    child: AppText(
+                      price.categoryDisplay.isNotEmpty
+                          ? price.categoryDisplay
+                          : 'market_category_other'.tr(context),
+                      style: Get.bodySmall.px11.w500.copyWith(
+                        color: Get.disabledColor.withValues(alpha: 0.7),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -172,23 +189,35 @@ class _MarketPriceRow extends StatelessWidget {
             ],
           ),
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            AppText(
-              formattedPrice,
-              style: Get.bodyMedium.px15.w800.copyWith(
-                color: AppColors.primary,
+        8.horizontalGap,
+        Flexible(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: AppText(
+                  formattedPrice,
+                  style: Get.bodyMedium.px15.w800.copyWith(
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
-            ),
-            2.verticalGap,
-            AppText(
-              '/${price.unit}',
-              style: Get.bodySmall.px11.w500.copyWith(
-                color: Get.disabledColor.withValues(alpha: 0.7),
+              2.verticalGap,
+              Flexible(
+                child: AppText(
+                  '/${price.unit}',
+                  style: Get.bodySmall.px11.w500.copyWith(
+                    color: Get.disabledColor.withValues(alpha: 0.7),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

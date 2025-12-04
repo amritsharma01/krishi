@@ -33,7 +33,7 @@ class OrdersTiles extends ConsumerWidget {
             isLoading: homeState.isLoadingOrders,
           ),
         ),
-        12.horizontalGap,
+        6.horizontalGap,
         Expanded(
           child: _OrderCard(
             title: 'placed_orders',
@@ -81,7 +81,7 @@ class _OrderCard extends StatelessWidget {
         splashColor: AppColors.primary.withValues(alpha: 0.12),
         highlightColor: AppColors.primary.withValues(alpha: 0.08),
         child: Container(
-          height: 110.ht,
+          constraints: BoxConstraints(minHeight: 110.ht),
           padding: const EdgeInsets.all(16).rt,
           decoration: BoxDecoration(
             color: Get.cardColor,
@@ -95,6 +95,7 @@ class _OrderCard extends StatelessWidget {
             ],
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
@@ -108,45 +109,54 @@ class _OrderCard extends StatelessWidget {
                     child: Icon(icon, color: AppColors.white, size: 24.st),
                   ),
                   15.horizontalGap,
-                  isLoading
-                      ? SizedBox(
-                          width: 24.st,
-                          height: 24.st,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: AppColors.primary,
+                  Flexible(
+                    child: isLoading
+                        ? SizedBox(
+                            width: 24.st,
+                            height: 24.st,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: AppColors.primary,
+                            ),
+                          )
+                        : FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerLeft,
+                            child: AppText(
+                              '$count',
+                              style: Get.bodyLarge.px26.w800.copyWith(
+                                color: Get.disabledColor,
+                              ),
+                            ),
                           ),
-                        )
-                      : AppText(
-                          overflow: TextOverflow.ellipsis,
-                          '$count',
-                          style: Get.bodyLarge.px26.w800.copyWith(
-                            color: Get.disabledColor,
-                          ),
-                        ),
+                  ),
                 ],
               ),
               10.verticalGap,
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    overflow: TextOverflow.ellipsis,
-                    title.tr(context),
-                    style: Get.bodyMedium.px13.w700.copyWith(
-                      color: Get.disabledColor,
+              Flexible(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      title.tr(context),
+                      style: Get.bodyMedium.px13.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  2.verticalGap,
-                  AppText(
-                    overflow: TextOverflow.ellipsis,
-                    subtitle.tr(context),
-                    style: Get.bodySmall.px10.w500.copyWith(
-                      color: Get.disabledColor.withValues(alpha: 0.6),
+                    2.verticalGap,
+                    AppText(
+                      subtitle.tr(context),
+                      style: Get.bodySmall.px10.w500.copyWith(
+                        color: Get.disabledColor.withValues(alpha: 0.6),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ],
           ),

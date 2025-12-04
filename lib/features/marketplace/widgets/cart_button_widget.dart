@@ -109,10 +109,14 @@ class _AddToCartButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.check_circle, size: 20.st),
-                  8.horizontalGap,
-                  AppText(
-                    'added_to_cart'.tr(context),
-                    style: Get.bodyMedium.px15.w600.copyWith(color: Colors.white),
+                  6.horizontalGap,
+                  Flexible(
+                    child: AppText(
+                      'added_to_cart'.tr(context),
+                      style: Get.bodyMedium.px15.w600.copyWith(color: Colors.white),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               )
@@ -122,10 +126,14 @@ class _AddToCartButton extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(Icons.shopping_cart, size: 20.st),
-                  8.horizontalGap,
-                  AppText(
-                    'add_to_cart'.tr(context),
-                    style: Get.bodyMedium.px15.w600.copyWith(color: Colors.white),
+                  6.horizontalGap,
+                  Flexible(
+                    child: AppText(
+                      'add_to_cart'.tr(context),
+                      style: Get.bodyMedium.px15.w600.copyWith(color: Colors.white),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -171,10 +179,14 @@ class _CheckoutButton extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.payment, size: 20.st),
-                8.horizontalGap,
-                AppText(
-                  'checkout'.tr(context),
-                  style: Get.bodyMedium.px15.w600.copyWith(color: Colors.white),
+                6.horizontalGap,
+                Flexible(
+                  child: AppText(
+                    'checkout'.tr(context),
+                    style: Get.bodyMedium.px15.w600.copyWith(color: Colors.white),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

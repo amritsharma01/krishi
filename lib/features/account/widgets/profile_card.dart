@@ -34,10 +34,10 @@ class ProfileCard extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(24.rt),
+      padding: EdgeInsets.all(15.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(24).rt,
+        borderRadius: BorderRadius.circular(30).rt,
         border: Border.all(
           color: Get.disabledColor.withValues(alpha: 0.1),
           width: 1,
@@ -45,7 +45,7 @@ class ProfileCard extends ConsumerWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 20,
+            blurRadius: 30,
             offset: const Offset(0, 4),
           ),
         ],
@@ -61,18 +61,18 @@ class ProfileCard extends ConsumerWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-          8.verticalGap,
+          5.verticalGap,
           AppText(
             email,
             style: Get.bodyMedium.px12.copyWith(
               color: Get.disabledColor.withValues(alpha: 0.7),
             ),
             textAlign: TextAlign.center,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
           if (phone != null || address != null) ...[
-            20.verticalGap,
+            10.verticalGap,
             _buildContactInfo(phone, address),
           ],
         ],
@@ -93,11 +93,17 @@ class ProfileCard extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.phone_outlined, size: 16.st, color: AppColors.primary),
+                Icon(
+                  Icons.phone_outlined,
+                  size: 16.st,
+                  color: AppColors.primary,
+                ),
                 8.horizontalGap,
                 AppText(
                   phone,
-                  style: Get.bodyMedium.px12.w500.copyWith(color: Get.disabledColor),
+                  style: Get.bodyMedium.px12.w500.copyWith(
+                    color: Get.disabledColor,
+                  ),
                 ),
               ],
             ),
@@ -107,12 +113,18 @@ class ProfileCard extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.location_on_outlined, size: 16.st, color: AppColors.primary),
+                Icon(
+                  Icons.location_on_outlined,
+                  size: 16.st,
+                  color: AppColors.primary,
+                ),
                 8.horizontalGap,
                 Flexible(
                   child: AppText(
                     address,
-                    style: Get.bodyMedium.px12.w500.copyWith(color: Get.disabledColor),
+                    style: Get.bodyMedium.px12.w500.copyWith(
+                      color: Get.disabledColor,
+                    ),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -131,7 +143,10 @@ class ProfileCard extends ConsumerWidget {
       padding: const EdgeInsets.all(16).rt,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.85)],
+          colors: [
+            AppColors.primary,
+            AppColors.primary.withValues(alpha: 0.85),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -158,7 +173,10 @@ class ProfileCard extends ConsumerWidget {
       padding: const EdgeInsets.all(24).rt,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primary.withValues(alpha: 0.85)],
+          colors: [
+            AppColors.primary,
+            AppColors.primary.withValues(alpha: 0.85),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -184,14 +202,19 @@ class ProfileCard extends ConsumerWidget {
           GestureDetector(
             onTap: () => ref.read(userProfileProvider.notifier).refresh(),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10).rt,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 10,
+              ).rt,
               decoration: BoxDecoration(
                 color: AppColors.white,
                 borderRadius: BorderRadius.circular(10).rt,
               ),
               child: AppText(
                 'retry'.tr(context),
-                style: Get.bodyMedium.px14.w600.copyWith(color: AppColors.primary),
+                style: Get.bodyMedium.px14.w600.copyWith(
+                  color: AppColors.primary,
+                ),
               ),
             ),
           ),

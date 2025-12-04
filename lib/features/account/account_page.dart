@@ -43,34 +43,35 @@ class AccountPage extends ConsumerWidget {
           child: SingleChildScrollView(
             physics: Get.scrollPhysics,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15).rt,
+              padding: const EdgeInsets.symmetric(horizontal: 8).rt,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  10.verticalGap,
                   const ProfileCard(),
                   12.verticalGap,
                   AppText(
                     'app_settings'.tr(context),
-                    style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
+                    style: Get.bodyLarge.px16.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
                   ),
-                  12.verticalGap,
+                  6.verticalGap,
                   SettingsSection(
                     icon: Icons.palette_outlined,
                     title: 'theme_mode'.tr(context),
                     subtitle: 'choose_theme'.tr(context),
                     child: const ThemeSwitcher(),
                   ),
-                  16.verticalGap,
+                  6.verticalGap,
                   SettingsSection(
                     icon: Icons.language_outlined,
                     title: 'language'.tr(context),
                     subtitle: 'select_language'.tr(context),
                     child: const LanguageSwitcher(),
                   ),
-                  24.verticalGap,
+                  6.verticalGap,
                   _buildDeveloperBanner(context),
-                  12.verticalGap,
+                  6.verticalGap,
                   SettingsTile(
                     icon: Icons.smartphone_outlined,
                     iconColor: Colors.orange,
@@ -78,16 +79,18 @@ class AccountPage extends ConsumerWidget {
                     subtitle: 'test_platform'.tr(context),
                     trailing: Container(),
                   ),
-                  12.verticalGap,
+                  6.verticalGap,
                   const PlatformSwitcher(),
-                  24.verticalGap,
+                  6.verticalGap,
                   AppText(
                     'account_actions'.tr(context),
-                    style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
+                    style: Get.bodyLarge.px16.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
                   ),
-                  12.verticalGap,
+                  6.verticalGap,
                   _buildEditProfileTile(context, ref),
-                  12.verticalGap,
+                  6.verticalGap,
                   SettingsTile(
                     icon: Icons.notifications_outlined,
                     title: 'notifications'.tr(context),
@@ -101,7 +104,7 @@ class AccountPage extends ConsumerWidget {
                       // TODO: Navigate to notifications settings
                     },
                   ),
-                  12.verticalGap,
+                  6.verticalGap,
                   SettingsTile(
                     icon: Icons.info_outline,
                     title: 'about'.tr(context),
@@ -113,9 +116,9 @@ class AccountPage extends ConsumerWidget {
                     ),
                     onTap: () => Get.to(const AboutPage()),
                   ),
-                  24.verticalGap,
+                  6.verticalGap,
                   _buildLogoutButton(context, ref),
-                  30.verticalGap,
+                  6.verticalGap,
                 ],
               ),
             ),
@@ -187,7 +190,7 @@ class AccountPage extends ConsumerWidget {
 
   Widget _buildLogoutButton(BuildContext context, WidgetRef ref) {
     final logoutState = ref.watch(logoutProvider);
-    
+
     return SizedBox(
       width: double.infinity,
       height: 40.ht,
@@ -224,7 +227,9 @@ class AccountPage extends ConsumerWidget {
               )
             : AppText(
                 'logout'.tr(context),
-                style: Get.bodyMedium.px14.w600.copyWith(color: AppColors.white),
+                style: Get.bodyMedium.px14.w600.copyWith(
+                  color: AppColors.white,
+                ),
               ),
       ),
     );

@@ -235,34 +235,47 @@ class _CartPageState extends ConsumerState<CartPage> {
           // Product Details
           Expanded(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  product.name,
-                  style: Get.bodyMedium.px14.w700.copyWith(
-                    color: Get.disabledColor,
+                Flexible(
+                  child: AppText(
+                    product.name,
+                    style: Get.bodyMedium.px14.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
                 ),
-
+                4.verticalGap,
                 Row(
                   children: [
-                    AppText(
-                      'Rs. ${item.unitPrice}',
-                      style: Get.bodyMedium.px08.w700.copyWith(
-                        color: AppColors.primary,
+                    Flexible(
+                      child: AppText(
+                        'Rs. ${item.unitPrice}',
+                        style: Get.bodyMedium.px08.w700.copyWith(
+                          color: AppColors.primary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    AppText(
-                      ' /${product.unitName}',
-                      style: Get.bodySmall.px08.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.6),
+                    Flexible(
+                      child: AppText(
+                        ' /${product.unitName}',
+                        style: Get.bodySmall.px08.copyWith(
+                          color: Get.disabledColor.withValues(alpha: 0.6),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
                 4.verticalGap,
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
                       onTap: isUpdating
@@ -284,7 +297,7 @@ class _CartPageState extends ConsumerState<CartPage> {
                         ),
                       ),
                     ),
-                    10.horizontalGap,
+                    8.horizontalGap,
                     isUpdating
                         ? SizedBox(
                             width: 10.st,
@@ -296,13 +309,16 @@ class _CartPageState extends ConsumerState<CartPage> {
                               ),
                             ),
                           )
-                        : AppText(
-                            '${item.quantity}',
-                            style: Get.bodyMedium.px10.w700.copyWith(
-                              color: Get.disabledColor,
+                        : FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: AppText(
+                              '${item.quantity}',
+                              style: Get.bodyMedium.px10.w700.copyWith(
+                                color: Get.disabledColor,
+                              ),
                             ),
                           ),
-                    10.horizontalGap,
+                    8.horizontalGap,
                     GestureDetector(
                       onTap: isUpdating
                           ? null
@@ -328,8 +344,10 @@ class _CartPageState extends ConsumerState<CartPage> {
               ],
             ),
           ),
+          8.horizontalGap,
           // Total and Delete
           Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               isDeleting
@@ -364,10 +382,14 @@ class _CartPageState extends ConsumerState<CartPage> {
                       ),
                     ),
               8.verticalGap,
-              AppText(
-                'Rs. ${item.subtotal}',
-                style: Get.bodyMedium.px13.w800.copyWith(
-                  color: Get.disabledColor,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: AppText(
+                  'Rs. ${item.subtotal}',
+                  style: Get.bodyMedium.px13.w800.copyWith(
+                    color: Get.disabledColor,
+                  ),
                 ),
               ),
             ],
@@ -397,16 +419,25 @@ class _CartPageState extends ConsumerState<CartPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                AppText(
-                  'total'.tr(context),
-                  style: Get.bodyMedium.px15.w600.copyWith(
-                    color: Get.disabledColor.withValues(alpha: 0.7),
+                Flexible(
+                  child: AppText(
+                    'total'.tr(context),
+                    style: Get.bodyMedium.px15.w600.copyWith(
+                      color: Get.disabledColor.withValues(alpha: 0.7),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                AppText(
-                  'Rs. ${cart.totalAmount}',
-                  style: Get.bodyLarge.px18.w700.copyWith(
-                    color: Get.disabledColor,
+                8.horizontalGap,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: AppText(
+                    'Rs. ${cart.totalAmount}',
+                    style: Get.bodyLarge.px18.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
                   ),
                 ),
               ],

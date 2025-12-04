@@ -4,6 +4,7 @@ import 'package:krishi/core/services/storage_services/token_storage_service.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../get.dart';
+import '../storage_services/hive_keys.dart';
 
 typedef QueryType = Map<String, dynamic>?;
 
@@ -15,7 +16,13 @@ class ApiManager {
   /// Dio instance used for API requests.
   late Dio dio;
   final TokenStorage tokenStorage;
-  ApiManager(Ref ref, this.tokenStorage) {
+  final Ref ref;
+
+  // Flag to prevent multiple 401 handling in quick succession
+  DateTime? _last401Handled;
+  static const _401HandlingCooldown = Duration(seconds: 2);
+
+  ApiManager(this.ref, this.tokenStorage) {
     Map<String, dynamic> headers = {};
 
     BaseOptions options = BaseOptions(
@@ -137,8 +144,45 @@ class ApiManager {
             }
           }
           if (error.response?.statusCode == 401) {
-            // Token expired - clear tokens and redirect to login
-            await tokenStorage.clearTokens();
+            // Prevent multiple 401 handling in quick succession (avoid loops)
+            final now = DateTime.now();
+            if (_last401Handled == null ||
+                now.difference(_last401Handled!) > _401HandlingCooldown) {
+              _last401Handled = now;
+
+              if (kDebugMode) {
+                print(
+                  '🔒 Handling 401 Unauthorized - clearing tokens and auth state',
+                );
+              }
+
+              // Clear tokens
+              await tokenStorage.clearTokens();
+
+              // Update auth state directly in storage to trigger navigation to login
+              // This avoids circular dependency with authServiceProvider
+              try {
+                final box = Get.box;
+                final isLoggedIn =
+                    await box.get(StorageKeys.isLoggedIn) ?? false;
+                if (isLoggedIn) {
+                  await box.set(StorageKeys.isLoggedIn, false);
+                  if (kDebugMode) {
+                    print(
+                      '✅ Auth state updated in storage - user will be redirected to login',
+                    );
+                  }
+                }
+              } catch (e) {
+                if (kDebugMode) {
+                  print('⚠️ Error updating auth state: $e');
+                }
+              }
+            } else {
+              if (kDebugMode) {
+                print('⏭️ Skipping 401 handling (cooldown active)');
+              }
+            }
           }
           return handler.next(error);
         },

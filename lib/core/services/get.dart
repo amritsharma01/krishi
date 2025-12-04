@@ -27,8 +27,9 @@ abstract final class Get {
 
   //constant
   //static String baseUrl = "http://192.168.1.65:8000/";
+  static String baseUrl = "http://104.214.169.60:8000/";
 
-  static String baseUrl = "https://6mf87s99-8000.inc1.devtunnels.ms/";
+  //static String baseUrl = "https://6mf87s99-8000.inc1.devtunnels.ms/";
   //static String baseUrl = "https://b976h8zb-8000.inc1.devtunnels.ms/";
 
   // Helper method to construct image URLs properly

@@ -24,10 +24,10 @@ class SettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16.rt),
+      padding: EdgeInsets.all(8.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(16).rt,
+        borderRadius: BorderRadius.circular(25).rt,
         border: Border.all(
           color: Get.disabledColor.withValues(alpha: 0.1),
           width: 1,
@@ -57,7 +57,7 @@ class SettingsSection extends StatelessWidget {
                         color: Get.disabledColor,
                       ),
                     ),
-                    4.verticalGap,
+                    2.verticalGap,
                     AppText(
                       subtitle,
                       style: Get.bodySmall.px12.copyWith(
@@ -69,7 +69,7 @@ class SettingsSection extends StatelessWidget {
               ),
             ],
           ),
-          16.verticalGap,
+          8.verticalGap,
           child,
         ],
       ),
