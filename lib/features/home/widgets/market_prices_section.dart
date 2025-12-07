@@ -35,7 +35,9 @@ class MarketPricesSection extends ConsumerWidget {
             Flexible(
               child: AppText(
                 'market_prices'.tr(context),
-                style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
+                style: Get.bodyLarge.px14.w600.copyWith(
+                  color: Get.disabledColor,
+                ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -57,7 +59,7 @@ class MarketPricesSection extends ConsumerWidget {
                   children: [
                     AppText(
                       'view_all'.tr(context),
-                      style: Get.bodyMedium.px12.w600.copyWith(
+                      style: Get.bodyMedium.px10.w600.copyWith(
                         color: AppColors.primary,
                       ),
                       maxLines: 1,
@@ -82,9 +84,7 @@ class MarketPricesSection extends ConsumerWidget {
           decoration: BoxDecoration(
             color: Get.cardColor,
             borderRadius: BorderRadius.circular(16).rt,
-            border: Border.all(
-              color: Get.disabledColor.withValues(alpha: 0.1),
-            ),
+            border: Border.all(color: Get.disabledColor.withValues(alpha: 0.1)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.04),
@@ -96,24 +96,24 @@ class MarketPricesSection extends ConsumerWidget {
           child: homeState.isLoadingMarketPrices
               ? const Center(child: CircularProgressIndicator.adaptive())
               : homeState.marketPricesError != null
-                  ? _MarketPricesError()
-                  : homeState.marketPrices.isEmpty
-                      ? _MarketPricesEmpty()
-                      : Column(
-                          children: [
-                            for (int i = 0; i < homeState.marketPrices.length; i++) ...[
-                              _MarketPriceRow(
-                                price: homeState.marketPrices[i],
-                                formatPrice: _formatMarketPrice,
-                              ),
-                              if (i != homeState.marketPrices.length - 1)
-                                Divider(
-                                  color: Get.disabledColor.withValues(alpha: 0.1),
-                                  height: 20,
-                                ),
-                            ],
-                          ],
+              ? _MarketPricesError()
+              : homeState.marketPrices.isEmpty
+              ? _MarketPricesEmpty()
+              : Column(
+                  children: [
+                    for (int i = 0; i < homeState.marketPrices.length; i++) ...[
+                      _MarketPriceRow(
+                        price: homeState.marketPrices[i],
+                        formatPrice: _formatMarketPrice,
+                      ),
+                      if (i != homeState.marketPrices.length - 1)
+                        Divider(
+                          color: Get.disabledColor.withValues(alpha: 0.1),
+                          height: 20,
                         ),
+                    ],
+                  ],
+                ),
         ),
       ],
     );
@@ -124,15 +124,12 @@ class _MarketPriceRow extends StatelessWidget {
   final MarketPrice price;
   final String Function(double) formatPrice;
 
-  const _MarketPriceRow({
-    required this.price,
-    required this.formatPrice,
-  });
+  const _MarketPriceRow({required this.price, required this.formatPrice});
 
   @override
   Widget build(BuildContext context) {
     final formattedPrice = formatPrice(price.price);
-    
+
     return Row(
       children: [
         Container(
@@ -231,13 +228,13 @@ class _MarketPricesError extends ConsumerWidget {
       children: [
         AppText(
           'market_prices_error'.tr(context),
-          style: Get.bodyMedium.copyWith(
+          style: Get.bodyMedium.px12.copyWith(
             color: Colors.redAccent,
             fontWeight: FontWeight.w600,
           ),
           textAlign: TextAlign.center,
         ),
-        12.verticalGap,
+        6.verticalGap,
         ElevatedButton(
           onPressed: () => ref.read(homeProvider.notifier).loadMarketPrices(),
           style: ElevatedButton.styleFrom(
@@ -248,7 +245,7 @@ class _MarketPricesError extends ConsumerWidget {
           ),
           child: AppText(
             'retry'.tr(context),
-            style: Get.bodyMedium.copyWith(color: Colors.white),
+            style: Get.bodyMedium.px10.copyWith(color: Colors.white),
           ),
         ),
       ],
@@ -264,15 +261,15 @@ class _MarketPricesEmpty extends StatelessWidget {
         Icon(
           Icons.bar_chart_rounded,
           color: Get.disabledColor.withValues(alpha: 0.6),
-          size: 40.st,
+          size: 30.st,
         ),
         8.verticalGap,
         AppText(
           'no_market_prices'.tr(context),
-          style: Get.bodyMedium.px14.w600.copyWith(color: Get.disabledColor),
+          style: Get.bodyMedium.px12.w600.copyWith(color: Get.disabledColor),
           textAlign: TextAlign.center,
         ),
-        4.verticalGap,
+
         AppText(
           'market_prices_empty_state_subtitle'.tr(context),
           style: Get.bodySmall.px10.copyWith(

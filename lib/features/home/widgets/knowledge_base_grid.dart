@@ -21,7 +21,7 @@ class KnowledgeBaseGrid extends StatelessWidget {
       children: [
         AppText(
           'knowledge_base'.tr(context),
-          style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px14.w600.copyWith(color: Get.disabledColor),
         ),
         5.verticalGap,
         Column(
@@ -36,7 +36,7 @@ class KnowledgeBaseGrid extends StatelessWidget {
                     onTap: () => Get.to(ArticlesPage()),
                   ),
                 ),
-                12.horizontalGap,
+                6.horizontalGap,
                 Expanded(
                   child: _KnowledgeCard(
                     title: 'news_information'.tr(context),
@@ -47,7 +47,7 @@ class KnowledgeBaseGrid extends StatelessWidget {
                 ),
               ],
             ),
-            12.verticalGap,
+            6.verticalGap,
             Row(
               children: [
                 Expanded(
@@ -58,7 +58,7 @@ class KnowledgeBaseGrid extends StatelessWidget {
                     onTap: () => Get.to(const VideosPage()),
                   ),
                 ),
-                12.horizontalGap,
+                6.horizontalGap,
                 Expanded(
                   child: _KnowledgeCard(
                     title: 'crop_calendar'.tr(context),

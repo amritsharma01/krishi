@@ -21,9 +21,9 @@ class MainServicesSection extends StatelessWidget {
         AppText(
           overflow: TextOverflow.ellipsis,
           'main_services'.tr(context),
-          style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px14.w600.copyWith(color: Get.disabledColor),
         ),
-        7.verticalGap,
+        5.verticalGap,
         _MainServiceCard(
           titleKey: 'soil_testing',
           descriptionKey: 'test_soil_quality',
@@ -31,7 +31,7 @@ class MainServicesSection extends StatelessWidget {
           accentColor: const Color(0xFF5E35B1),
           onTap: () => Get.to(const SoilTestingPage()),
         ),
-        7.verticalGap,
+        5.verticalGap,
         _MainServiceCard(
           titleKey: 'notices',
           descriptionKey: 'important_announcements',
@@ -39,7 +39,7 @@ class MainServicesSection extends StatelessWidget {
           accentColor: const Color(0xFFFF8F00),
           onTap: () => Get.to(const NoticesPage()),
         ),
-        7.verticalGap,
+        5.verticalGap,
         _MainServiceCard(
           titleKey: 'programs',
           descriptionKey: 'agricultural_development_programs',
@@ -107,13 +107,13 @@ class _MainServiceCard extends StatelessWidget {
                 children: [
                   AppText(
                     titleKey.tr(context),
-                    style: Get.bodyLarge.px14.w700.copyWith(
+                    style: Get.bodyLarge.px12.w700.copyWith(
                       color: Get.disabledColor,
                     ),
                   ),
                   AppText(
                     descriptionKey.tr(context),
-                    style: Get.bodySmall.px11.w500.copyWith(
+                    style: Get.bodySmall.px10.w500.copyWith(
                       color: Get.disabledColor.withValues(alpha: 0.65),
                     ),
                     maxLines: 2,

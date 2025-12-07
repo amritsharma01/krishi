@@ -84,23 +84,21 @@ class WelcomeCard extends ConsumerWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(20).rt,
+            padding: const EdgeInsets.all(15).rt,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
                   _getGreeting().tr(context),
-                  style: Get.bodyMedium.px14.w500.copyWith(
+                  style: Get.bodyMedium.px12.w500.copyWith(
                     color: AppColors.white.withValues(alpha: 0.95),
                     letterSpacing: 0.5,
                   ),
                 ),
-                6.verticalGap,
+
                 AppText(
-                  userName.isNotEmpty
-                      ? userName
-                      : 'welcome_user'.tr(context),
-                  style: Get.bodyLarge.px28.w800.copyWith(
+                  userName.isNotEmpty ? userName : 'welcome_user'.tr(context),
+                  style: Get.bodyLarge.px22.w800.copyWith(
                     color: AppColors.white,
                     letterSpacing: 0.5,
                   ),
@@ -108,7 +106,7 @@ class WelcomeCard extends ConsumerWidget {
                 12.verticalGap,
                 AppText(
                   'app_tagline'.tr(context),
-                  style: Get.bodyMedium.px14.w500.copyWith(
+                  style: Get.bodyMedium.px12.w400.copyWith(
                     color: AppColors.white.withValues(alpha: 0.9),
                     height: 1.4,
                   ),

@@ -81,7 +81,7 @@ class _OrderCard extends StatelessWidget {
         splashColor: AppColors.primary.withValues(alpha: 0.12),
         highlightColor: AppColors.primary.withValues(alpha: 0.08),
         child: Container(
-          constraints: BoxConstraints(minHeight: 110.ht),
+          constraints: BoxConstraints(minHeight: 90.ht),
           padding: const EdgeInsets.all(16).rt,
           decoration: BoxDecoration(
             color: Get.cardColor,
@@ -101,7 +101,7 @@ class _OrderCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10).rt,
+                    padding: const EdgeInsets.all(6).rt,
                     decoration: BoxDecoration(
                       gradient: gradient,
                       borderRadius: BorderRadius.circular(14).rt,
@@ -124,7 +124,7 @@ class _OrderCard extends StatelessWidget {
                             alignment: Alignment.centerLeft,
                             child: AppText(
                               '$count',
-                              style: Get.bodyLarge.px26.w800.copyWith(
+                              style: Get.bodyLarge.px22.w800.copyWith(
                                 color: Get.disabledColor,
                               ),
                             ),
@@ -140,7 +140,7 @@ class _OrderCard extends StatelessWidget {
                   children: [
                     AppText(
                       title.tr(context),
-                      style: Get.bodyMedium.px13.w700.copyWith(
+                      style: Get.bodyMedium.px12.w700.copyWith(
                         color: Get.disabledColor,
                       ),
                       maxLines: 2,

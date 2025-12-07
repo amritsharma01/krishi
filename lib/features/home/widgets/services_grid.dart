@@ -20,7 +20,7 @@ class ServicesGrid extends StatelessWidget {
       children: [
         AppText(
           'services_directory'.tr(context),
-          style: Get.bodyLarge.px16.w600.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px14.w600.copyWith(color: Get.disabledColor),
         ),
         5.verticalGap,
         Row(
@@ -33,7 +33,7 @@ class ServicesGrid extends StatelessWidget {
                 onTap: () => Get.to(const ExpertsPage()),
               ),
             ),
-            7.horizontalGap,
+            5.horizontalGap,
             Expanded(
               child: _DirectoryCard(
                 title: 'service_providers',
@@ -42,7 +42,7 @@ class ServicesGrid extends StatelessWidget {
                 onTap: () => Get.to(const ServiceProvidersPage()),
               ),
             ),
-            7.horizontalGap,
+            5.horizontalGap,
             Expanded(
               child: _DirectoryCard(
                 title: 'emergency_contacts',
@@ -101,10 +101,10 @@ class _DirectoryCard extends StatelessWidget {
               ),
               child: Icon(icon, color: color, size: 28.st),
             ),
-            6.verticalGap,
+            3.verticalGap,
             AppText(
               title.tr(context),
-              style: Get.bodySmall.px11.w600.copyWith(color: Get.disabledColor),
+              style: Get.bodySmall.px10.w600.copyWith(color: Get.disabledColor),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

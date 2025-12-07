@@ -68,7 +68,6 @@ class _HomePageState extends ConsumerState<HomePage> {
                   const KnowledgeBaseGrid(),
                   10.verticalGap,
                   const MarketPricesSection(),
-                  10.verticalGap,
                 ],
               ),
             ),
@@ -93,7 +92,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           12.horizontalGap,
           AppText(
             'krishi'.tr(context),
-            style: Get.bodyLarge.px22.w700.copyWith(color: AppColors.primary),
+            style: Get.bodyLarge.px20.w700.copyWith(color: AppColors.primary),
           ),
         ],
       ),
