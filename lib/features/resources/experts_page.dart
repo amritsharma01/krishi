@@ -19,32 +19,92 @@ class ExpertsPage extends ConsumerStatefulWidget {
 }
 
 class _ExpertsPageState extends ConsumerState<ExpertsPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadExperts();
     });
   }
 
-  Future<void> _loadExperts() async {
-    if (!mounted) return;
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadExperts({bool force = false}) async {
+    if (!force && _hasLoaded && ref.read(expertsListProvider).isNotEmpty) {
+      return;
+    }
 
     ref.read(isLoadingExpertsProvider.notifier).state = true;
+    ref.read(expertsCurrentPageProvider.notifier).state = 1;
+    ref.read(expertsHasMoreProvider.notifier).state = true;
+    ref.read(expertsListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final experts = await apiService.getExperts();
+      final response = await apiService.getExperts(page: 1, pageSize: 10);
 
       if (!mounted) return;
 
-      ref.read(expertsListProvider.notifier).state = experts;
+      ref.read(expertsListProvider.notifier).state = response.results;
       ref.read(isLoadingExpertsProvider.notifier).state = false;
+      ref.read(expertsHasMoreProvider.notifier).state = response.next != null;
+      ref.read(expertsCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
       if (!mounted) return;
       ref.read(isLoadingExpertsProvider.notifier).state = false;
       Get.snackbar('error_loading_products'.tr(context));
+    }
+  }
+
+  Future<void> _loadMoreExperts() async {
+    final isLoading = ref.read(isLoadingMoreExpertsProvider);
+    final hasMore = ref.read(expertsHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreExpertsProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(expertsCurrentPageProvider);
+      final response = await apiService.getExperts(page: currentPage, pageSize: 10);
+
+      if (!mounted) return;
+
+      final currentExperts = ref.read(expertsListProvider);
+      ref.read(expertsListProvider.notifier).state = [
+        ...currentExperts,
+        ...response.results,
+      ];
+      ref.read(expertsHasMoreProvider.notifier).state = response.next != null;
+      ref.read(expertsCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(isLoadingMoreExpertsProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreExpertsProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreExpertsProvider);
+    final hasMore = ref.read(expertsHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreExperts();
     }
   }
 
@@ -116,6 +176,7 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(isLoadingExpertsProvider);
     final experts = ref.watch(expertsListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreExpertsProvider);
     final hasExperts = experts.isNotEmpty;
 
     return Scaffold(
@@ -129,41 +190,46 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
         elevation: 0,
         iconTheme: IconThemeData(color: Get.disabledColor),
       ),
-      body: isLoading
-          ? Center(
-              child: CircularProgressIndicator.adaptive(
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-              ),
-            )
-          : hasExperts
-              ? _buildExpertsList(context)
-              : EmptyStateWidget(
-                  icon: Icons.person_search_rounded,
-                  title: 'no_experts_available'.tr(context),
-                  subtitle: 'check_back_later'.tr(context),
+      body: RefreshIndicator(
+        onRefresh: () => _loadExperts(force: true),
+        child: isLoading && experts.isEmpty
+            ? Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
-    );
-  }
-
-  Widget _buildExpertsList(BuildContext context) {
-    final experts = ref.watch(expertsListProvider);
-
-    return RefreshIndicator(
-      onRefresh: _loadExperts,
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: experts.length,
-        itemBuilder: (context, index) {
-          final expert = experts[index];
-          return ExpertCard(
-            expert: expert,
-            onCall: () => _makePhoneCall(context, expert.phoneNumber),
-            onWhatsApp: () => _openWhatsApp(context, expert.phoneNumber),
-            onEmail: expert.email.isNotEmpty
-                ? () => _sendEmail(context, expert.email)
-                : null,
-          );
-        },
+              )
+            : !hasExperts
+                ? EmptyStateWidget(
+                    icon: Icons.person_search_rounded,
+                    title: 'no_experts_available'.tr(context),
+                    subtitle: 'check_back_later'.tr(context),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: experts.length + (isLoadingMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == experts.length) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: CircularProgressIndicator.adaptive(
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                            ),
+                          ),
+                        );
+                      }
+                      final expert = experts[index];
+                      return ExpertCard(
+                        expert: expert,
+                        onCall: () => _makePhoneCall(context, expert.phoneNumber),
+                        onWhatsApp: () => _openWhatsApp(context, expert.phoneNumber),
+                        onEmail: expert.email.isNotEmpty
+                            ? () => _sendEmail(context, expert.email)
+                            : null,
+                      );
+                    },
+                  ),
       ),
     );
   }

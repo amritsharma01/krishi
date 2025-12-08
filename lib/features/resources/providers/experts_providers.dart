@@ -7,4 +7,7 @@ final expertsListProvider = StateProvider<List<Expert>>(
 );
 
 final isLoadingExpertsProvider = StateProvider<bool>((ref) => true);
+final isLoadingMoreExpertsProvider = StateProvider<bool>((ref) => false);
+final expertsCurrentPageProvider = StateProvider<int>((ref) => 1);
+final expertsHasMoreProvider = StateProvider<bool>((ref) => true);
 

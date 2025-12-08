@@ -17,6 +17,8 @@ class NoticesPage extends ConsumerStatefulWidget {
 }
 
 class _NoticesPageState extends ConsumerState<NoticesPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
 
   Map<String, String> _getFilterOptions(BuildContext context) {
     return {
@@ -48,33 +50,107 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadNotices();
     });
   }
 
-  Future<void> _loadNotices({String? noticeType}) async {
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadNotices({String? noticeType, bool force = false}) async {
     if (!mounted) return;
 
     final selectedFilter = noticeType ?? ref.read(selectedNoticeFilterProvider);
+    
+    // Reset if filter changed or force refresh
+    if (noticeType != null || force) {
+      _hasLoaded = false;
+    }
+    
+    if (!force && _hasLoaded && ref.read(noticesListProvider).isNotEmpty) {
+      return;
+    }
+
     ref.read(isLoadingNoticesProvider.notifier).state = true;
+    ref.read(noticesCurrentPageProvider.notifier).state = 1;
+    ref.read(noticesHasMoreProvider.notifier).state = true;
+    ref.read(noticesListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final notices = await apiService.getNotices(
+      final response = await apiService.getNotices(
         noticeType: selectedFilter == 'all' ? null : selectedFilter,
+        page: 1,
+        pageSize: 10,
       );
 
       if (!mounted) return;
 
-      ref.read(noticesListProvider.notifier).state = notices;
+      ref.read(noticesListProvider.notifier).state = response.results;
       ref.read(isLoadingNoticesProvider.notifier).state = false;
+      ref.read(noticesHasMoreProvider.notifier).state = response.next != null;
+      ref.read(noticesCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
       if (!mounted || e is FormatException) {
         return;
       }
       ref.read(isLoadingNoticesProvider.notifier).state = false;
       Get.snackbar('Failed to load notices: $e');
+    }
+  }
+
+  Future<void> _loadMoreNotices() async {
+    final isLoading = ref.read(isLoadingMoreNoticesProvider);
+    final hasMore = ref.read(noticesHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreNoticesProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(noticesCurrentPageProvider);
+      final selectedFilter = ref.read(selectedNoticeFilterProvider);
+      
+      final response = await apiService.getNotices(
+        noticeType: selectedFilter == 'all' ? null : selectedFilter,
+        page: currentPage,
+        pageSize: 10,
+      );
+
+      if (!mounted) return;
+
+      final currentNotices = ref.read(noticesListProvider);
+      ref.read(noticesListProvider.notifier).state = [
+        ...currentNotices,
+        ...response.results,
+      ];
+      ref.read(noticesHasMoreProvider.notifier).state = response.next != null;
+      ref.read(noticesCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(isLoadingMoreNoticesProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreNoticesProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreNoticesProvider);
+    final hasMore = ref.read(noticesHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreNotices();
     }
   }
 
@@ -112,6 +188,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(isLoadingNoticesProvider);
     final notices = ref.watch(noticesListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreNoticesProvider);
     final hasNotices = notices.isNotEmpty;
 
     return Scaffold(
@@ -132,34 +209,45 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
             filterOptions: _getFilterOptions(context),
             filterIcons: _filterIcons,
             filterColors: _filterColors,
-            onFilterChanged: (noticeType) => _loadNotices(noticeType: noticeType),
+            onFilterChanged: (noticeType) => _loadNotices(noticeType: noticeType, force: true),
           ),
           Expanded(
-            child: isLoading
+            child: isLoading && notices.isEmpty
                 ? const Center(child: CircularProgressIndicator.adaptive())
-                : hasNotices
-                    ? _buildNoticesList(context)
-                    : EmptyStateWidget(
+                : !hasNotices
+                    ? EmptyStateWidget(
                         icon: Icons.notifications_off_rounded,
                         title: 'no_notices_available'.tr(context),
                         subtitle: 'check_back_later_updates'.tr(context),
-                      ),
+                      )
+                    : _buildNoticesList(context, isLoadingMore),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildNoticesList(BuildContext context) {
+  Widget _buildNoticesList(BuildContext context, bool isLoadingMore) {
     final notices = ref.watch(noticesListProvider);
     final selectedFilter = ref.watch(selectedNoticeFilterProvider);
 
     return RefreshIndicator(
-      onRefresh: () => _loadNotices(noticeType: selectedFilter),
+      onRefresh: () => _loadNotices(noticeType: selectedFilter, force: true),
       child: ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.all(16),
-        itemCount: notices.length,
+        itemCount: notices.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == notices.length) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(Get.primaryColor),
+                ),
+              ),
+            );
+          }
           final notice = notices[index];
           return NoticeCard(
             notice: notice,

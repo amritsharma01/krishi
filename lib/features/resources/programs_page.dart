@@ -88,6 +88,7 @@ class _ProgramsPageState extends ConsumerState<ProgramsPage> {
       debugPrint('Loading programs page: $currentPage');
       final response = await apiService.getPrograms(
         page: currentPage,
+        pageSize: 10,
         search: searchQuery.isEmpty ? null : searchQuery,
         ordering: '-created_at',
       );

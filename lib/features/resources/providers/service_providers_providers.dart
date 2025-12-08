@@ -7,6 +7,9 @@ final serviceProvidersListProvider = StateProvider<List<ServiceProvider>>(
 );
 
 final isLoadingServiceProvidersProvider = StateProvider<bool>((ref) => true);
+final isLoadingMoreServiceProvidersProvider = StateProvider<bool>((ref) => false);
+final serviceProvidersCurrentPageProvider = StateProvider<int>((ref) => 1);
+final serviceProvidersHasMoreProvider = StateProvider<bool>((ref) => true);
 
 final selectedServiceTypeProvider = StateProvider<String>((ref) => 'all');
 

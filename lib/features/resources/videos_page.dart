@@ -19,6 +19,8 @@ class VideosPage extends ConsumerStatefulWidget {
 }
 
 class _VideosPageState extends ConsumerState<VideosPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
 
   Map<String, String> _getCategories(BuildContext context) {
     return {
@@ -56,31 +58,105 @@ class _VideosPageState extends ConsumerState<VideosPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadVideos();
     });
   }
 
-  Future<void> _loadVideos({String? category}) async {
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadVideos({String? category, bool force = false}) async {
     if (!mounted) return;
 
     final selectedCategory = category ?? ref.read(selectedVideoCategoryProvider);
+    
+    // Reset if category changed or force refresh
+    if (category != null || force) {
+      _hasLoaded = false;
+    }
+    
+    if (!force && _hasLoaded && ref.read(videosListProvider).isNotEmpty) {
+      return;
+    }
+
     ref.read(isLoadingVideosProvider.notifier).state = true;
+    ref.read(videosCurrentPageProvider.notifier).state = 1;
+    ref.read(videosHasMoreProvider.notifier).state = true;
+    ref.read(videosListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final videos = await apiService.getVideos(
+      final response = await apiService.getVideos(
         category: selectedCategory == 'all' ? null : selectedCategory,
+        page: 1,
+        pageSize: 10,
       );
 
       if (!mounted) return;
 
-      ref.read(videosListProvider.notifier).state = videos;
+      ref.read(videosListProvider.notifier).state = response.results;
       ref.read(isLoadingVideosProvider.notifier).state = false;
+      ref.read(videosHasMoreProvider.notifier).state = response.next != null;
+      ref.read(videosCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
       if (!mounted) return;
       ref.read(isLoadingVideosProvider.notifier).state = false;
       Get.snackbar('error_loading_products'.tr(context));
+    }
+  }
+
+  Future<void> _loadMoreVideos() async {
+    final isLoading = ref.read(isLoadingMoreVideosProvider);
+    final hasMore = ref.read(videosHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreVideosProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(videosCurrentPageProvider);
+      final selectedCategory = ref.read(selectedVideoCategoryProvider);
+      
+      final response = await apiService.getVideos(
+        category: selectedCategory == 'all' ? null : selectedCategory,
+        page: currentPage,
+        pageSize: 10,
+      );
+
+      if (!mounted) return;
+
+      final currentVideos = ref.read(videosListProvider);
+      ref.read(videosListProvider.notifier).state = [
+        ...currentVideos,
+        ...response.results,
+      ];
+      ref.read(videosHasMoreProvider.notifier).state = response.next != null;
+      ref.read(videosCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(isLoadingMoreVideosProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreVideosProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreVideosProvider);
+    final hasMore = ref.read(videosHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreVideos();
     }
   }
 
@@ -193,6 +269,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(isLoadingVideosProvider);
     final videos = ref.watch(videosListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreVideosProvider);
     final hasVideos = videos.isNotEmpty;
 
     return Scaffold(
@@ -213,34 +290,45 @@ class _VideosPageState extends ConsumerState<VideosPage> {
             categories: _getCategories(context),
             categoryIcons: _categoryIcons,
             categoryColors: _categoryColors,
-            onFilterChanged: (category) => _loadVideos(category: category),
+            onFilterChanged: (category) => _loadVideos(category: category, force: true),
           ),
           Expanded(
-            child: isLoading
+            child: isLoading && videos.isEmpty
                 ? const Center(child: CircularProgressIndicator.adaptive())
-                : hasVideos
-                    ? _buildVideosList(context)
-                    : EmptyStateWidget(
+                : !hasVideos
+                    ? EmptyStateWidget(
                         icon: Icons.video_library_rounded,
                         title: 'no_videos_available'.tr(context),
                         subtitle: 'check_back_later_videos'.tr(context),
-                      ),
+                      )
+                    : _buildVideosList(context, isLoadingMore),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildVideosList(BuildContext context) {
+  Widget _buildVideosList(BuildContext context, bool isLoadingMore) {
     final videos = ref.watch(videosListProvider);
     final selectedCategory = ref.watch(selectedVideoCategoryProvider);
 
     return RefreshIndicator(
-      onRefresh: () => _loadVideos(category: selectedCategory),
+      onRefresh: () => _loadVideos(category: selectedCategory, force: true),
       child: ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.all(16),
-        itemCount: videos.length,
+        itemCount: videos.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == videos.length) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.red.shade700),
+                ),
+              ),
+            );
+          }
           final video = videos[index];
           final thumbnailUrl = _getThumbnailUrl(video);
           final categoryColor = _categoryColors[video.category] ?? Colors.red;

@@ -7,6 +7,9 @@ final userGuidesListProvider = StateProvider<List<UserManual>>(
 );
 
 final isLoadingUserGuidesProvider = StateProvider<bool>((ref) => true);
+final isLoadingMoreUserGuidesProvider = StateProvider<bool>((ref) => false);
+final userGuidesCurrentPageProvider = StateProvider<int>((ref) => 1);
+final userGuidesHasMoreProvider = StateProvider<bool>((ref) => true);
 
 final selectedUserGuideCategoryProvider = StateProvider<String>((ref) => 'all');
 

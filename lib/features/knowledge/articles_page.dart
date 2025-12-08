@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
+import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -9,17 +10,113 @@ import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
-import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/knowledge/article_detail_page.dart';
 import 'package:krishi/features/knowledge/providers/knowledge_providers.dart';
 import 'package:krishi/models/article.dart';
 
-class ArticlesPage extends ConsumerWidget {
+class ArticlesPage extends ConsumerStatefulWidget {
   const ArticlesPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final articlesAsync = ref.watch(articlesProvider);
+  ConsumerState<ArticlesPage> createState() => _ArticlesPageState();
+}
+
+class _ArticlesPageState extends ConsumerState<ArticlesPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadArticles();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadArticles({bool force = false}) async {
+    if (!force && _hasLoaded && ref.read(articlesListProvider).isNotEmpty) {
+      return;
+    }
+
+    ref.read(isLoadingArticlesProvider.notifier).state = true;
+    ref.read(articlesCurrentPageProvider.notifier).state = 1;
+    ref.read(articlesHasMoreProvider.notifier).state = true;
+    ref.read(articlesListProvider.notifier).state = [];
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final response = await apiService.getArticles(page: 1, pageSize: 10);
+
+      if (mounted) {
+        ref.read(articlesListProvider.notifier).state = response.results;
+        ref.read(isLoadingArticlesProvider.notifier).state = false;
+        ref.read(articlesHasMoreProvider.notifier).state = response.next != null;
+        ref.read(articlesCurrentPageProvider.notifier).state = 2;
+        _hasLoaded = true;
+      }
+    } catch (e) {
+      if (mounted) {
+        ref.read(isLoadingArticlesProvider.notifier).state = false;
+      }
+    }
+  }
+
+  Future<void> _loadMoreArticles() async {
+    final isLoading = ref.read(isLoadingMoreArticlesProvider);
+    final hasMore = ref.read(articlesHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreArticlesProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(articlesCurrentPageProvider);
+      final response = await apiService.getArticles(page: currentPage, pageSize: 10);
+
+      if (mounted) {
+        final currentArticles = ref.read(articlesListProvider);
+        ref.read(articlesListProvider.notifier).state = [
+          ...currentArticles,
+          ...response.results,
+        ];
+        ref.read(articlesHasMoreProvider.notifier).state = response.next != null;
+        ref.read(articlesCurrentPageProvider.notifier).state = currentPage + 1;
+        ref.read(isLoadingMoreArticlesProvider.notifier).state = false;
+      }
+    } catch (e) {
+      if (mounted) {
+        ref.read(isLoadingMoreArticlesProvider.notifier).state = false;
+      }
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreArticlesProvider);
+    final hasMore = ref.read(articlesHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreArticles();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isLoading = ref.watch(isLoadingArticlesProvider);
+    final articles = ref.watch(articlesListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreArticlesProvider);
 
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
@@ -35,40 +132,38 @@ class ArticlesPage extends ConsumerWidget {
           style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
         ),
       ),
-      body: articlesAsync.when(
-        data: (articlesList) {
-          if (articlesList.isEmpty) {
-            return EmptyState(
-              title: 'no_articles_available'.tr(context),
-              subtitle: 'no_articles_subtitle'.tr(context),
-              icon: Icons.article_outlined,
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(articlesProvider);
-            },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16).rt,
-              itemCount: articlesList.length,
-              itemBuilder: (context, index) {
-                return _buildArticleCard(context, articlesList[index]);
-              },
-            ),
-          );
-        },
-        loading: () => Center(
-          child: CircularProgressIndicator.adaptive(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-          ),
-        ),
-        error: (error, stack) => ErrorState(
-          subtitle: 'error_loading_articles_subtitle'.tr(context),
-          onRetry: () {
-            ref.invalidate(articlesProvider);
-          },
-        ),
+      body: RefreshIndicator(
+        onRefresh: () => _loadArticles(force: true),
+        child: isLoading && articles.isEmpty
+            ? Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              )
+            : articles.isEmpty
+                ? EmptyState(
+                    title: 'no_articles_available'.tr(context),
+                    subtitle: 'no_articles_subtitle'.tr(context),
+                    icon: Icons.article_outlined,
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16).rt,
+                    itemCount: articles.length + (isLoadingMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == articles.length) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16).rt,
+                          child: Center(
+                            child: CircularProgressIndicator.adaptive(
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                            ),
+                          ),
+                        );
+                      }
+                      return _buildArticleCard(context, articles[index]);
+                    },
+                  ),
       ),
     );
   }

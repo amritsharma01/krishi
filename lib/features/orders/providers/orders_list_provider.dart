@@ -91,8 +91,8 @@ class OrdersListNotifier extends StateNotifier<OrdersListState> {
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final result = showSales
-          ? await apiService.getMySalesPaginated(page: 1)
-          : await apiService.getMyPurchasesPaginated(page: 1);
+          ? await apiService.getMySalesPaginated(page: 1, pageSize: 10)
+          : await apiService.getMyPurchasesPaginated(page: 1, pageSize: 10);
 
       if (mounted) {
         state = state.copyWith(
@@ -118,8 +118,8 @@ class OrdersListNotifier extends StateNotifier<OrdersListState> {
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final result = showSales
-          ? await apiService.getMySalesPaginated(page: state.currentPage)
-          : await apiService.getMyPurchasesPaginated(page: state.currentPage);
+          ? await apiService.getMySalesPaginated(page: state.currentPage, pageSize: 10)
+          : await apiService.getMyPurchasesPaginated(page: state.currentPage, pageSize: 10);
 
       if (mounted) {
         state = state.copyWith(

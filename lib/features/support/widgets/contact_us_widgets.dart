@@ -77,6 +77,8 @@ class ContactUsList extends ConsumerWidget {
   final Map<String, IconData> contactIcons;
   final Future<void> Function(BuildContext, String) onMakePhoneCall;
   final Future<void> Function(BuildContext, String) onSendEmail;
+  final ScrollController? scrollController;
+  final bool isLoadingMore;
 
   const ContactUsList({
     super.key,
@@ -85,49 +87,57 @@ class ContactUsList extends ConsumerWidget {
     required this.contactIcons,
     required this.onMakePhoneCall,
     required this.onSendEmail,
+    this.scrollController,
+    this.isLoadingMore = false,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectedType = ref.watch(selectedContactUsTypeProvider);
-    final contactsAsync = ref.watch(contactUsListProvider(selectedType == 'all' ? null : selectedType));
+    final contacts = ref.watch(contactUsListProvider);
+    final isLoading = ref.watch(isLoadingContactUsProvider);
 
-    return contactsAsync.when(
-      data: (contactsList) {
-        if (contactsList.isEmpty) {
-          return EmptyStateWidget(
-            icon: Icons.contacts_rounded,
-            title: 'no_contacts_available'.tr(context),
-            subtitle: 'check_back_later'.tr(context),
-          );
-        }
-        return RefreshIndicator(
-          onRefresh: () => onRefresh(selectedType),
-          child: ListView.builder(
-            padding: EdgeInsets.all(16.rt),
-            itemCount: contactsList.length,
-            itemBuilder: (context, index) {
-              final contact = contactsList[index];
-              return ContactUsCard(
-                contact: contact,
-                contactColors: contactColors,
-                contactIcons: contactIcons,
-                onMakePhoneCall: onMakePhoneCall,
-                onSendEmail: onSendEmail,
-              );
-            },
-          ),
-        );
-      },
-      loading: () => Center(
+    if (isLoading && contacts.isEmpty) {
+      return Center(
         child: CircularProgressIndicator.adaptive(
           valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
         ),
-      ),
-      error: (error, stack) => EmptyStateWidget(
-        icon: Icons.error_outline_rounded,
-        title: 'error_loading_contacts'.tr(context),
-        subtitle: error.toString(),
+      );
+    }
+
+    if (contacts.isEmpty) {
+      return EmptyStateWidget(
+        icon: Icons.contacts_rounded,
+        title: 'no_contacts_available'.tr(context),
+        subtitle: 'check_back_later'.tr(context),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () => onRefresh(ref.read(selectedContactUsTypeProvider)),
+      child: ListView.builder(
+        controller: scrollController,
+        padding: EdgeInsets.all(16.rt),
+        itemCount: contacts.length + (isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == contacts.length) {
+            return Padding(
+              padding: EdgeInsets.symmetric(vertical: 16.rt),
+              child: Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              ),
+            );
+          }
+          final contact = contacts[index];
+          return ContactUsCard(
+            contact: contact,
+            contactColors: contactColors,
+            contactIcons: contactIcons,
+            onMakePhoneCall: onMakePhoneCall,
+            onSendEmail: onSendEmail,
+          );
+        },
       ),
     );
   }
@@ -265,7 +275,8 @@ class ContactUsCard extends StatelessWidget {
                         icon: Icons.phone_rounded,
                         label: 'call'.tr(context),
                         color: Colors.green,
-                        onTap: () => onMakePhoneCall(context, contact.phoneNumber),
+                        onTap: () =>
+                            onMakePhoneCall(context, contact.phoneNumber),
                       ),
                     ),
                   ],
@@ -318,10 +329,7 @@ class ContactUsButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12).rt,
-            border: Border.all(
-              color: color.withValues(alpha: 0.3),
-              width: 1.5,
-            ),
+            border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -343,4 +351,3 @@ class ContactUsButton extends StatelessWidget {
     );
   }
 }
-

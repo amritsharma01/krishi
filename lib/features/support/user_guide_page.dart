@@ -10,7 +10,6 @@ import 'package:krishi/features/resources/widgets/empty_state_widget.dart';
 import 'package:krishi/features/support/providers/user_guides_providers.dart';
 import 'package:krishi/features/support/user_manual_detail_page.dart';
 import 'package:krishi/features/support/widgets/user_guide_widgets.dart';
-import 'package:krishi/models/resources.dart';
 
 class UserGuidePage extends ConsumerStatefulWidget {
   const UserGuidePage({super.key});
@@ -20,6 +19,8 @@ class UserGuidePage extends ConsumerStatefulWidget {
 }
 
 class _UserGuidePageState extends ConsumerState<UserGuidePage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
 
   Map<String, String> _getCategories(BuildContext context) {
     return {
@@ -51,27 +52,53 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadManuals();
     });
   }
 
-  Future<void> _loadManuals({String? category}) async {
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadManuals({String? category, bool force = false}) async {
     if (!mounted) return;
 
     final selectedCategory = category ?? ref.read(selectedUserGuideCategoryProvider);
+    
+    // Reset if category changed or force refresh
+    if (category != null || force) {
+      _hasLoaded = false;
+    }
+    
+    if (!force && _hasLoaded && ref.read(userGuidesListProvider).isNotEmpty) {
+      return;
+    }
+
     ref.read(isLoadingUserGuidesProvider.notifier).state = true;
+    ref.read(userGuidesCurrentPageProvider.notifier).state = 1;
+    ref.read(userGuidesHasMoreProvider.notifier).state = true;
+    ref.read(userGuidesListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final manuals = await apiService.getUserManuals(
+      final response = await apiService.getUserManuals(
         category: selectedCategory == 'all' ? null : selectedCategory,
+        page: 1,
+        pageSize: 10,
       );
 
       if (!mounted) return;
 
-      ref.read(userGuidesListProvider.notifier).state = manuals;
+      ref.read(userGuidesListProvider.notifier).state = response.results;
       ref.read(isLoadingUserGuidesProvider.notifier).state = false;
+      ref.read(userGuidesHasMoreProvider.notifier).state = response.next != null;
+      ref.read(userGuidesCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
       if (!mounted) return;
       ref.read(isLoadingUserGuidesProvider.notifier).state = false;
@@ -79,10 +106,59 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
     }
   }
 
+  Future<void> _loadMoreManuals() async {
+    final isLoading = ref.read(isLoadingMoreUserGuidesProvider);
+    final hasMore = ref.read(userGuidesHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreUserGuidesProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(userGuidesCurrentPageProvider);
+      final selectedCategory = ref.read(selectedUserGuideCategoryProvider);
+      
+      final response = await apiService.getUserManuals(
+        category: selectedCategory == 'all' ? null : selectedCategory,
+        page: currentPage,
+        pageSize: 10,
+      );
+
+      if (!mounted) return;
+
+      final currentManuals = ref.read(userGuidesListProvider);
+      ref.read(userGuidesListProvider.notifier).state = [
+        ...currentManuals,
+        ...response.results,
+      ];
+      ref.read(userGuidesHasMoreProvider.notifier).state = response.next != null;
+      ref.read(userGuidesCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(isLoadingMoreUserGuidesProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreUserGuidesProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreUserGuidesProvider);
+    final hasMore = ref.read(userGuidesHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreManuals();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(isLoadingUserGuidesProvider);
     final manuals = ref.watch(userGuidesListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreUserGuidesProvider);
     final hasManuals = manuals.isNotEmpty;
 
     return Scaffold(
@@ -104,44 +180,59 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
             categoryColors: _categoryColors,
             onFilterSelected: (category) {
               ref.read(selectedUserGuideCategoryProvider.notifier).state = category;
-              _loadManuals(category: category);
+              _loadManuals(category: category, force: true);
             },
           ),
           Expanded(
-            child: isLoading
-                ? Center(
-                    child: CircularProgressIndicator.adaptive(
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                    ),
-                  )
-                : hasManuals
-                    ? _buildManualsList(context)
-                    : EmptyStateWidget(
-                        icon: Icons.menu_book_rounded,
-                        title: 'no_manuals_available'.tr(context),
-                        subtitle: 'check_back_later'.tr(context),
+            child: RefreshIndicator(
+              onRefresh: () => _loadManuals(force: true),
+              child: isLoading && manuals.isEmpty
+                  ? Center(
+                      child: CircularProgressIndicator.adaptive(
+                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                       ),
+                    )
+                  : !hasManuals
+                      ? EmptyStateWidget(
+                          icon: Icons.menu_book_rounded,
+                          title: 'no_manuals_available'.tr(context),
+                          subtitle: 'check_back_later'.tr(context),
+                        )
+                      : ListView.builder(
+                          controller: _scrollController,
+                          padding: const EdgeInsets.all(16),
+                          itemCount: manuals.length + (isLoadingMore ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (index == manuals.length) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                child: Center(
+                                  child: CircularProgressIndicator.adaptive(
+                                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                                  ),
+                                ),
+                              );
+                            }
+                            final manual = manuals[index];
+                            return UserGuideCard(
+                              manual: manual,
+                              categoryColors: _categoryColors,
+                              categoryIcons: _categoryIcons,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => UserManualDetailPage(manual: manual),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildManualsList(BuildContext context) {
-    final selectedCategory = ref.watch(selectedUserGuideCategoryProvider);
-
-    return UserGuideList(
-      onRefresh: (category) => _loadManuals(category: category ?? selectedCategory),
-      categoryColors: _categoryColors,
-      categoryIcons: _categoryIcons,
-      onManualTap: (manual) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => UserManualDetailPage(manual: manual),
-          ),
-        );
-      },
     );
   }
 }

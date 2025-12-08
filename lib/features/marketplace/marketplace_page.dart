@@ -69,6 +69,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
 
       final response = await apiService.getProducts(
         page: 1,
+        pageSize: 10,
         search: _searchController.text.isEmpty ? null : _searchController.text,
         category: selectedCategoryId,
       );
@@ -105,6 +106,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       
       final response = await apiService.getProducts(
         page: currentPage,
+        pageSize: 10,
         search: _searchController.text.isEmpty ? null : _searchController.text,
         category: selectedCategoryId,
       );
@@ -154,6 +156,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       final sellStatusFilter = ref.read(sellStatusFilterProvider);
       final response = await apiService.getProducts(
         page: 1,
+        pageSize: 10,
         sellerId: _currentSellerKrId ?? _currentUserId?.toString(),
         approvalStatus: sellStatusFilter == 'all' ? null : sellStatusFilter,
       );
@@ -191,6 +194,7 @@ class _MarketplacePageState extends ConsumerState<MarketplacePage> {
       
       final response = await apiService.getProducts(
         page: currentPage,
+        pageSize: 10,
         sellerId: _currentSellerKrId ?? _currentUserId?.toString(),
         approvalStatus: sellStatusFilter == 'all' ? null : sellStatusFilter,
       );

@@ -20,6 +20,9 @@ class ServiceProvidersPage extends ConsumerStatefulWidget {
 }
 
 class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
+
   Map<String, String> _getServiceTypes(BuildContext context) {
     return {
       'all': 'all_services'.tr(context),
@@ -56,31 +59,105 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProviders();
     });
   }
 
-  Future<void> _loadProviders({String? serviceType}) async {
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadProviders({String? serviceType, bool force = false}) async {
     if (!mounted) return;
 
     final selectedType = serviceType ?? ref.read(selectedServiceTypeProvider);
+    
+    // Reset if service type changed or force refresh
+    if (serviceType != null || force) {
+      _hasLoaded = false;
+    }
+    
+    if (!force && _hasLoaded && ref.read(serviceProvidersListProvider).isNotEmpty) {
+      return;
+    }
+
     ref.read(isLoadingServiceProvidersProvider.notifier).state = true;
+    ref.read(serviceProvidersCurrentPageProvider.notifier).state = 1;
+    ref.read(serviceProvidersHasMoreProvider.notifier).state = true;
+    ref.read(serviceProvidersListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final providers = await apiService.getServiceProviders(
+      final response = await apiService.getServiceProviders(
         serviceType: selectedType == 'all' ? null : selectedType,
+        page: 1,
+        pageSize: 10,
       );
 
       if (!mounted) return;
 
-      ref.read(serviceProvidersListProvider.notifier).state = providers;
+      ref.read(serviceProvidersListProvider.notifier).state = response.results;
       ref.read(isLoadingServiceProvidersProvider.notifier).state = false;
+      ref.read(serviceProvidersHasMoreProvider.notifier).state = response.next != null;
+      ref.read(serviceProvidersCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
       if (!mounted) return;
       ref.read(isLoadingServiceProvidersProvider.notifier).state = false;
       Get.snackbar('error_loading_products'.tr(context));
+    }
+  }
+
+  Future<void> _loadMoreProviders() async {
+    final isLoading = ref.read(isLoadingMoreServiceProvidersProvider);
+    final hasMore = ref.read(serviceProvidersHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreServiceProvidersProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(serviceProvidersCurrentPageProvider);
+      final selectedType = ref.read(selectedServiceTypeProvider);
+      
+      final response = await apiService.getServiceProviders(
+        serviceType: selectedType == 'all' ? null : selectedType,
+        page: currentPage,
+        pageSize: 10,
+      );
+
+      if (!mounted) return;
+
+      final currentProviders = ref.read(serviceProvidersListProvider);
+      ref.read(serviceProvidersListProvider.notifier).state = [
+        ...currentProviders,
+        ...response.results,
+      ];
+      ref.read(serviceProvidersHasMoreProvider.notifier).state = response.next != null;
+      ref.read(serviceProvidersCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(isLoadingMoreServiceProvidersProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreServiceProvidersProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreServiceProvidersProvider);
+    final hasMore = ref.read(serviceProvidersHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreProviders();
     }
   }
 
@@ -112,6 +189,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(isLoadingServiceProvidersProvider);
     final providers = ref.watch(serviceProvidersListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreServiceProvidersProvider);
     final hasProviders = providers.isNotEmpty;
 
     return Scaffold(
@@ -132,10 +210,10 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
             serviceIcons: _serviceIcons,
             serviceColors: _serviceColors,
             onFilterChanged: (serviceType) =>
-                _loadProviders(serviceType: serviceType),
+                _loadProviders(serviceType: serviceType, force: true),
           ),
           Expanded(
-            child: isLoading
+            child: isLoading && providers.isEmpty
                 ? Center(
                     child: CircularProgressIndicator.adaptive(
                       valueColor: AlwaysStoppedAnimation<Color>(
@@ -143,29 +221,40 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
                       ),
                     ),
                   )
-                : hasProviders
-                ? _buildProvidersList(context)
-                : EmptyStateWidget(
+                : !hasProviders
+                ? EmptyStateWidget(
                     icon: Icons.store_rounded,
                     title: 'no_service_providers_available'.tr(context),
                     subtitle: 'check_back_later'.tr(context),
-                  ),
+                  )
+                : _buildProvidersList(context, isLoadingMore),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProvidersList(BuildContext context) {
+  Widget _buildProvidersList(BuildContext context, bool isLoadingMore) {
     final providers = ref.watch(serviceProvidersListProvider);
     final selectedType = ref.watch(selectedServiceTypeProvider);
 
     return RefreshIndicator(
-      onRefresh: () => _loadProviders(serviceType: selectedType),
+      onRefresh: () => _loadProviders(serviceType: selectedType, force: true),
       child: ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.all(16),
-        itemCount: providers.length,
+        itemCount: providers.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == providers.length) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              ),
+            );
+          }
           final provider = providers[index];
           final color =
               _serviceColors[provider.serviceType] ?? AppColors.primary;

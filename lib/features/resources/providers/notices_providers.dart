@@ -7,6 +7,9 @@ final noticesListProvider = StateProvider<List<Notice>>(
 );
 
 final isLoadingNoticesProvider = StateProvider<bool>((ref) => true);
+final isLoadingMoreNoticesProvider = StateProvider<bool>((ref) => false);
+final noticesCurrentPageProvider = StateProvider<int>((ref) => 1);
+final noticesHasMoreProvider = StateProvider<bool>((ref) => true);
 
 final selectedNoticeFilterProvider = StateProvider<String>((ref) => 'all');
 

@@ -85,6 +85,7 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
       debugPrint('Loading soil tests page: $currentPage');
       final response = await apiService.getSoilTests(
         page: currentPage,
+        pageSize: 10,
         search: searchQuery.isEmpty ? null : searchQuery,
         ordering: 'municipality_name',
       );

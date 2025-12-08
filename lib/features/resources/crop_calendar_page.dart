@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
@@ -19,6 +18,8 @@ class CropCalendarPage extends ConsumerStatefulWidget {
 }
 
 class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
 
   Map<String, String> _getCropTypes(BuildContext context) {
     return {
@@ -53,27 +54,53 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadCrops();
     });
   }
 
-  Future<void> _loadCrops({String? cropType}) async {
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCrops({String? cropType, bool force = false}) async {
     if (!mounted) return;
 
     final selectedType = cropType ?? ref.read(selectedCropTypeProvider);
+    
+    // Reset if crop type changed or force refresh
+    if (cropType != null || force) {
+      _hasLoaded = false;
+    }
+    
+    if (!force && _hasLoaded && ref.read(cropCalendarListProvider).isNotEmpty) {
+      return;
+    }
+
     ref.read(isLoadingCropCalendarProvider.notifier).state = true;
+    ref.read(cropCalendarCurrentPageProvider.notifier).state = 1;
+    ref.read(cropCalendarHasMoreProvider.notifier).state = true;
+    ref.read(cropCalendarListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final crops = await apiService.getCropCalendar(
+      final response = await apiService.getCropCalendar(
         cropType: selectedType == 'all' ? null : selectedType,
+        page: 1,
+        pageSize: 10,
       );
 
       if (!mounted) return;
 
-      ref.read(cropCalendarListProvider.notifier).state = crops;
+      ref.read(cropCalendarListProvider.notifier).state = response.results;
       ref.read(isLoadingCropCalendarProvider.notifier).state = false;
+      ref.read(cropCalendarHasMoreProvider.notifier).state = response.next != null;
+      ref.read(cropCalendarCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
       if (!mounted) return;
       ref.read(isLoadingCropCalendarProvider.notifier).state = false;
@@ -81,10 +108,59 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
     }
   }
 
+  Future<void> _loadMoreCrops() async {
+    final isLoading = ref.read(isLoadingMoreCropCalendarProvider);
+    final hasMore = ref.read(cropCalendarHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreCropCalendarProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(cropCalendarCurrentPageProvider);
+      final selectedType = ref.read(selectedCropTypeProvider);
+      
+      final response = await apiService.getCropCalendar(
+        cropType: selectedType == 'all' ? null : selectedType,
+        page: currentPage,
+        pageSize: 10,
+      );
+
+      if (!mounted) return;
+
+      final currentCrops = ref.read(cropCalendarListProvider);
+      ref.read(cropCalendarListProvider.notifier).state = [
+        ...currentCrops,
+        ...response.results,
+      ];
+      ref.read(cropCalendarHasMoreProvider.notifier).state = response.next != null;
+      ref.read(cropCalendarCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(isLoadingMoreCropCalendarProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreCropCalendarProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreCropCalendarProvider);
+    final hasMore = ref.read(cropCalendarHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreCrops();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isLoading = ref.watch(isLoadingCropCalendarProvider);
     final crops = ref.watch(cropCalendarListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreCropCalendarProvider);
     final hasCrops = crops.isNotEmpty;
 
     return Scaffold(
@@ -105,31 +181,32 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
             cropTypes: _getCropTypes(context),
             cropIcons: _cropIcons,
             cropColors: _cropColors,
-            onFilterChanged: (cropType) => _loadCrops(cropType: cropType),
+            onFilterChanged: (cropType) => _loadCrops(cropType: cropType, force: true),
           ),
           Expanded(
-            child: isLoading
+            child: isLoading && crops.isEmpty
                 ? const Center(child: CircularProgressIndicator.adaptive())
-                : hasCrops
-                    ? _buildCropsList(context)
-                    : EmptyStateWidget(
+                : !hasCrops
+                    ? EmptyStateWidget(
                         icon: Icons.calendar_today_rounded,
                         title: 'no_crops_available'.tr(context),
                         subtitle: 'check_back_later_info'.tr(context),
-                      ),
+                      )
+                    : _buildCropsList(context, isLoadingMore),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCropsList(BuildContext context) {
+  Widget _buildCropsList(BuildContext context, bool isLoadingMore) {
     final crops = ref.watch(cropCalendarListProvider);
     final selectedType = ref.watch(selectedCropTypeProvider);
 
     return RefreshIndicator(
-      onRefresh: () => _loadCrops(cropType: selectedType),
+      onRefresh: () => _loadCrops(cropType: selectedType, force: true),
       child: GridView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.all(10),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -137,8 +214,16 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
           mainAxisSpacing: 16.ht,
           childAspectRatio: 0.65,
         ),
-        itemCount: crops.length,
+        itemCount: crops.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == crops.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircularProgressIndicator.adaptive(),
+              ),
+            );
+          }
           final crop = crops[index];
           final color = _cropColors[crop.cropType] ?? Colors.teal;
           final icon = _cropIcons[crop.cropType] ?? Icons.agriculture_rounded;

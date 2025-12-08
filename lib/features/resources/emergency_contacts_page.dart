@@ -20,6 +20,9 @@ class EmergencyContactsPage extends ConsumerStatefulWidget {
 }
 
 class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
+
   Map<String, String> _getContactTypes(BuildContext context) {
     return {
       'all': 'all_contacts'.tr(context),
@@ -50,31 +53,105 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadContacts();
     });
   }
 
-  Future<void> _loadContacts({String? contactType}) async {
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadContacts({String? contactType, bool force = false}) async {
     if (!mounted) return;
 
     final selectedType = contactType ?? ref.read(selectedContactTypeProvider);
+    
+    // Reset if contact type changed or force refresh
+    if (contactType != null || force) {
+      _hasLoaded = false;
+    }
+    
+    if (!force && _hasLoaded && ref.read(emergencyContactsListProvider).isNotEmpty) {
+      return;
+    }
+
     ref.read(isLoadingEmergencyContactsProvider.notifier).state = true;
+    ref.read(emergencyContactsCurrentPageProvider.notifier).state = 1;
+    ref.read(emergencyContactsHasMoreProvider.notifier).state = true;
+    ref.read(emergencyContactsListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final contacts = await apiService.getContacts(
+      final response = await apiService.getContacts(
         contactType: selectedType == 'all' ? null : selectedType,
+        page: 1,
+        pageSize: 10,
       );
 
       if (!mounted) return;
 
-      ref.read(emergencyContactsListProvider.notifier).state = contacts;
+      ref.read(emergencyContactsListProvider.notifier).state = response.results;
       ref.read(isLoadingEmergencyContactsProvider.notifier).state = false;
+      ref.read(emergencyContactsHasMoreProvider.notifier).state = response.next != null;
+      ref.read(emergencyContactsCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
       if (!mounted) return;
       ref.read(isLoadingEmergencyContactsProvider.notifier).state = false;
       Get.snackbar('error_loading_products'.tr(context));
+    }
+  }
+
+  Future<void> _loadMoreContacts() async {
+    final isLoading = ref.read(isLoadingMoreEmergencyContactsProvider);
+    final hasMore = ref.read(emergencyContactsHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreEmergencyContactsProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(emergencyContactsCurrentPageProvider);
+      final selectedType = ref.read(selectedContactTypeProvider);
+      
+      final response = await apiService.getContacts(
+        contactType: selectedType == 'all' ? null : selectedType,
+        page: currentPage,
+        pageSize: 10,
+      );
+
+      if (!mounted) return;
+
+      final currentContacts = ref.read(emergencyContactsListProvider);
+      ref.read(emergencyContactsListProvider.notifier).state = [
+        ...currentContacts,
+        ...response.results,
+      ];
+      ref.read(emergencyContactsHasMoreProvider.notifier).state = response.next != null;
+      ref.read(emergencyContactsCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(isLoadingMoreEmergencyContactsProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreEmergencyContactsProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreEmergencyContactsProvider);
+    final hasMore = ref.read(emergencyContactsHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreContacts();
     }
   }
 
@@ -104,6 +181,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(isLoadingEmergencyContactsProvider);
     final contacts = ref.watch(emergencyContactsListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreEmergencyContactsProvider);
     final hasContacts = contacts.isNotEmpty;
 
     return Scaffold(
@@ -124,10 +202,10 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
             contactIcons: _contactIcons,
             contactColors: _contactColors,
             onFilterChanged: (contactType) =>
-                _loadContacts(contactType: contactType),
+                _loadContacts(contactType: contactType, force: true),
           ),
           Expanded(
-            child: isLoading
+            child: isLoading && contacts.isEmpty
                 ? Center(
                     child: CircularProgressIndicator.adaptive(
                       valueColor: AlwaysStoppedAnimation<Color>(
@@ -135,29 +213,40 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
                       ),
                     ),
                   )
-                : hasContacts
-                ? _buildContactsList(context)
-                : EmptyStateWidget(
+                : !hasContacts
+                ? EmptyStateWidget(
                     icon: Icons.contacts_rounded,
                     title: 'no_contacts_available'.tr(context),
                     subtitle: 'check_back_later'.tr(context),
-                  ),
+                  )
+                : _buildContactsList(context, isLoadingMore),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildContactsList(BuildContext context) {
+  Widget _buildContactsList(BuildContext context, bool isLoadingMore) {
     final contacts = ref.watch(emergencyContactsListProvider);
     final selectedType = ref.watch(selectedContactTypeProvider);
 
     return RefreshIndicator(
-      onRefresh: () => _loadContacts(contactType: selectedType),
+      onRefresh: () => _loadContacts(contactType: selectedType, force: true),
       child: ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.all(16),
-        itemCount: contacts.length,
+        itemCount: contacts.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == contacts.length) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              ),
+            );
+          }
           final contact = contacts[index];
           final color =
               _contactColors[contact.contactType] ?? AppColors.primary;
