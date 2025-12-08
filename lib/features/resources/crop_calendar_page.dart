@@ -168,12 +168,11 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
       appBar: AppBar(
         title: AppText(
           'crop_calendar'.tr(context),
-          style: Get.bodyLarge.px20.w600.copyWith(color: Colors.white),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: Get.cardColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Get.disabledColor),
       ),
       body: Column(
         children: [

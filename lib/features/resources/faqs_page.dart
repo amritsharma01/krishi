@@ -77,7 +77,10 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final currentPage = ref.read(faqsCurrentPageProvider);
-      final response = await apiService.getFAQs(page: currentPage, pageSize: 10);
+      final response = await apiService.getFAQs(
+        page: currentPage,
+        pageSize: 10,
+      );
 
       if (!mounted) return;
 
@@ -130,31 +133,33 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
         child: isLoading && faqs.isEmpty
             ? const Center(child: CircularProgressIndicator.adaptive())
             : error != null
-                ? ErrorState(title: error, onRetry: () => _loadFAQs(force: true))
-                : faqs.isEmpty
-                    ? EmptyStateWidget(
-                        icon: Icons.help_outline_rounded,
-                        title: 'no_faqs_found'.tr(context),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(16),
-                        itemCount: faqs.length + (isLoadingMore ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (index == faqs.length) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: Center(
-                                child: CircularProgressIndicator.adaptive(
-                                  valueColor: AlwaysStoppedAnimation<Color>(Get.primaryColor),
-                                ),
-                              ),
-                            );
-                          }
-                          final faq = faqs[index];
-                          return FAQCard(faq: faq, index: index);
-                        },
+            ? ErrorState(title: error, onRetry: () => _loadFAQs(force: true))
+            : faqs.isEmpty
+            ? EmptyStateWidget(
+                icon: Icons.help_outline_rounded,
+                title: 'no_faqs_found'.tr(context),
+              )
+            : ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(10),
+                itemCount: faqs.length + (isLoadingMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == faqs.length) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: CircularProgressIndicator.adaptive(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Get.primaryColor,
+                          ),
+                        ),
                       ),
+                    );
+                  }
+                  final faq = faqs[index];
+                  return FAQCard(faq: faq, index: index);
+                },
+              ),
       ),
     );
   }

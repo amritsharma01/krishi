@@ -70,13 +70,15 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
     if (!mounted) return;
 
     final selectedType = contactType ?? ref.read(selectedContactTypeProvider);
-    
+
     // Reset if contact type changed or force refresh
     if (contactType != null || force) {
       _hasLoaded = false;
     }
-    
-    if (!force && _hasLoaded && ref.read(emergencyContactsListProvider).isNotEmpty) {
+
+    if (!force &&
+        _hasLoaded &&
+        ref.read(emergencyContactsListProvider).isNotEmpty) {
       return;
     }
 
@@ -97,7 +99,8 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
 
       ref.read(emergencyContactsListProvider.notifier).state = response.results;
       ref.read(isLoadingEmergencyContactsProvider.notifier).state = false;
-      ref.read(emergencyContactsHasMoreProvider.notifier).state = response.next != null;
+      ref.read(emergencyContactsHasMoreProvider.notifier).state =
+          response.next != null;
       ref.read(emergencyContactsCurrentPageProvider.notifier).state = 2;
       _hasLoaded = true;
     } catch (e) {
@@ -119,7 +122,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
       final apiService = ref.read(krishiApiServiceProvider);
       final currentPage = ref.read(emergencyContactsCurrentPageProvider);
       final selectedType = ref.read(selectedContactTypeProvider);
-      
+
       final response = await apiService.getContacts(
         contactType: selectedType == 'all' ? null : selectedType,
         page: currentPage,
@@ -133,8 +136,10 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
         ...currentContacts,
         ...response.results,
       ];
-      ref.read(emergencyContactsHasMoreProvider.notifier).state = response.next != null;
-      ref.read(emergencyContactsCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(emergencyContactsHasMoreProvider.notifier).state =
+          response.next != null;
+      ref.read(emergencyContactsCurrentPageProvider.notifier).state =
+          currentPage + 1;
       ref.read(isLoadingMoreEmergencyContactsProvider.notifier).state = false;
     } catch (e) {
       if (!mounted) return;
@@ -189,9 +194,9 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
       appBar: AppBar(
         title: AppText(
           'emergency_contacts'.tr(context),
-          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        backgroundColor: Get.scaffoldBackgroundColor,
+        backgroundColor: Get.cardColor,
         elevation: 0,
         iconTheme: IconThemeData(color: Get.disabledColor),
       ),
@@ -234,7 +239,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
       onRefresh: () => _loadContacts(contactType: selectedType, force: true),
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(6),
         itemCount: contacts.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == contacts.length) {

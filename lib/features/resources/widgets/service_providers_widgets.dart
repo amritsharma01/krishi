@@ -31,11 +31,11 @@ class ServiceProvidersFilter extends ConsumerWidget {
     final selectedType = ref.watch(selectedServiceTypeProvider);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
+      padding: EdgeInsets.symmetric(horizontal: 6.wt, vertical: 5.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
+          bottom: const Radius.circular(20),
         ).rt,
         boxShadow: [
           BoxShadow(
@@ -55,7 +55,7 @@ class ServiceProvidersFilter extends ConsumerWidget {
                 ? Icons.all_inclusive
                 : serviceIcons[entry.key] ?? Icons.business_rounded;
             return Padding(
-              padding: EdgeInsets.only(right: 8.wt),
+              padding: EdgeInsets.only(right: 5.wt),
               child: FilterPill(
                 label: entry.value,
                 icon: icon,
@@ -96,7 +96,7 @@ class ServiceProviderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16.rt),
+      margin: EdgeInsets.only(bottom: 6.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(20).rt,
@@ -116,20 +116,20 @@ class ServiceProviderCard extends StatelessWidget {
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(20).rt,
         child: Padding(
-          padding: EdgeInsets.all(20.rt),
+          padding: EdgeInsets.all(10.rt),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(12.rt),
+                    padding: EdgeInsets.all(10.rt),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14).rt,
                       border: Border.all(color: color.withValues(alpha: 0.2)),
                     ),
-                    child: Icon(icon, color: color, size: 28.st),
+                    child: Icon(icon, color: color, size: 18.st),
                   ),
                   16.horizontalGap,
                   Expanded(
@@ -138,16 +138,16 @@ class ServiceProviderCard extends StatelessWidget {
                       children: [
                         AppText(
                           provider.businessName,
-                          style: Get.bodyLarge.px18.w700.copyWith(
+                          style: Get.bodyLarge.px14.w700.copyWith(
                             color: Get.disabledColor,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        6.verticalGap,
+                        2.verticalGap,
                         AppText(
                           provider.serviceTypeDisplay,
-                          style: Get.bodyMedium.px14.w500.copyWith(
+                          style: Get.bodyMedium.px12.w500.copyWith(
                             color: Get.disabledColor.withValues(alpha: 0.7),
                           ),
                           maxLines: 1,
@@ -158,7 +158,7 @@ class ServiceProviderCard extends StatelessWidget {
                   ),
                 ],
               ),
-              20.verticalGap,
+              Divider(),
               Wrap(
                 spacing: 8.rt,
                 runSpacing: 8.rt,
@@ -179,10 +179,10 @@ class ServiceProviderCard extends StatelessWidget {
                 ],
               ),
               if (provider.description.isNotEmpty) ...[
-                16.verticalGap,
+                Divider(),
                 AppText(
                   provider.description,
-                  style: Get.bodyMedium.px14.copyWith(
+                  style: Get.bodyMedium.px10.copyWith(
                     color: Get.disabledColor.withValues(alpha: 0.8),
                     height: 1.5,
                   ),
@@ -190,7 +190,7 @@ class ServiceProviderCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              20.verticalGap,
+              Divider(),
               Column(
                 children: [
                   Row(
@@ -204,7 +204,7 @@ class ServiceProviderCard extends StatelessWidget {
                         ),
                       ),
                       if (onAltCall != null) ...[
-                        12.horizontalGap,
+                        6.horizontalGap,
                         Expanded(
                           child: _ContactButton(
                             icon: Icons.phone_forwarded_rounded,
@@ -217,7 +217,7 @@ class ServiceProviderCard extends StatelessWidget {
                     ],
                   ),
                   if (onEmail != null) ...[
-                    12.verticalGap,
+                    6.verticalGap,
                     SizedBox(
                       width: double.infinity,
                       child: _ContactButton(
@@ -261,7 +261,7 @@ class _InfoPill extends StatelessWidget {
           Flexible(
             child: AppText(
               text,
-              style: Get.bodySmall.px12.w600.copyWith(color: Get.disabledColor),
+              style: Get.bodySmall.px10.w600.copyWith(color: Get.disabledColor),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -294,7 +294,7 @@ class _ContactButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12).rt,
         child: Container(
           width: double.infinity,
-          padding: EdgeInsets.symmetric(vertical: 12.rt, horizontal: 8.rt),
+          padding: EdgeInsets.symmetric(vertical: 10.rt, horizontal: 8.rt),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12).rt,
@@ -303,12 +303,12 @@ class _ContactButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18.st, color: color),
+              Icon(icon, size: 14.st, color: color),
               6.horizontalGap,
               Flexible(
                 child: AppText(
                   label,
-                  style: Get.bodyMedium.px14.w600.copyWith(color: color),
+                  style: Get.bodyMedium.px12.w600.copyWith(color: color),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

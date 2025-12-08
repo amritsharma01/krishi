@@ -76,13 +76,15 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
     if (!mounted) return;
 
     final selectedType = serviceType ?? ref.read(selectedServiceTypeProvider);
-    
+
     // Reset if service type changed or force refresh
     if (serviceType != null || force) {
       _hasLoaded = false;
     }
-    
-    if (!force && _hasLoaded && ref.read(serviceProvidersListProvider).isNotEmpty) {
+
+    if (!force &&
+        _hasLoaded &&
+        ref.read(serviceProvidersListProvider).isNotEmpty) {
       return;
     }
 
@@ -103,7 +105,8 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
 
       ref.read(serviceProvidersListProvider.notifier).state = response.results;
       ref.read(isLoadingServiceProvidersProvider.notifier).state = false;
-      ref.read(serviceProvidersHasMoreProvider.notifier).state = response.next != null;
+      ref.read(serviceProvidersHasMoreProvider.notifier).state =
+          response.next != null;
       ref.read(serviceProvidersCurrentPageProvider.notifier).state = 2;
       _hasLoaded = true;
     } catch (e) {
@@ -125,7 +128,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
       final apiService = ref.read(krishiApiServiceProvider);
       final currentPage = ref.read(serviceProvidersCurrentPageProvider);
       final selectedType = ref.read(selectedServiceTypeProvider);
-      
+
       final response = await apiService.getServiceProviders(
         serviceType: selectedType == 'all' ? null : selectedType,
         page: currentPage,
@@ -139,8 +142,10 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
         ...currentProviders,
         ...response.results,
       ];
-      ref.read(serviceProvidersHasMoreProvider.notifier).state = response.next != null;
-      ref.read(serviceProvidersCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(serviceProvidersHasMoreProvider.notifier).state =
+          response.next != null;
+      ref.read(serviceProvidersCurrentPageProvider.notifier).state =
+          currentPage + 1;
       ref.read(isLoadingMoreServiceProvidersProvider.notifier).state = false;
     } catch (e) {
       if (!mounted) return;
@@ -197,9 +202,9 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
       appBar: AppBar(
         title: AppText(
           'service_providers'.tr(context),
-          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        backgroundColor: Get.scaffoldBackgroundColor,
+        backgroundColor: Get.cardColor,
         elevation: 0,
         iconTheme: IconThemeData(color: Get.disabledColor),
       ),
@@ -242,7 +247,7 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
       onRefresh: () => _loadProviders(serviceType: selectedType, force: true),
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(6),
         itemCount: providers.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == providers.length) {

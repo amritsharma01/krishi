@@ -303,10 +303,7 @@ class AppTranslations {
       'en': 'Authentication required. Please log in.',
       'ne': 'प्रमाणीकरण आवश्यक छ। कृपया लग इन गर्नुहोस्।',
     },
-    'product_not_found': {
-      'en': 'Product not found',
-      'ne': 'उत्पादन फेला परेन',
-    },
+    'product_not_found': {'en': 'Product not found', 'ne': 'उत्पादन फेला परेन'},
 
     // Add/Edit Product
     'product_name': {'en': 'Product Name', 'ne': 'उत्पादन नाम'},
@@ -1084,7 +1081,7 @@ class AppTranslations {
     'alt_call': {'en': 'Alt. Call', 'ne': 'वैकल्पिक कल'},
 
     // Experts Page
-    'agri_experts': {'en': 'Agri \n Experts', 'ne': 'कृषि विशेषज्ञहरू'},
+    'agri_experts': {'en': 'Agri Experts', 'ne': 'कृषि विशेषज्ञहरू'},
     'no_experts_available': {
       'en': 'No experts available',
       'ne': 'कुनै विशेषज्ञ उपलब्ध छैन',

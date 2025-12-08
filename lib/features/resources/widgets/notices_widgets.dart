@@ -32,11 +32,11 @@ class NoticesFilterChips extends ConsumerWidget {
     final selectedFilter = ref.watch(selectedNoticeFilterProvider);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
+      padding: EdgeInsets.symmetric(horizontal: 6.wt, vertical: 5.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
+          bottom: const Radius.circular(20),
         ).rt,
         boxShadow: [
           BoxShadow(
@@ -56,7 +56,7 @@ class NoticesFilterChips extends ConsumerWidget {
                 ? Icons.all_inclusive
                 : filterIcons[entry.key] ?? Icons.article_rounded;
             return Padding(
-              padding: EdgeInsets.only(right: 8.wt),
+              padding: EdgeInsets.only(right: 5.wt),
               child: FilterPill(
                 label: entry.value,
                 icon: icon,

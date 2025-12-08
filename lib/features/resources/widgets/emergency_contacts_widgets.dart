@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
-import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
@@ -31,11 +30,11 @@ class EmergencyContactsFilter extends ConsumerWidget {
     final selectedType = ref.watch(selectedContactTypeProvider);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
+      padding: EdgeInsets.symmetric(horizontal: 6.wt, vertical: 5.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
+          bottom: const Radius.circular(20),
         ).rt,
         boxShadow: [
           BoxShadow(
@@ -55,7 +54,7 @@ class EmergencyContactsFilter extends ConsumerWidget {
                 ? Icons.all_inclusive
                 : contactIcons[entry.key] ?? Icons.phone_rounded;
             return Padding(
-              padding: EdgeInsets.only(right: 8.wt),
+              padding: EdgeInsets.only(right: 5.wt),
               child: FilterPill(
                 label: entry.value,
                 icon: icon,
@@ -94,7 +93,7 @@ class ContactCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16.rt),
+      margin: EdgeInsets.only(bottom: 6.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(20).rt,
@@ -114,20 +113,20 @@ class ContactCard extends StatelessWidget {
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(20).rt,
         child: Padding(
-          padding: EdgeInsets.all(20.rt),
+          padding: EdgeInsets.all(10.rt),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(12.rt),
+                    padding: EdgeInsets.all(10.rt),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14).rt,
                       border: Border.all(color: color.withValues(alpha: 0.2)),
                     ),
-                    child: Icon(icon, color: color, size: 28.st),
+                    child: Icon(icon, color: color, size: 18.st),
                   ),
                   16.horizontalGap,
                   Expanded(
@@ -136,47 +135,27 @@ class ContactCard extends StatelessWidget {
                       children: [
                         AppText(
                           contact.title,
-                          style: Get.bodyLarge.px18.w700.copyWith(
+                          style: Get.bodyLarge.px14.w700.copyWith(
                             color: Get.disabledColor,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        6.verticalGap,
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 10.rt,
-                            vertical: 4.rt,
+                        2.verticalGap,
+                        AppText(
+                          contact.contactTypeDisplay,
+                          style: Get.bodyMedium.px12.w500.copyWith(
+                            color: Get.disabledColor.withValues(alpha: 0.7),
                           ),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8).rt,
-                          ),
-                          child: AppText(
-                            contact.contactTypeDisplay,
-                            style: Get.bodySmall.px11.w600.copyWith(
-                              color: color,
-                            ),
-                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
                   ),
                 ],
               ),
-              if (contact.description.isNotEmpty) ...[
-                16.verticalGap,
-                AppText(
-                  contact.description,
-                  style: Get.bodyMedium.px14.copyWith(
-                    color: Get.disabledColor.withValues(alpha: 0.8),
-                    height: 1.5,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-              20.verticalGap,
+              Divider(),
               Wrap(
                 spacing: 8.rt,
                 runSpacing: 8.rt,
@@ -190,34 +169,48 @@ class ContactCard extends StatelessWidget {
                       icon: Icons.location_on_rounded,
                       text: contact.address,
                     ),
+                  if (contact.email.isNotEmpty)
+                    _InfoPill(icon: Icons.email_rounded, text: contact.email),
                 ],
               ),
-              if (contact.email.isNotEmpty) ...[
-                8.verticalGap,
-                _InfoPill(icon: Icons.email_rounded, text: contact.email),
-              ],
-              20.verticalGap,
-              Row(
-                children: [
-                  Expanded(
-                    child: _ContactButton(
-                      icon: Icons.phone_rounded,
-                      label: 'call'.tr(context),
-                      color: color,
-                      onTap: onCall,
-                    ),
+              if (contact.description.isNotEmpty) ...[
+                Divider(),
+                AppText(
+                  contact.description,
+                  style: Get.bodyMedium.px10.copyWith(
+                    color: Get.disabledColor.withValues(alpha: 0.8),
+                    height: 1.5,
                   ),
-                  if (onEmail != null) ...[
-                    12.horizontalGap,
-                    Expanded(
-                      child: _ContactButton(
-                        icon: Icons.email_rounded,
-                        label: 'email'.tr(context),
-                        color: Colors.orange,
-                        onTap: onEmail!,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+              Divider(),
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _ContactButton(
+                          icon: Icons.phone_rounded,
+                          label: 'call'.tr(context),
+                          color: Colors.green,
+                          onTap: onCall,
+                        ),
                       ),
-                    ),
-                  ],
+                      if (onEmail != null) ...[
+                        6.horizontalGap,
+                        Expanded(
+                          child: _ContactButton(
+                            icon: Icons.email_rounded,
+                            label: 'email'.tr(context),
+                            color: Colors.orange,
+                            onTap: onEmail!,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ],
@@ -251,7 +244,7 @@ class _InfoPill extends StatelessWidget {
           Flexible(
             child: AppText(
               text,
-              style: Get.bodySmall.px12.w600.copyWith(color: Get.disabledColor),
+              style: Get.bodySmall.px10.w600.copyWith(color: Get.disabledColor),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -283,7 +276,8 @@ class _ContactButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12).rt,
         child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.rt),
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: 10.rt, horizontal: 8.rt),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12).rt,
@@ -292,12 +286,12 @@ class _ContactButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18.st, color: color),
-              8.horizontalGap,
+              Icon(icon, size: 14.st, color: color),
+              6.horizontalGap,
               Flexible(
                 child: AppText(
                   label,
-                  style: Get.bodyMedium.px14.w600.copyWith(color: color),
+                  style: Get.bodyMedium.px12.w600.copyWith(color: color),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

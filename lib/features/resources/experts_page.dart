@@ -77,7 +77,10 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final currentPage = ref.read(expertsCurrentPageProvider);
-      final response = await apiService.getExperts(page: currentPage, pageSize: 10);
+      final response = await apiService.getExperts(
+        page: currentPage,
+        pageSize: 10,
+      );
 
       if (!mounted) return;
 
@@ -136,19 +139,19 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
     try {
       // Remove any spaces or special characters
       String cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-      
+
       // Add country code if not present (Nepal country code is +977)
       if (!cleanNumber.startsWith('+') && !cleanNumber.startsWith('977')) {
         cleanNumber = '977$cleanNumber';
       }
-      
+
       // Ensure it starts with + for WhatsApp
       if (!cleanNumber.startsWith('+')) {
         cleanNumber = '+$cleanNumber';
       }
-      
+
       final Uri whatsappUri = Uri.parse('https://wa.me/$cleanNumber');
-      
+
       // Try multiple launch modes
       try {
         await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
@@ -184,7 +187,7 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
       appBar: AppBar(
         title: AppText(
           'agri_experts'.tr(context),
-          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
         ),
         backgroundColor: Get.scaffoldBackgroundColor,
         elevation: 0,
@@ -199,39 +202,41 @@ class _ExpertsPageState extends ConsumerState<ExpertsPage> {
                 ),
               )
             : !hasExperts
-                ? EmptyStateWidget(
-                    icon: Icons.person_search_rounded,
-                    title: 'no_experts_available'.tr(context),
-                    subtitle: 'check_back_later'.tr(context),
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16),
-                    itemCount: experts.length + (isLoadingMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == experts.length) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          child: Center(
-                            child: CircularProgressIndicator.adaptive(
-                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                            ),
+            ? EmptyStateWidget(
+                icon: Icons.person_search_rounded,
+                title: 'no_experts_available'.tr(context),
+                subtitle: 'check_back_later'.tr(context),
+              )
+            : ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(6),
+                itemCount: experts.length + (isLoadingMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == experts.length) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Center(
+                        child: CircularProgressIndicator.adaptive(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primary,
                           ),
-                        );
-                      }
-                      final expert = experts[index];
-                      return ExpertCard(
-                        expert: expert,
-                        onCall: () => _makePhoneCall(context, expert.phoneNumber),
-                        onWhatsApp: () => _openWhatsApp(context, expert.phoneNumber),
-                        onEmail: expert.email.isNotEmpty
-                            ? () => _sendEmail(context, expert.email)
-                            : null,
-                      );
-                    },
-                  ),
+                        ),
+                      ),
+                    );
+                  }
+                  final expert = experts[index];
+                  return ExpertCard(
+                    expert: expert,
+                    onCall: () => _makePhoneCall(context, expert.phoneNumber),
+                    onWhatsApp: () =>
+                        _openWhatsApp(context, expert.phoneNumber),
+                    onEmail: expert.email.isNotEmpty
+                        ? () => _sendEmail(context, expert.email)
+                        : null,
+                  );
+                },
+              ),
       ),
     );
   }
-
 }

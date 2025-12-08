@@ -27,7 +27,7 @@ class ExpertCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(bottom: 16.rt),
+      margin: EdgeInsets.only(bottom: 6.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(20).rt,
@@ -44,15 +44,15 @@ class ExpertCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: EdgeInsets.all(20.rt),
+        padding: EdgeInsets.all(10.rt),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  width: 70.rt,
-                  height: 70.rt,
+                  width: 50.rt,
+                  height: 50.rt,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
@@ -78,7 +78,7 @@ class ExpertCard extends StatelessWidget {
                               color: AppColors.primary.withValues(alpha: 0.1),
                               child: Icon(
                                 Icons.person_rounded,
-                                size: 35.st,
+                                size: 25.st,
                                 color: AppColors.primary,
                               ),
                             ),
@@ -87,7 +87,7 @@ class ExpertCard extends StatelessWidget {
                             color: AppColors.primary.withValues(alpha: 0.1),
                             child: Icon(
                               Icons.person_rounded,
-                              size: 35.st,
+                              size: 25.st,
                               color: AppColors.primary,
                             ),
                           ),
@@ -100,16 +100,16 @@ class ExpertCard extends StatelessWidget {
                     children: [
                       AppText(
                         expert.name,
-                        style: Get.bodyLarge.px18.w700.copyWith(
+                        style: Get.bodyLarge.px14.w700.copyWith(
                           color: Get.disabledColor,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      6.verticalGap,
+
                       AppText(
                         expert.specialization,
-                        style: Get.bodyMedium.px14.w500.copyWith(
+                        style: Get.bodyMedium.px12.w500.copyWith(
                           color: Get.disabledColor.withValues(alpha: 0.7),
                         ),
                         maxLines: 2,
@@ -120,10 +120,10 @@ class ExpertCard extends StatelessWidget {
                 ),
               ],
             ),
-            20.verticalGap,
+           Divider(),
             Wrap(
               spacing: 8.rt,
-              runSpacing: 8.rt,
+              runSpacing: 6.rt,
               children: [
                 _InfoPill(
                   icon: Icons.access_time_rounded,
@@ -139,7 +139,7 @@ class ExpertCard extends StatelessWidget {
                 ),
               ],
             ),
-            20.verticalGap,
+            Divider(),
             Column(
               children: [
                 Row(
@@ -152,7 +152,7 @@ class ExpertCard extends StatelessWidget {
                         onTap: onCall,
                       ),
                     ),
-                    12.horizontalGap,
+                    6.horizontalGap,
                     Expanded(
                       child: _ContactButton(
                         icon: Icons.chat_rounded,
@@ -164,7 +164,7 @@ class ExpertCard extends StatelessWidget {
                   ],
                 ),
                 if (onEmail != null) ...[
-                  12.verticalGap,
+                  4.verticalGap,
                   _ContactButton(
                     icon: Icons.email_rounded,
                     label: 'email'.tr(context),
@@ -237,7 +237,7 @@ class _ContactButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12).rt,
         child: Container(
           width: double.infinity,
-          padding: EdgeInsets.symmetric(vertical: 12.rt, horizontal: 8.rt),
+          padding: EdgeInsets.symmetric(vertical: 10.rt, horizontal: 8.rt),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12).rt,
@@ -246,12 +246,12 @@ class _ContactButton extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 18.st, color: color),
+              Icon(icon, size: 14.st, color: color),
               6.horizontalGap,
               Flexible(
                 child: AppText(
                   label,
-                  style: Get.bodyMedium.px14.w600.copyWith(color: color),
+                  style: Get.bodyMedium.px12.w600.copyWith(color: color),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

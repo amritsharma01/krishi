@@ -27,16 +27,16 @@ class SoilTestingHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+      padding: EdgeInsets.symmetric(horizontal: 6.wt, vertical: 8.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
+          bottom: const Radius.circular(20),
         ).rt,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
             offset: const Offset(0, 6),
           ),
         ],
@@ -44,21 +44,33 @@ class SoilTestingHeader extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppText(
-            'soil_testing_centers'.tr(context),
-            style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
-          ),
-          8.verticalGap,
-          AppText(
-            'soil_testing_centers_subtitle'.tr(context),
-            maxLines: 3,
-            style: Get.bodyMedium.px12.copyWith(
-              color: Get.disabledColor.withValues(alpha: 0.75),
-              height: 1.4,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 5.wt),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  'soil_testing_centers'.tr(context),
+                  style: Get.bodyLarge.px14.w700.copyWith(
+                    color: Get.disabledColor,
+                  ),
+                ),
+                4.verticalGap,
+                AppText(
+                  'soil_testing_centers_subtitle'.tr(context),
+                  maxLines: 4,
+                  style: Get.bodyMedium.px12.copyWith(
+                    color: Get.disabledColor.withValues(alpha: 0.8),
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
-          16.verticalGap,
-          TextField(
+          6.verticalGap,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 5.wt),
+            child: TextField(
             controller: searchController,
             onChanged: onSearchChanged,
             decoration: InputDecoration(
@@ -81,6 +93,7 @@ class SoilTestingHeader extends ConsumerWidget {
               contentPadding: EdgeInsets.zero,
             ),
             textInputAction: TextInputAction.search,
+            ),
           ),
         ],
       ),

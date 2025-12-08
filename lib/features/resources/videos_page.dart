@@ -74,13 +74,14 @@ class _VideosPageState extends ConsumerState<VideosPage> {
   Future<void> _loadVideos({String? category, bool force = false}) async {
     if (!mounted) return;
 
-    final selectedCategory = category ?? ref.read(selectedVideoCategoryProvider);
-    
+    final selectedCategory =
+        category ?? ref.read(selectedVideoCategoryProvider);
+
     // Reset if category changed or force refresh
     if (category != null || force) {
       _hasLoaded = false;
     }
-    
+
     if (!force && _hasLoaded && ref.read(videosListProvider).isNotEmpty) {
       return;
     }
@@ -124,7 +125,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
       final apiService = ref.read(krishiApiServiceProvider);
       final currentPage = ref.read(videosCurrentPageProvider);
       final selectedCategory = ref.read(selectedVideoCategoryProvider);
-      
+
       final response = await apiService.getVideos(
         category: selectedCategory == 'all' ? null : selectedCategory,
         page: currentPage,
@@ -277,12 +278,11 @@ class _VideosPageState extends ConsumerState<VideosPage> {
       appBar: AppBar(
         title: AppText(
           'educational_videos'.tr(context),
-          style: Get.bodyLarge.px20.w600.copyWith(color: Colors.white),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.red.shade700,
+        backgroundColor: Get.cardColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Get.disabledColor),
       ),
       body: Column(
         children: [
@@ -290,18 +290,19 @@ class _VideosPageState extends ConsumerState<VideosPage> {
             categories: _getCategories(context),
             categoryIcons: _categoryIcons,
             categoryColors: _categoryColors,
-            onFilterChanged: (category) => _loadVideos(category: category, force: true),
+            onFilterChanged: (category) =>
+                _loadVideos(category: category, force: true),
           ),
           Expanded(
             child: isLoading && videos.isEmpty
                 ? const Center(child: CircularProgressIndicator.adaptive())
                 : !hasVideos
-                    ? EmptyStateWidget(
-                        icon: Icons.video_library_rounded,
-                        title: 'no_videos_available'.tr(context),
-                        subtitle: 'check_back_later_videos'.tr(context),
-                      )
-                    : _buildVideosList(context, isLoadingMore),
+                ? EmptyStateWidget(
+                    icon: Icons.video_library_rounded,
+                    title: 'no_videos_available'.tr(context),
+                    subtitle: 'check_back_later_videos'.tr(context),
+                  )
+                : _buildVideosList(context, isLoadingMore),
           ),
         ],
       ),
@@ -316,7 +317,7 @@ class _VideosPageState extends ConsumerState<VideosPage> {
       onRefresh: () => _loadVideos(category: selectedCategory, force: true),
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(8),
         itemCount: videos.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == videos.length) {
@@ -324,7 +325,9 @@ class _VideosPageState extends ConsumerState<VideosPage> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Center(
                 child: CircularProgressIndicator.adaptive(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.red.shade700),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Colors.red.shade700,
+                  ),
                 ),
               ),
             );
@@ -342,5 +345,4 @@ class _VideosPageState extends ConsumerState<VideosPage> {
       ),
     );
   }
-
 }

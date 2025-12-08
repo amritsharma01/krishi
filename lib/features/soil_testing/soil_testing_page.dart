@@ -143,7 +143,7 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Get.scaffoldBackgroundColor,
+        backgroundColor: Get.cardColor,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Get.disabledColor),

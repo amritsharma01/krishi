@@ -1,11 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
-import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/resources/crop_detail_page.dart';
@@ -32,11 +30,11 @@ class CropCalendarFilter extends ConsumerWidget {
     final selectedType = ref.watch(selectedCropTypeProvider);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
+      padding: EdgeInsets.symmetric(horizontal: 6.wt, vertical: 5.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
+          bottom: const Radius.circular(20),
         ).rt,
         boxShadow: [
           BoxShadow(
@@ -56,7 +54,7 @@ class CropCalendarFilter extends ConsumerWidget {
                 ? Icons.all_inclusive
                 : cropIcons[entry.key] ?? Icons.agriculture_rounded;
             return Padding(
-              padding: EdgeInsets.only(right: 8.wt),
+              padding: EdgeInsets.only(right: 5.wt),
               child: FilterPill(
                 label: entry.value,
                 icon: icon,

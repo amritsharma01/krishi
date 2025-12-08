@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
@@ -12,25 +11,22 @@ import 'package:krishi/models/resources.dart';
 class ProgramsHeader extends StatelessWidget {
   final Widget searchField;
 
-  const ProgramsHeader({
-    super.key,
-    required this.searchField,
-  });
+  const ProgramsHeader({super.key, required this.searchField});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.fromLTRB(16.wt, 20.ht, 16.wt, 16.ht),
+      padding: EdgeInsets.symmetric(horizontal: 6.wt, vertical: 8.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
+          bottom: const Radius.circular(20),
         ).rt,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
             offset: const Offset(0, 6),
           ),
         ],
@@ -38,21 +34,34 @@ class ProgramsHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AppText(
-            'agricultural_development_programs'.tr(context),
-            style: Get.bodyLarge.px14.w700.copyWith(color: Get.disabledColor),
-          ),
-          8.verticalGap,
-          AppText(
-            maxLines: 4,
-            'programs_intro'.tr(context),
-            style: Get.bodyMedium.px12.copyWith(
-              color: Get.disabledColor.withValues(alpha: 0.8),
-              height: 1.4,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 5.wt),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  'agricultural_development_programs'.tr(context),
+                  style: Get.bodyLarge.px14.w700.copyWith(
+                    color: Get.disabledColor,
+                  ),
+                ),
+                4.verticalGap,
+                AppText(
+                  maxLines: 4,
+                  'programs_intro'.tr(context),
+                  style: Get.bodyMedium.px12.copyWith(
+                    color: Get.disabledColor.withValues(alpha: 0.8),
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
-          16.verticalGap,
-          searchField,
+          6.verticalGap,
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 5.wt),
+            child: searchField,
+          ),
         ],
       ),
     );
@@ -63,11 +72,7 @@ class ProgramCard extends StatelessWidget {
   final Program program;
   final VoidCallback onApply;
 
-  const ProgramCard({
-    super.key,
-    required this.program,
-    required this.onApply,
-  });
+  const ProgramCard({super.key, required this.program, required this.onApply});
 
   @override
   Widget build(BuildContext context) {
@@ -176,4 +181,3 @@ class ProgramCard extends StatelessWidget {
     );
   }
 }
-
