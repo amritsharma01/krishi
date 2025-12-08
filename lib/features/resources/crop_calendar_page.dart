@@ -1,16 +1,15 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi/core/core_service_providers.dart';
-import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
-import 'package:krishi/features/resources/crop_detail_page.dart';
-import 'package:krishi/models/resources.dart';
+import 'package:krishi/features/resources/providers/crop_calendar_providers.dart';
+import 'package:krishi/features/resources/widgets/crop_calendar_widgets.dart';
+import 'package:krishi/features/resources/widgets/empty_state_widget.dart';
 
 class CropCalendarPage extends ConsumerStatefulWidget {
   const CropCalendarPage({super.key});
@@ -20,9 +19,6 @@ class CropCalendarPage extends ConsumerStatefulWidget {
 }
 
 class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
-  List<CropCalendar> _crops = [];
-  bool _isLoading = true;
-  String _selectedType = 'all';
 
   Map<String, String> _getCropTypes(BuildContext context) {
     return {
@@ -57,35 +53,40 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
   @override
   void initState() {
     super.initState();
-    _loadCrops();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadCrops();
+    });
   }
 
   Future<void> _loadCrops({String? cropType}) async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (!mounted) return;
+
+    final selectedType = cropType ?? ref.read(selectedCropTypeProvider);
+    ref.read(isLoadingCropCalendarProvider.notifier).state = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final crops = await apiService.getCropCalendar(
-        cropType: cropType == 'all' ? null : cropType,
+        cropType: selectedType == 'all' ? null : selectedType,
       );
-      setState(() {
-        _crops = crops;
-        _isLoading = false;
-      });
+
+      if (!mounted) return;
+
+      ref.read(cropCalendarListProvider.notifier).state = crops;
+      ref.read(isLoadingCropCalendarProvider.notifier).state = false;
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
-        Get.snackbar('Failed to load crop calendar: $e');
-      }
+      if (!mounted) return;
+      ref.read(isLoadingCropCalendarProvider.notifier).state = false;
+      Get.snackbar('Failed to load crop calendar: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(isLoadingCropCalendarProvider);
+    final crops = ref.watch(cropCalendarListProvider);
+    final hasCrops = crops.isNotEmpty;
+
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -100,87 +101,22 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
       ),
       body: Column(
         children: [
-          _buildTypeFilter(context),
+          CropCalendarFilter(
+            cropTypes: _getCropTypes(context),
+            cropIcons: _cropIcons,
+            cropColors: _cropColors,
+            onFilterChanged: (cropType) => _loadCrops(cropType: cropType),
+          ),
           Expanded(
-            child: _isLoading
+            child: isLoading
                 ? const Center(child: CircularProgressIndicator.adaptive())
-                : _crops.isEmpty
-                ? _buildEmptyState(context)
-                : _buildCropsList(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTypeFilter(BuildContext context) {
-    final cropTypes = _getCropTypes(context);
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
-        ).rt,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: cropTypes.entries.map((entry) {
-            final isSelected = _selectedType == entry.key;
-            final color = _cropColors[entry.key] ?? Colors.green;
-            final icon = entry.key == 'all'
-                ? Icons.all_inclusive
-                : _cropIcons[entry.key] ?? Icons.agriculture_rounded;
-            return Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: _buildFilterPill(
-                label: entry.value,
-                icon: icon,
-                color: color,
-                isSelected: isSelected,
-                onTap: () {
-                  setState(() {
-                    _selectedType = entry.key;
-                  });
-                  _loadCrops(cropType: entry.key);
-                },
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.calendar_today_rounded,
-            size: 80.st,
-            color: Colors.grey.shade400,
-          ),
-          16.verticalGap,
-          AppText(
-            'no_crops_available'.tr(context),
-            style: Get.bodyLarge.px18.w600.copyWith(
-              color: Colors.grey.shade600,
-            ),
-          ),
-          8.verticalGap,
-          AppText(
-            'check_back_later_info'.tr(context),
-            style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
+                : hasCrops
+                    ? _buildCropsList(context)
+                    : EmptyStateWidget(
+                        icon: Icons.calendar_today_rounded,
+                        title: 'no_crops_available'.tr(context),
+                        subtitle: 'check_back_later_info'.tr(context),
+                      ),
           ),
         ],
       ),
@@ -188,204 +124,30 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
   }
 
   Widget _buildCropsList(BuildContext context) {
+    final crops = ref.watch(cropCalendarListProvider);
+    final selectedType = ref.watch(selectedCropTypeProvider);
+
     return RefreshIndicator(
-      onRefresh: () => _loadCrops(cropType: _selectedType),
+      onRefresh: () => _loadCrops(cropType: selectedType),
       child: GridView.builder(
-        padding: EdgeInsets.all(10.rt),
+        padding: const EdgeInsets.all(10),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 16.w,
-          mainAxisSpacing: 16.h,
+          crossAxisSpacing: 16.wt,
+          mainAxisSpacing: 16.ht,
           childAspectRatio: 0.65,
         ),
-        itemCount: _crops.length,
+        itemCount: crops.length,
         itemBuilder: (context, index) {
-          final crop = _crops[index];
-          return _buildCropCard(context, crop);
+          final crop = crops[index];
+          final color = _cropColors[crop.cropType] ?? Colors.teal;
+          final icon = _cropIcons[crop.cropType] ?? Icons.agriculture_rounded;
+          return CropCard(
+            crop: crop,
+            color: color,
+            icon: icon,
+          );
         },
-      ),
-    );
-  }
-
-  Widget _buildCropCard(BuildContext context, CropCalendar crop) {
-    final color = _cropColors[crop.cropType] ?? Colors.teal;
-    final icon = _cropIcons[crop.cropType] ?? Icons.agriculture_rounded;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.circular(22).rt,
-        border: Border.all(color: color.withValues(alpha: 0.08)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(22).rt,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(22).rt,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CropDetailPage(crop: crop),
-              ),
-            );
-          },
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildCropHeader(crop, color, icon),
-              Flexible(
-                child: Padding(
-                  padding: EdgeInsets.all(16.rt),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Flexible(
-                        child: _buildTypeBadge(crop.cropTypeDisplay, color),
-                      ),
-                      12.verticalGap,
-                      Flexible(
-                        child: AppText(
-                          crop.cropName,
-                          style: Get.bodyLarge.px16.w700.copyWith(
-                            color: Get.disabledColor,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      10.verticalGap,
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.schedule_rounded,
-                            size: 12.st,
-                            color: Colors.grey.shade600,
-                          ),
-                          6.horizontalGap,
-                          Flexible(
-                            child: AppText(
-                              '${crop.durationDays} days',
-                              style: Get.bodyMedium.px10.copyWith(
-                                color: Colors.grey.shade600,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCropHeader(CropCalendar crop, Color color, IconData icon) {
-    return SizedBox(
-      height: 100.h,
-      child: ClipRRect(
-        borderRadius: BorderRadius.vertical(top: const Radius.circular(22)).rt,
-        child: crop.image != null && crop.image!.isNotEmpty
-            ? CachedNetworkImage(
-                imageUrl: crop.image!,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: color.withValues(alpha: 0.15),
-                  child: Center(
-                    child: CircularProgressIndicator.adaptive(
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
-                    ),
-                  ),
-                ),
-                errorWidget: (context, url, error) =>
-                    _buildHeaderFallback(color, icon),
-              )
-            : _buildHeaderFallback(color, icon),
-      ),
-    );
-  }
-
-  Widget _buildHeaderFallback(Color color, IconData icon) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.85), color],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Center(
-        child: Icon(icon, size: 42.st, color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _buildTypeBadge(String text, Color color) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(30).rt,
-      ),
-      child: AppText(
-        text,
-        style: Get.bodySmall.px12.w600.copyWith(color: color),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-
-  Widget _buildFilterPill({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: isSelected ? color : color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : color.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14.st, color: isSelected ? Colors.white : color),
-            6.horizontalGap,
-            AppText(
-              label,
-              style: Get.bodySmall.px12.w600.copyWith(
-                color: isSelected ? Colors.white : color,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

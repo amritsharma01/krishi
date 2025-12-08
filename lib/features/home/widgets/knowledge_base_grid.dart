@@ -113,13 +113,13 @@ class _KnowledgeCard extends StatelessWidget {
                   color: accentColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(12).rt,
                 ),
-                child: Icon(icon, color: accentColor, size: 24.st),
+                child: Icon(icon, color: accentColor, size: 22.st),
               ),
               16.horizontalGap,
               Expanded(
                 child: AppText(
                   title,
-                  style: Get.bodyLarge.px12.w600.copyWith(
+                  style: Get.bodyLarge.px10.w600.copyWith(
                     color: Get.disabledColor,
                     height: 1.3,
                   ),

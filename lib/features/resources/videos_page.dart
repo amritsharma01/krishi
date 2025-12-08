@@ -1,13 +1,13 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/core_service_providers.dart';
-import 'package:krishi/core/extensions/border_radius.dart';
-import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/resources/providers/videos_providers.dart';
+import 'package:krishi/features/resources/widgets/empty_state_widget.dart';
+import 'package:krishi/features/resources/widgets/videos_widgets.dart';
 import 'package:krishi/models/resources.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -19,9 +19,6 @@ class VideosPage extends ConsumerStatefulWidget {
 }
 
 class _VideosPageState extends ConsumerState<VideosPage> {
-  List<Video> _videos = [];
-  bool _isLoading = true;
-  String _selectedCategory = 'all';
 
   Map<String, String> _getCategories(BuildContext context) {
     return {
@@ -59,30 +56,31 @@ class _VideosPageState extends ConsumerState<VideosPage> {
   @override
   void initState() {
     super.initState();
-    _loadVideos();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadVideos();
+    });
   }
 
   Future<void> _loadVideos({String? category}) async {
-    setState(() {
-      _isLoading = true;
-    });
+    if (!mounted) return;
+
+    final selectedCategory = category ?? ref.read(selectedVideoCategoryProvider);
+    ref.read(isLoadingVideosProvider.notifier).state = true;
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final videos = await apiService.getVideos(
-        category: category == 'all' ? null : category,
+        category: selectedCategory == 'all' ? null : selectedCategory,
       );
-      setState(() {
-        _videos = videos;
-        _isLoading = false;
-      });
+
+      if (!mounted) return;
+
+      ref.read(videosListProvider.notifier).state = videos;
+      ref.read(isLoadingVideosProvider.notifier).state = false;
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
-        Get.snackbar('error_loading_products'.tr(context));
-      }
+      if (!mounted) return;
+      ref.read(isLoadingVideosProvider.notifier).state = false;
+      Get.snackbar('error_loading_products'.tr(context));
     }
   }
 
@@ -193,6 +191,10 @@ class _VideosPageState extends ConsumerState<VideosPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(isLoadingVideosProvider);
+    final videos = ref.watch(videosListProvider);
+    final hasVideos = videos.isNotEmpty;
+
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -207,126 +209,22 @@ class _VideosPageState extends ConsumerState<VideosPage> {
       ),
       body: Column(
         children: [
-          _buildCategoryFilter(context),
+          VideosCategoryFilter(
+            categories: _getCategories(context),
+            categoryIcons: _categoryIcons,
+            categoryColors: _categoryColors,
+            onFilterChanged: (category) => _loadVideos(category: category),
+          ),
           Expanded(
-            child: _isLoading
+            child: isLoading
                 ? const Center(child: CircularProgressIndicator.adaptive())
-                : _videos.isEmpty
-                ? _buildEmptyState(context)
-                : _buildVideosList(context),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryFilter(BuildContext context) {
-    final categories = _getCategories(context);
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
-        ).rt,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: categories.entries.map((entry) {
-            final isSelected = _selectedCategory == entry.key;
-            final color = _categoryColors[entry.key] ?? Colors.red;
-            final icon = entry.key == 'all'
-                ? Icons.all_inclusive
-                : _categoryIcons[entry.key] ?? Icons.video_library_rounded;
-            return Padding(
-              padding: EdgeInsets.only(right: 8.wt),
-              child: _buildFilterPill(
-                label: entry.value,
-                icon: icon,
-                color: color,
-                isSelected: isSelected,
-                onTap: () {
-                  setState(() {
-                    _selectedCategory = entry.key;
-                  });
-                  _loadVideos(category: entry.key);
-                },
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterPill({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 12.wt, vertical: 6.ht),
-        decoration: BoxDecoration(
-          color: isSelected ? color : color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : color.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14.st, color: isSelected ? Colors.white : color),
-            6.horizontalGap,
-            AppText(
-              label,
-              style: Get.bodySmall.px12.w600.copyWith(
-                color: isSelected ? Colors.white : color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.video_library_rounded,
-            size: 80.st,
-            color: Colors.grey.shade400,
-          ),
-          16.verticalGap,
-          AppText(
-            'no_videos_available'.tr(context),
-            style: Get.bodyLarge.px18.w600.copyWith(
-              color: Colors.grey.shade600,
-            ),
-          ),
-          8.verticalGap,
-          AppText(
-            'check_back_later_videos'.tr(context),
-            style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
+                : hasVideos
+                    ? _buildVideosList(context)
+                    : EmptyStateWidget(
+                        icon: Icons.video_library_rounded,
+                        title: 'no_videos_available'.tr(context),
+                        subtitle: 'check_back_later_videos'.tr(context),
+                      ),
           ),
         ],
       ),
@@ -334,236 +232,27 @@ class _VideosPageState extends ConsumerState<VideosPage> {
   }
 
   Widget _buildVideosList(BuildContext context) {
+    final videos = ref.watch(videosListProvider);
+    final selectedCategory = ref.watch(selectedVideoCategoryProvider);
+
     return RefreshIndicator(
-      onRefresh: () => _loadVideos(category: _selectedCategory),
+      onRefresh: () => _loadVideos(category: selectedCategory),
       child: ListView.builder(
-        padding: EdgeInsets.all(16.rt),
-        itemCount: _videos.length,
+        padding: const EdgeInsets.all(16),
+        itemCount: videos.length,
         itemBuilder: (context, index) {
-          final video = _videos[index];
-          return _buildVideoCard(context, video);
+          final video = videos[index];
+          final thumbnailUrl = _getThumbnailUrl(video);
+          final categoryColor = _categoryColors[video.category] ?? Colors.red;
+          return VideoCard(
+            video: video,
+            thumbnailUrl: thumbnailUrl,
+            categoryColor: categoryColor,
+            onTap: () => _openVideo(context, video.youtubeUrl),
+          );
         },
       ),
     );
   }
 
-  Widget _buildVideoCard(BuildContext context, Video video) {
-    final thumbnailUrl = _getThumbnailUrl(video);
-    final categoryColor = _categoryColors[video.category] ?? Colors.red;
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.rt),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.circular(20).rt,
-        border: Border.all(
-          color: Get.disabledColor.withValues(alpha: 0.1),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Thumbnail tap target
-          Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _openVideo(context, video.youtubeUrl),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20.rt),
-                topRight: Radius.circular(20.rt),
-              ),
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20.rt),
-                      topRight: Radius.circular(20.rt),
-                    ),
-                    child: thumbnailUrl.isNotEmpty
-                        ? CachedNetworkImage(
-                            imageUrl: thumbnailUrl,
-                            width: double.infinity,
-                            height: 180.ht,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(
-                              height: 180.ht,
-                              color: Get.cardColor.withValues(alpha: 0.3),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: categoryColor,
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            ),
-                            errorWidget: (context, url, error) => Container(
-                              height: 180.ht,
-                              color: Get.cardColor.withValues(alpha: 0.3),
-                              child: Icon(
-                                Icons.video_library_rounded,
-                                size: 50.st,
-                                color: Get.disabledColor.withValues(alpha: 0.5),
-                              ),
-                            ),
-                          )
-                        : Container(
-                            height: 180.ht,
-                            color: Get.cardColor.withValues(alpha: 0.3),
-                            child: Icon(
-                              Icons.video_library_rounded,
-                              size: 50.st,
-                              color: Get.disabledColor.withValues(alpha: 0.5),
-                            ),
-                          ),
-                  ),
-                  // Play button overlay
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20.rt),
-                          topRight: Radius.circular(20.rt),
-                        ),
-                      ),
-                      child: Center(
-                        child: Container(
-                          padding: EdgeInsets.all(14.rt),
-                          decoration: BoxDecoration(
-                            color: Colors.red.shade600,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.25),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.play_arrow_rounded,
-                            color: Colors.white,
-                            size: 32.st,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Duration badge
-                  Positioned(
-                    bottom: 10.rt,
-                    right: 10.rt,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 8.wt,
-                        vertical: 4.ht,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.75),
-                        borderRadius: BorderRadius.circular(8).rt,
-                      ),
-                      child: AppText(
-                        video.duration,
-                        style: Get.bodySmall.px11.w600.copyWith(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-              ),
-
-              // Content
-              Padding(
-                padding: EdgeInsets.all(18.rt),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Category badge
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10.wt,
-                        vertical: 5.ht,
-                      ),
-                      decoration: BoxDecoration(
-                        color: categoryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(8).rt,
-                      ),
-                      child: AppText(
-                        video.categoryDisplay,
-                        style: Get.bodySmall.px12.w600.copyWith(
-                          color: categoryColor,
-                        ),
-                      ),
-                    ),
-                    14.verticalGap,
-                    // Title
-                    AppText(
-                      video.title,
-                      style: Get.bodyLarge.px16.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    10.verticalGap,
-                    // Description
-                    AppText(
-                      video.description,
-                      style: Get.bodyMedium.px13.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.7),
-                        height: 1.5,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    12.verticalGap,
-                    // Views
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.visibility_outlined,
-                          size: 14.st,
-                          color: Get.disabledColor.withValues(alpha: 0.5),
-                        ),
-                        6.horizontalGap,
-                        AppText(
-                          '${video.viewsCount} ${'views'.tr(context)}',
-                          style: Get.bodySmall.px12.copyWith(
-                            color: Get.disabledColor.withValues(alpha: 0.6),
-                          ),
-                        ),
-                    const Spacer(),
-                    TextButton.icon(
-                      onPressed: () => _openVideo(context, video.youtubeUrl),
-                      icon: Icon(
-                        Icons.play_circle_fill_rounded,
-                        color: Colors.red.shade600,
-                        size: 18.st,
-                      ),
-                      label: AppText(
-                        'watch_video'.tr(context),
-                        style: Get.bodySmall.px12.w600.copyWith(
-                          color: Colors.red.shade600,
-                        ),
-                      ),
-                    ),
-                  ],
-              ),
-            ],
-          ),
-        ),
-        ],
-      ),
-    );
-  }
 }
