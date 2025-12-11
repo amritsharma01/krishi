@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/core_service_providers.dart';
-import 'package:krishi/core/extensions/border_radius.dart';
-import 'package:krishi/core/extensions/int.dart';
-import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
-import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
-import 'package:krishi/models/resources.dart';
+import 'package:krishi/features/resources/providers/faqs_providers.dart';
+import 'package:krishi/features/resources/widgets/empty_state_widget.dart';
+import 'package:krishi/features/resources/widgets/faqs_widgets.dart';
 
 class FAQsPage extends ConsumerStatefulWidget {
   const FAQsPage({super.key});
@@ -20,46 +18,106 @@ class FAQsPage extends ConsumerStatefulWidget {
 }
 
 class _FAQsPageState extends ConsumerState<FAQsPage> {
-  List<FAQ> _faqs = [];
-  final ValueNotifier<bool> _isLoading = ValueNotifier(true);
-  final ValueNotifier<String?> _error = ValueNotifier(null);
-  final ValueNotifier<int?> _expandedIndex = ValueNotifier(null);
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _loadFAQs();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadFAQs();
+    });
   }
 
   @override
   void dispose() {
-    _isLoading.dispose();
-    _error.dispose();
-    _expandedIndex.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadFAQs() async {
-    _isLoading.value = true;
-    _error.value = null;
+  Future<void> _loadFAQs({bool force = false}) async {
+    if (!force && _hasLoaded && ref.read(faqsListProvider).isNotEmpty) {
+      return;
+    }
+
+    ref.read(isLoadingFAQsProvider.notifier).state = true;
+    ref.read(faqsErrorProvider.notifier).state = null;
+    ref.read(faqsCurrentPageProvider.notifier).state = 1;
+    ref.read(faqsHasMoreProvider.notifier).state = true;
+    ref.read(faqsListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final faqs = await apiService.getFAQs();
-      if (mounted) {
-        _faqs = faqs;
-        _isLoading.value = false;
-      }
+      final response = await apiService.getFAQs(page: 1, pageSize: 10);
+
+      if (!mounted) return;
+
+      ref.read(faqsListProvider.notifier).state = response.results;
+      ref.read(isLoadingFAQsProvider.notifier).state = false;
+      ref.read(faqsHasMoreProvider.notifier).state = response.next != null;
+      ref.read(faqsCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
-      if (mounted) {
-        _error.value = e.toString();
-        _isLoading.value = false;
-      }
+      if (!mounted) return;
+      ref.read(faqsErrorProvider.notifier).state = e.toString();
+      ref.read(isLoadingFAQsProvider.notifier).state = false;
+    }
+  }
+
+  Future<void> _loadMoreFAQs() async {
+    final isLoading = ref.read(isLoadingMoreFAQsProvider);
+    final hasMore = ref.read(faqsHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreFAQsProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(faqsCurrentPageProvider);
+      final response = await apiService.getFAQs(
+        page: currentPage,
+        pageSize: 10,
+      );
+
+      if (!mounted) return;
+
+      final currentFAQs = ref.read(faqsListProvider);
+      ref.read(faqsListProvider.notifier).state = [
+        ...currentFAQs,
+        ...response.results,
+      ];
+      ref.read(faqsHasMoreProvider.notifier).state = response.next != null;
+      ref.read(faqsCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(isLoadingMoreFAQsProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreFAQsProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreFAQsProvider);
+    final hasMore = ref.read(faqsHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreFAQs();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(isLoadingFAQsProvider);
+    final error = ref.watch(faqsErrorProvider);
+    final faqs = ref.watch(faqsListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreFAQsProvider);
+
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -70,149 +128,38 @@ class _FAQsPageState extends ConsumerState<FAQsPage> {
         backgroundColor: Get.primaryColor,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: ValueListenableBuilder<bool>(
-        valueListenable: _isLoading,
-        builder: (context, isLoading, _) {
-          if (isLoading) return const Center(child: CircularProgressIndicator.adaptive());
-
-          return ValueListenableBuilder<String?>(
-            valueListenable: _error,
-            builder: (context, error, _) {
-              if (error != null) return ErrorState(title: error, onRetry: _loadFAQs);
-
-              if (_faqs.isEmpty) {
-                return EmptyState(
-                  title: 'no_faqs_found'.tr(context),
-                  icon: Icons.help_outline_rounded,
-                );
-              }
-
-              return ValueListenableBuilder<int?>(
-                valueListenable: _expandedIndex,
-                builder: (context, expandedIndex, _) {
-                  return RefreshIndicator(
-                    onRefresh: _loadFAQs,
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _faqs.length,
-                      itemBuilder: (context, index) {
-                        final faq = _faqs[index];
-                        final isExpanded = expandedIndex == index;
-                        return _buildFAQCard(faq, index, isExpanded);
-                      },
-                    ),
-                  );
+      body: RefreshIndicator(
+        onRefresh: () => _loadFAQs(force: true),
+        child: isLoading && faqs.isEmpty
+            ? const Center(child: CircularProgressIndicator.adaptive())
+            : error != null
+            ? ErrorState(title: error, onRetry: () => _loadFAQs(force: true))
+            : faqs.isEmpty
+            ? EmptyStateWidget(
+                icon: Icons.help_outline_rounded,
+                title: 'no_faqs_found'.tr(context),
+              )
+            : ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.all(10),
+                itemCount: faqs.length + (isLoadingMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == faqs.length) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Center(
+                        child: CircularProgressIndicator.adaptive(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Get.primaryColor,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+                  final faq = faqs[index];
+                  return FAQCard(faq: faq, index: index);
                 },
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildFAQCard(FAQ faq, int index, bool isExpanded) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14).rt),
-      elevation: 2,
-      child: InkWell(
-        onTap: () {
-          _expandedIndex.value = isExpanded ? null : index;
-        },
-        borderRadius: BorderRadius.circular(14).rt,
-        child: Padding(
-          padding: const EdgeInsets.all(16).rt,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Get.primaryColor.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: AppText(
-                        'Q',
-                        style: Get.bodyLarge.px15.w700.copyWith(
-                          color: Get.primaryColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                  12.horizontalGap,
-                  Expanded(
-                    child: AppText(
-                      faq.question,
-                      style: Get.bodyMedium.px15.w600,
-                      maxLines: isExpanded ? null : 2,
-                      overflow: isExpanded
-                          ? TextOverflow.visible
-                          : TextOverflow.ellipsis,
-                    ),
-                  ),
-                  8.horizontalGap,
-                  AnimatedRotation(
-                    turns: isExpanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: Get.primaryColor,
-                      size: 24.st,
-                    ),
-                  ),
-                ],
               ),
-              if (isExpanded) ...[
-                16.verticalGap,
-                Container(
-                  padding: const EdgeInsets.all(14).rt,
-                  decoration: BoxDecoration(
-                    color: Get.cardColor,
-                    borderRadius: BorderRadius.circular(10).rt,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.green.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: AppText(
-                            'A',
-                            style: Get.bodyLarge.px15.w700.copyWith(
-                              color: Colors.green,
-                            ),
-                          ),
-                        ),
-                      ),
-                      12.horizontalGap,
-                      Expanded(
-                        child: AppText(
-                          faq.answer,
-                          style: Get.bodyMedium.px14.w400.copyWith(
-                            height: 1.6,
-                            color: Get.disabledColor.withValues(alpha: 0.85),
-                          ),
-                          maxLines: 50,
-                          overflow: TextOverflow.visible,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
       ),
     );
   }

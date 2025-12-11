@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -7,28 +8,65 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
+import 'package:krishi/features/components/error_state.dart';
+import 'package:krishi/features/knowledge/providers/knowledge_providers.dart';
 import 'package:krishi/models/article.dart';
 
 class NewsDetailPage extends ConsumerWidget {
-  final Article news;
+  final int newsId;
 
-  const NewsDetailPage({super.key, required this.news});
+  const NewsDetailPage({super.key, required this.newsId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final newsAsync = ref.watch(newsDetailProvider(newsId));
+
+    return newsAsync.when(
+      data: (newsData) => _buildNewsContent(context, newsData),
+      loading: () => Scaffold(
+        backgroundColor: Get.scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: Get.scaffoldBackgroundColor,
+          elevation: 0,
+          leading: _buildBackButton(context),
+        ),
+        body: Center(
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
+        ),
+      ),
+      error: (error, stack) => Scaffold(
+        backgroundColor: Get.scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: Get.scaffoldBackgroundColor,
+          elevation: 0,
+          leading: _buildBackButton(context),
+        ),
+        body: ErrorState(
+          subtitle: 'error_loading_news'.tr(context),
+          onRetry: () {
+            ref.invalidate(newsDetailProvider(newsId));
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNewsContent(BuildContext context, Article newsData) {
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       body: CustomScrollView(
         slivers: [
-          _buildAppBar(context),
+          _buildAppBar(newsData),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20).rt,
+              padding: const EdgeInsets.all(10).rt,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
-                    news.title,
+                    newsData.title,
                     style: Get.bodyLarge.px20.w700.copyWith(
                       color:
                           Get.bodyLarge.color ??
@@ -38,27 +76,27 @@ class NewsDetailPage extends ConsumerWidget {
                     maxLines: 10,
                     overflow: TextOverflow.visible,
                   ),
-                  14.verticalGap,
+                  4.verticalGap,
                   Wrap(
-                    spacing: 10.rt,
-                    runSpacing: 8.rt,
+                    spacing: 8.rt,
+                    runSpacing: 4.rt,
                     children: [
                       _buildMetaChip(
                         icon: Icons.person_outline,
-                        label: news.authorName,
+                        label: newsData.authorName,
                       ),
                       _buildMetaChip(
                         icon: Icons.calendar_today_outlined,
-                        label: _formatDate(context, news.createdAt),
+                        label: _formatDate(newsData.createdAt, context),
                       ),
                     ],
                   ),
-                  10.verticalGap,
+                  6.verticalGap,
                   Divider(color: Get.disabledColor.withValues(alpha: 0.2)),
-                  10.verticalGap,
+                  6.verticalGap,
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(12).rt,
+                    padding: const EdgeInsets.all(18).rt,
                     decoration: BoxDecoration(
                       color: Get.cardColor,
                       borderRadius: BorderRadius.circular(16).rt,
@@ -67,8 +105,8 @@ class NewsDetailPage extends ConsumerWidget {
                       ),
                     ),
                     child: AppText(
-                      news.content,
-                      style: Get.bodyMedium.px14.w400.copyWith(
+                      newsData.content,
+                      style: Get.bodyMedium.px12.w400.copyWith(
                         color:
                             Get.bodyMedium.color ??
                             (Get.isDark ? Colors.white : Colors.black87),
@@ -88,7 +126,7 @@ class NewsDetailPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildAppBar(Article newsData) {
     return SliverAppBar(
       expandedHeight: 240.rt,
       pinned: true,
@@ -117,9 +155,9 @@ class NewsDetailPage extends ConsumerWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            news.image != null
+            newsData.image != null
                 ? Image.network(
-                    Get.imageUrl(news.image),
+                    Get.imageUrl(newsData.image),
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
                         _buildHeroPlaceholder(),
@@ -166,7 +204,7 @@ class NewsDetailPage extends ConsumerWidget {
           6.horizontalGap,
           AppText(
             label,
-            style: Get.bodySmall.copyWith(
+            style: Get.bodySmall.px10.copyWith(
               color:
                   Get.bodySmall.color ??
                   (Get.isDark ? Colors.white70 : Colors.black87),
@@ -179,22 +217,32 @@ class NewsDetailPage extends ConsumerWidget {
 
   Widget _buildHeroPlaceholder({bool isLoading = false}) {
     return Container(
-      color: const Color(0xFF1976D2).withValues(alpha: 0.1),
+      color: AppColors.primary.withValues(alpha: 0.1),
       child: Center(
         child: isLoading
             ? CircularProgressIndicator.adaptive(
-                valueColor: AlwaysStoppedAnimation<Color>(const Color(0xFF1976D2)),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
               )
             : Icon(
-                Icons.newspaper,
+                Icons.article_outlined,
                 size: 80.st,
-                color: const Color(0xFF1976D2).withValues(alpha: 0.3),
+                color: AppColors.primary.withValues(alpha: 0.3),
               ),
       ),
     );
   }
 
-  String _formatDate(BuildContext context, DateTime date) {
+  Widget _buildBackButton(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(left: 8.rt),
+      child: IconButton(
+        icon: Icon(Icons.arrow_back_ios_new_rounded, color: Get.disabledColor),
+        onPressed: () => Get.pop(),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date, BuildContext context) {
     final now = DateTime.now();
     final difference = now.difference(date);
 
@@ -209,3 +257,4 @@ class NewsDetailPage extends ConsumerWidget {
     }
   }
 }
+

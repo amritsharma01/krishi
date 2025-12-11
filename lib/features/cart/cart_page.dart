@@ -1,5 +1,4 @@
 import 'package:krishi/core/configs/app_colors.dart';
-import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -7,6 +6,7 @@ import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/cart/checkout_page.dart';
+import 'package:krishi/features/cart/providers/cart_providers.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
 import 'package:krishi/features/components/error_state.dart';
@@ -22,126 +22,39 @@ class CartPage extends ConsumerStatefulWidget {
 }
 
 class _CartPageState extends ConsumerState<CartPage> {
-  Cart? cart;
-  bool isLoading = true;
-  String? error;
-  final Set<int> _updatingItemIds = {};
-  final Set<int> _deletingItemIds = {};
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCart();
-  }
-
-  Future<void> _loadCart({bool silently = false}) async {
-    if (!silently) {
-      setState(() {
-        isLoading = true;
-        error = null;
-      });
-    }
-
-    try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      final cartData = await apiService.getCart();
-      if (mounted) {
-        setState(() {
-          cart = cartData;
-          error = null;
-          if (!silently) {
-            isLoading = false;
-          }
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          error = e.toString();
-          if (!silently) {
-            isLoading = false;
-          }
-        });
-      }
-    }
-  }
-
-  CartItem _copyCartItemWithQuantity(CartItem source, int quantity) {
-    final subtotal = (source.unitPriceAsDouble * quantity).toStringAsFixed(2);
-    return CartItem(
-      id: source.id,
-      product: source.product,
-      productDetails: source.productDetails,
-      quantity: quantity,
-      unitPrice: source.unitPrice,
-      subtotal: subtotal,
-      createdAt: source.createdAt,
-      updatedAt: DateTime.now(),
-    );
-  }
-
-  Cart _copyCartWithItems(List<CartItem> items) {
-    final total = items.fold<double>(
-      0,
-      (sum, current) => sum + current.subtotalAsDouble,
-    );
-
-    return Cart(
-      id: cart!.id,
-      user: cart!.user,
-      items: items,
-      totalAmount: total.toStringAsFixed(2),
-      createdAt: cart!.createdAt,
-      updatedAt: DateTime.now(),
-    );
-  }
-
   Future<void> _updateQuantity(CartItem item, int newQuantity) async {
-    if (newQuantity <= 0 || _updatingItemIds.contains(item.id)) return;
-    if (cart == null) return;
+    final updatingIds = ref.read(updatingItemIdsProvider);
+    if (updatingIds.contains(item.id)) return;
 
-    final updatedItems = cart!.items.map((cartItem) {
-      if (cartItem.id == item.id) {
-        return _copyCartItemWithQuantity(cartItem, newQuantity);
-      }
-      return cartItem;
-    }).toList();
-
-    setState(() {
-      _updatingItemIds.add(item.id);
-      cart = _copyCartWithItems(updatedItems);
-    });
+    ref.read(updatingItemIdsProvider.notifier).state = {
+      ...updatingIds,
+      item.id,
+    };
 
     try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      await apiService.updateCartItem(itemId: item.id, quantity: newQuantity);
-      await _loadCart(silently: true);
+      final cartNotifier = ref.read(cartProvider.notifier);
+      await cartNotifier.updateQuantity(item, newQuantity);
     } catch (e) {
       Get.snackbar(
         'error_updating_quantity'.tr(Get.context),
         color: Colors.red,
       );
-      await _loadCart(silently: true);
     } finally {
-      if (mounted) {
-        setState(() {
-          _updatingItemIds.remove(item.id);
-        });
-      }
+      final currentIds = ref.read(updatingItemIdsProvider);
+      final updatedIds = {...currentIds}..remove(item.id);
+      ref.read(updatingItemIdsProvider.notifier).state = updatedIds;
     }
   }
 
   Future<void> _removeItem(int itemId) async {
-    if (_deletingItemIds.contains(itemId)) return;
+    final deletingIds = ref.read(deletingItemIdsProvider);
+    if (deletingIds.contains(itemId)) return;
 
-    setState(() {
-      _deletingItemIds.add(itemId);
-    });
+    ref.read(deletingItemIdsProvider.notifier).state = {...deletingIds, itemId};
 
     try {
-      final apiService = ref.read(krishiApiServiceProvider);
-      await apiService.removeCartItem(itemId);
-      await _loadCart();
+      final cartNotifier = ref.read(cartProvider.notifier);
+      await cartNotifier.removeItem(itemId);
       if (mounted) {
         Get.snackbar('item_removed'.tr(Get.context), color: Colors.green);
       }
@@ -150,24 +63,24 @@ class _CartPageState extends ConsumerState<CartPage> {
         Get.snackbar('error_removing_item'.tr(Get.context), color: Colors.red);
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _deletingItemIds.remove(itemId);
-        });
-      }
+      final currentIds = ref.read(deletingItemIdsProvider);
+      final updatedIds = {...currentIds}..remove(itemId);
+      ref.read(deletingItemIdsProvider.notifier).state = updatedIds;
     }
   }
 
-  void _navigateToCheckout() {
-    if (cart == null || cart!.items.isEmpty) return;
-    Get.to(CheckoutPage(cart: cart!)).then((_) {
+  void _navigateToCheckout(Cart cart) {
+    if (cart.items.isEmpty) return;
+    Get.to(CheckoutPage(cart: cart)).then((_) {
       // Reload cart after returning from checkout
-      _loadCart();
+      ref.read(cartProvider.notifier).loadCart();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final cartAsync = ref.watch(cartProvider);
+
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
@@ -183,30 +96,29 @@ class _CartPageState extends ConsumerState<CartPage> {
           onPressed: () => Get.pop(),
         ),
       ),
-      body: _buildBody(),
-      bottomNavigationBar: cart != null && cart!.items.isNotEmpty
-          ? _buildCheckoutBar()
-          : null,
+      body: cartAsync.when(
+        data: (cart) => _buildBody(cart),
+        loading: () => Center(
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+          ),
+        ),
+        error: (error, stack) => ErrorState(
+          subtitle: 'error_loading_cart_subtitle'.tr(context),
+          onRetry: () => ref.read(cartProvider.notifier).loadCart(),
+        ),
+      ),
+      bottomNavigationBar: cartAsync.maybeWhen(
+        data: (cart) => cart != null && cart.items.isNotEmpty
+            ? _buildCheckoutBar(cart)
+            : null,
+        orElse: () => null,
+      ),
     );
   }
 
-  Widget _buildBody() {
-    if (isLoading) {
-      return Center(
-        child: CircularProgressIndicator.adaptive(
-          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-        ),
-      );
-    }
-
-    if (error != null) {
-      return ErrorState(
-        subtitle: 'error_loading_cart_subtitle'.tr(context),
-        onRetry: _loadCart,
-      );
-    }
-
-    if (cart == null || cart!.items.isEmpty) {
+  Widget _buildBody(Cart? cart) {
+    if (cart == null || cart.items.isEmpty) {
       return EmptyState(
         title: 'empty_cart'.tr(context),
         subtitle: 'start_shopping'.tr(context),
@@ -215,12 +127,12 @@ class _CartPageState extends ConsumerState<CartPage> {
     }
 
     return RefreshIndicator(
-      onRefresh: () => _loadCart(silently: true),
+      onRefresh: () => ref.read(cartProvider.notifier).loadCart(silently: true),
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(horizontal: 6).rt,
-        itemCount: cart!.items.length,
+        itemCount: cart.items.length,
         itemBuilder: (context, index) {
-          return _buildCartItem(cart!.items[index]);
+          return _buildCartItem(cart.items[index]);
         },
       ),
     );
@@ -229,8 +141,10 @@ class _CartPageState extends ConsumerState<CartPage> {
   Widget _buildCartItem(CartItem item) {
     final product = item.productDetails;
     if (product == null) return const SizedBox.shrink();
-    final isUpdating = _updatingItemIds.contains(item.id);
-    final isDeleting = _deletingItemIds.contains(item.id);
+    final updatingIds = ref.watch(updatingItemIdsProvider);
+    final deletingIds = ref.watch(deletingItemIdsProvider);
+    final isUpdating = updatingIds.contains(item.id);
+    final isDeleting = deletingIds.contains(item.id);
 
     return Container(
       margin: EdgeInsets.only(bottom: 5.rt),
@@ -321,34 +235,47 @@ class _CartPageState extends ConsumerState<CartPage> {
           // Product Details
           Expanded(
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  product.name,
-                  style: Get.bodyMedium.px14.w700.copyWith(
-                    color: Get.disabledColor,
+                Flexible(
+                  child: AppText(
+                    product.name,
+                    style: Get.bodyMedium.px14.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
                 ),
-
+                4.verticalGap,
                 Row(
                   children: [
-                    AppText(
-                      'Rs. ${item.unitPrice}',
-                      style: Get.bodyMedium.px08.w700.copyWith(
-                        color: AppColors.primary,
+                    Flexible(
+                      child: AppText(
+                        'Rs. ${item.unitPrice}',
+                        style: Get.bodyMedium.px08.w700.copyWith(
+                          color: AppColors.primary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    AppText(
-                      ' /${product.unitName}',
-                      style: Get.bodySmall.px08.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.6),
+                    Flexible(
+                      child: AppText(
+                        ' /${product.unitName}',
+                        style: Get.bodySmall.px08.copyWith(
+                          color: Get.disabledColor.withValues(alpha: 0.6),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
                 4.verticalGap,
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     GestureDetector(
                       onTap: isUpdating
@@ -370,7 +297,7 @@ class _CartPageState extends ConsumerState<CartPage> {
                         ),
                       ),
                     ),
-                    10.horizontalGap,
+                    8.horizontalGap,
                     isUpdating
                         ? SizedBox(
                             width: 10.st,
@@ -382,13 +309,16 @@ class _CartPageState extends ConsumerState<CartPage> {
                               ),
                             ),
                           )
-                        : AppText(
-                            '${item.quantity}',
-                            style: Get.bodyMedium.px10.w700.copyWith(
-                              color: Get.disabledColor,
+                        : FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: AppText(
+                              '${item.quantity}',
+                              style: Get.bodyMedium.px10.w700.copyWith(
+                                color: Get.disabledColor,
+                              ),
                             ),
                           ),
-                    10.horizontalGap,
+                    8.horizontalGap,
                     GestureDetector(
                       onTap: isUpdating
                           ? null
@@ -414,8 +344,10 @@ class _CartPageState extends ConsumerState<CartPage> {
               ],
             ),
           ),
+          8.horizontalGap,
           // Total and Delete
           Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               isDeleting
@@ -450,10 +382,14 @@ class _CartPageState extends ConsumerState<CartPage> {
                       ),
                     ),
               8.verticalGap,
-              AppText(
-                'Rs. ${item.subtotal}',
-                style: Get.bodyMedium.px13.w800.copyWith(
-                  color: Get.disabledColor,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: AppText(
+                  'Rs. ${item.subtotal}',
+                  style: Get.bodyMedium.px13.w800.copyWith(
+                    color: Get.disabledColor,
+                  ),
                 ),
               ),
             ],
@@ -463,7 +399,7 @@ class _CartPageState extends ConsumerState<CartPage> {
     );
   }
 
-  Widget _buildCheckoutBar() {
+  Widget _buildCheckoutBar(Cart cart) {
     return Container(
       padding: const EdgeInsets.all(16).rt,
       decoration: BoxDecoration(
@@ -483,23 +419,32 @@ class _CartPageState extends ConsumerState<CartPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                AppText(
-                  'total'.tr(context),
-                  style: Get.bodyMedium.px15.w600.copyWith(
-                    color: Get.disabledColor.withValues(alpha: 0.7),
+                Flexible(
+                  child: AppText(
+                    'total'.tr(context),
+                    style: Get.bodyMedium.px15.w600.copyWith(
+                      color: Get.disabledColor.withValues(alpha: 0.7),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                AppText(
-                  'Rs. ${cart?.totalAmount ?? '0.00'}',
-                  style: Get.bodyLarge.px18.w700.copyWith(
-                    color: Get.disabledColor,
+                8.horizontalGap,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: AppText(
+                    'Rs. ${cart.totalAmount}',
+                    style: Get.bodyLarge.px18.w700.copyWith(
+                      color: Get.disabledColor,
+                    ),
                   ),
                 ),
               ],
             ),
             16.verticalGap,
             GestureDetector(
-              onTap: _navigateToCheckout,
+              onTap: () => _navigateToCheckout(cart),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 14).rt,

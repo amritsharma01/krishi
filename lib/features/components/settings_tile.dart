@@ -30,14 +30,11 @@ class SettingsTile extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16).rt,
+        padding: const EdgeInsets.all(8).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(12).rt,
-          border: Border.all(
-            color: Get.disabledColor.o1,
-            width: 1,
-          ),
+          border: Border.all(color: Get.disabledColor.o1, width: 1),
         ),
         child: Row(
           children: [
@@ -65,7 +62,6 @@ class SettingsTile extends StatelessWidget {
                     ),
                   ),
                   if (subtitle != null) ...[
-                    4.verticalGap,
                     AppText(
                       subtitle!,
                       style: Get.bodySmall.px12.copyWith(
@@ -76,14 +72,10 @@ class SettingsTile extends StatelessWidget {
                 ],
               ),
             ),
-            if (trailing != null) ...[
-              12.horizontalGap,
-              trailing!,
-            ],
+            if (trailing != null) ...[12.horizontalGap, trailing!],
           ],
         ),
       ),
     );
   }
 }
-

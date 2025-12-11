@@ -211,10 +211,12 @@ class KrishiApiService {
   /// Get paginated list of articles
   Future<PaginatedResponse<Article>> getArticles({
     int page = 1,
+    int? pageSize,
     String? language,
   }) async {
     try {
       final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
       if (language != null) queryParams['language'] = language;
 
       final response = await apiManager.get(
@@ -245,10 +247,12 @@ class KrishiApiService {
   /// Get paginated list of news
   Future<PaginatedResponse<Article>> getNews({
     int page = 1,
+    int? pageSize,
     String? language,
   }) async {
     try {
       final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
       if (language != null) queryParams['language'] = language;
 
       final response = await apiManager.get(
@@ -259,6 +263,16 @@ class KrishiApiService {
         response.data as Map<String, dynamic>,
         (json) => Article.fromJson(json),
       );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  /// Get single news item
+  Future<Article> getNewsDetail(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.newsDetail(id));
+      return Article.fromJson(response.data as Map<String, dynamic>);
     } catch (e) {
       rethrow;
     }
@@ -311,6 +325,7 @@ class KrishiApiService {
   /// Get paginated list of products
   Future<PaginatedResponse<Product>> getProducts({
     int page = 1,
+    int? pageSize,
     int? category,
     String? categoryName,
     String? search,
@@ -324,6 +339,7 @@ class KrishiApiService {
   }) async {
     try {
       final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
       if (category != null) queryParams['category'] = category;
       final trimmedCategoryName = categoryName?.trim();
       if (trimmedCategoryName != null && trimmedCategoryName.isNotEmpty) {
@@ -705,11 +721,14 @@ class KrishiApiService {
   /// Get my purchases (orders where user is the buyer)
   Future<PaginatedResponse<Order>> getMyPurchasesPaginated({
     int page = 1,
+    int? pageSize,
   }) async {
     try {
+      final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
       final response = await apiManager.get(
         ApiEndpoints.myPurchases,
-        queryParameters: {'page': page},
+        queryParameters: queryParams,
       );
       
       // Check if response is a list or paginated object
@@ -767,11 +786,16 @@ class KrishiApiService {
   }
 
   /// Get my sales (order items where user is the seller) with pagination support
-  Future<PaginatedResponse<OrderItemSeller>> getMySalesPaginated({int page = 1}) async {
+  Future<PaginatedResponse<OrderItemSeller>> getMySalesPaginated({
+    int page = 1,
+    int? pageSize,
+  }) async {
     try {
+      final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
       final response = await apiManager.get(
         ApiEndpoints.mySales,
-        queryParameters: {'page': page},
+        queryParameters: queryParams,
       );
       
       // Check if response is a list or paginated object
@@ -898,17 +922,39 @@ class KrishiApiService {
 
   // ==================== Resources ====================
 
-  /// Get all notices
-  Future<List<Notice>> getNotices({String? noticeType}) async {
+  /// Get notices (paginated)
+  Future<PaginatedResponse<Notice>> getNotices({
+    String? noticeType,
+    int page = 1,
+    int? pageSize,
+  }) async {
     try {
-      final queryParams = noticeType != null
-          ? {'notice_type': noticeType}
-          : null;
+      final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
+      if (noticeType != null) queryParams['notice_type'] = noticeType;
+      
       final response = await apiManager.get(
         ApiEndpoints.notices,
         queryParameters: queryParams,
       );
-      return _parseListResponse(response.data, Notice.fromJson);
+      
+      // Handle both paginated and list responses
+      if (response.data is Map<String, dynamic> && 
+          (response.data as Map<String, dynamic>).containsKey('results')) {
+        return PaginatedResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => Notice.fromJson(json),
+        );
+      } else {
+        // Fallback for list response
+        final list = _parseListResponse(response.data, Notice.fromJson);
+        return PaginatedResponse(
+          count: list.length,
+          next: null,
+          previous: null,
+          results: list,
+        );
+      }
     } catch (e) {
       rethrow;
     }
@@ -924,15 +970,39 @@ class KrishiApiService {
     }
   }
 
-  /// Get all videos
-  Future<List<Video>> getVideos({String? category}) async {
+  /// Get videos (paginated)
+  Future<PaginatedResponse<Video>> getVideos({
+    String? category,
+    int page = 1,
+    int? pageSize,
+  }) async {
     try {
-      final queryParams = category != null ? {'category': category} : null;
+      final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
+      if (category != null) queryParams['category'] = category;
+      
       final response = await apiManager.get(
         ApiEndpoints.videos,
         queryParameters: queryParams,
       );
-      return _parseListResponse(response.data, Video.fromJson);
+      
+      // Handle both paginated and list responses
+      if (response.data is Map<String, dynamic> && 
+          (response.data as Map<String, dynamic>).containsKey('results')) {
+        return PaginatedResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => Video.fromJson(json),
+        );
+      } else {
+        // Fallback for list response
+        final list = _parseListResponse(response.data, Video.fromJson);
+        return PaginatedResponse(
+          count: list.length,
+          next: null,
+          previous: null,
+          results: list,
+        );
+      }
     } catch (e) {
       rethrow;
     }
@@ -948,15 +1018,39 @@ class KrishiApiService {
     }
   }
 
-  /// Get crop calendar
-  Future<List<CropCalendar>> getCropCalendar({String? cropType}) async {
+  /// Get crop calendar (paginated)
+  Future<PaginatedResponse<CropCalendar>> getCropCalendar({
+    String? cropType,
+    int page = 1,
+    int? pageSize,
+  }) async {
     try {
-      final queryParams = cropType != null ? {'crop_type': cropType} : null;
+      final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
+      if (cropType != null) queryParams['crop_type'] = cropType;
+      
       final response = await apiManager.get(
         ApiEndpoints.cropCalendar,
         queryParameters: queryParams,
       );
-      return _parseListResponse(response.data, CropCalendar.fromJson);
+      
+      // Handle both paginated and list responses
+      if (response.data is Map<String, dynamic> && 
+          (response.data as Map<String, dynamic>).containsKey('results')) {
+        return PaginatedResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => CropCalendar.fromJson(json),
+        );
+      } else {
+        // Fallback for list response
+        final list = _parseListResponse(response.data, CropCalendar.fromJson);
+        return PaginatedResponse(
+          count: list.length,
+          next: null,
+          previous: null,
+          results: list,
+        );
+      }
     } catch (e) {
       rethrow;
     }
@@ -972,11 +1066,37 @@ class KrishiApiService {
     }
   }
 
-  /// Get all experts
-  Future<List<Expert>> getExperts() async {
+  /// Get experts (paginated)
+  Future<PaginatedResponse<Expert>> getExperts({
+    int page = 1,
+    int? pageSize,
+  }) async {
     try {
-      final response = await apiManager.get(ApiEndpoints.experts);
-      return _parseListResponse(response.data, Expert.fromJson);
+      final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
+      
+      final response = await apiManager.get(
+        ApiEndpoints.experts,
+        queryParameters: queryParams,
+      );
+      
+      // Handle both paginated and list responses
+      if (response.data is Map<String, dynamic> && 
+          (response.data as Map<String, dynamic>).containsKey('results')) {
+        return PaginatedResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => Expert.fromJson(json),
+        );
+      } else {
+        // Fallback for list response
+        final list = _parseListResponse(response.data, Expert.fromJson);
+        return PaginatedResponse(
+          count: list.length,
+          next: null,
+          previous: null,
+          results: list,
+        );
+      }
     } catch (e) {
       rethrow;
     }
@@ -992,19 +1112,39 @@ class KrishiApiService {
     }
   }
 
-  /// Get all service providers
-  Future<List<ServiceProvider>> getServiceProviders({
+  /// Get service providers (paginated)
+  Future<PaginatedResponse<ServiceProvider>> getServiceProviders({
     String? serviceType,
+    int page = 1,
+    int? pageSize,
   }) async {
     try {
-      final queryParams = serviceType != null
-          ? {'service_type': serviceType}
-          : null;
+      final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
+      if (serviceType != null) queryParams['service_type'] = serviceType;
+      
       final response = await apiManager.get(
         ApiEndpoints.serviceProviders,
         queryParameters: queryParams,
       );
-      return _parseListResponse(response.data, ServiceProvider.fromJson);
+      
+      // Handle both paginated and list responses
+      if (response.data is Map<String, dynamic> && 
+          (response.data as Map<String, dynamic>).containsKey('results')) {
+        return PaginatedResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => ServiceProvider.fromJson(json),
+        );
+      } else {
+        // Fallback for list response
+        final list = _parseListResponse(response.data, ServiceProvider.fromJson);
+        return PaginatedResponse(
+          count: list.length,
+          next: null,
+          previous: null,
+          results: list,
+        );
+      }
     } catch (e) {
       rethrow;
     }
@@ -1022,17 +1162,39 @@ class KrishiApiService {
     }
   }
 
-  /// Get all contacts
-  Future<List<Contact>> getContacts({String? contactType}) async {
+  /// Get contacts (paginated)
+  Future<PaginatedResponse<Contact>> getContacts({
+    String? contactType,
+    int page = 1,
+    int? pageSize,
+  }) async {
     try {
-      final queryParams = contactType != null
-          ? {'contact_type': contactType}
-          : null;
+      final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
+      if (contactType != null) queryParams['contact_type'] = contactType;
+      
       final response = await apiManager.get(
         ApiEndpoints.contacts,
         queryParameters: queryParams,
       );
-      return _parseListResponse(response.data, Contact.fromJson);
+      
+      // Handle both paginated and list responses
+      if (response.data is Map<String, dynamic> && 
+          (response.data as Map<String, dynamic>).containsKey('results')) {
+        return PaginatedResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => Contact.fromJson(json),
+        );
+      } else {
+        // Fallback for list response
+        final list = _parseListResponse(response.data, Contact.fromJson);
+        return PaginatedResponse(
+          count: list.length,
+          next: null,
+          previous: null,
+          results: list,
+        );
+      }
     } catch (e) {
       rethrow;
     }
@@ -1048,11 +1210,37 @@ class KrishiApiService {
     }
   }
 
-  /// Get all FAQs
-  Future<List<FAQ>> getFAQs() async {
+  /// Get FAQs (paginated)
+  Future<PaginatedResponse<FAQ>> getFAQs({
+    int page = 1,
+    int? pageSize,
+  }) async {
     try {
-      final response = await apiManager.get(ApiEndpoints.faqs);
-      return _parseListResponse(response.data, FAQ.fromJson);
+      final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
+      
+      final response = await apiManager.get(
+        ApiEndpoints.faqs,
+        queryParameters: queryParams,
+      );
+      
+      // Handle both paginated and list responses
+      if (response.data is Map<String, dynamic> && 
+          (response.data as Map<String, dynamic>).containsKey('results')) {
+        return PaginatedResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => FAQ.fromJson(json),
+        );
+      } else {
+        // Fallback for list response
+        final list = _parseListResponse(response.data, FAQ.fromJson);
+        return PaginatedResponse(
+          count: list.length,
+          next: null,
+          previous: null,
+          results: list,
+        );
+      }
     } catch (e) {
       rethrow;
     }
@@ -1070,21 +1258,41 @@ class KrishiApiService {
 
   // ==================== User Manuals ====================
 
-  /// Get list of user manuals
-  Future<List<UserManual>> getUserManuals({
+  /// Get user manuals (paginated)
+  Future<PaginatedResponse<UserManual>> getUserManuals({
     String? category,
     String? search,
+    int page = 1,
+    int? pageSize,
   }) async {
     try {
-      final queryParams = <String, dynamic>{};
+      final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
       if (category != null) queryParams['category'] = category;
       if (search != null) queryParams['search'] = search;
 
       final response = await apiManager.get(
         ApiEndpoints.userManuals,
-        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+        queryParameters: queryParams,
       );
-      return _parseListResponse(response.data, UserManual.fromJson);
+      
+      // Handle both paginated and list responses
+      if (response.data is Map<String, dynamic> && 
+          (response.data as Map<String, dynamic>).containsKey('results')) {
+        return PaginatedResponse.fromJson(
+          response.data as Map<String, dynamic>,
+          (json) => UserManual.fromJson(json),
+        );
+      } else {
+        // Fallback for list response
+        final list = _parseListResponse(response.data, UserManual.fromJson);
+        return PaginatedResponse(
+          count: list.length,
+          next: null,
+          previous: null,
+          results: list,
+        );
+      }
     } catch (e) {
       rethrow;
     }
@@ -1104,11 +1312,13 @@ class KrishiApiService {
 
   Future<PaginatedResponse<Program>> getPrograms({
     int page = 1,
+    int? pageSize,
     String? search,
     String? ordering,
   }) async {
     try {
       final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
       final trimmedSearch = search?.trim();
       final trimmedOrdering = ordering?.trim();
       if (trimmedSearch != null && trimmedSearch.isNotEmpty) {
@@ -1182,15 +1392,33 @@ class KrishiApiService {
     }
   }
 
+  Future<DynamicMarketPricesResponse> getDynamicMarketPrices({
+    int page = 1,
+  }) async {
+    try {
+      final response = await apiManager.get(
+        ApiEndpoints.dynamicMarketPrices,
+        queryParameters: {'page': page},
+      );
+      return DynamicMarketPricesResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // ==================== Soil Tests ====================
 
   Future<PaginatedResponse<SoilTest>> getSoilTests({
     int page = 1,
+    int? pageSize,
     String? search,
     String? ordering,
   }) async {
     try {
       final queryParams = <String, dynamic>{'page': page};
+      if (pageSize != null) queryParams['page_size'] = pageSize;
       final trimmedSearch = search?.trim();
       final trimmedOrdering = ordering?.trim();
       if (trimmedSearch != null && trimmedSearch.isNotEmpty) {

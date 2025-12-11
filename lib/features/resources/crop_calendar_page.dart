@@ -1,16 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:krishi/core/core_service_providers.dart';
-import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
-import 'package:krishi/features/resources/crop_detail_page.dart';
-import 'package:krishi/models/resources.dart';
+import 'package:krishi/features/resources/providers/crop_calendar_providers.dart';
+import 'package:krishi/features/resources/widgets/crop_calendar_widgets.dart';
+import 'package:krishi/features/resources/widgets/empty_state_widget.dart';
 
 class CropCalendarPage extends ConsumerStatefulWidget {
   const CropCalendarPage({super.key});
@@ -20,9 +18,8 @@ class CropCalendarPage extends ConsumerStatefulWidget {
 }
 
 class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
-  List<CropCalendar> _crops = [];
-  bool _isLoading = true;
-  String _selectedType = 'all';
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
 
   Map<String, String> _getCropTypes(BuildContext context) {
     return {
@@ -57,321 +54,184 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
   @override
   void initState() {
     super.initState();
-    _loadCrops();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadCrops();
+    });
   }
 
-  Future<void> _loadCrops({String? cropType}) async {
-    setState(() {
-      _isLoading = true;
-    });
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCrops({String? cropType, bool force = false}) async {
+    if (!mounted) return;
+
+    final selectedType = cropType ?? ref.read(selectedCropTypeProvider);
+    
+    // Reset if crop type changed or force refresh
+    if (cropType != null || force) {
+      _hasLoaded = false;
+    }
+    
+    if (!force && _hasLoaded && ref.read(cropCalendarListProvider).isNotEmpty) {
+      return;
+    }
+
+    ref.read(isLoadingCropCalendarProvider.notifier).state = true;
+    ref.read(cropCalendarCurrentPageProvider.notifier).state = 1;
+    ref.read(cropCalendarHasMoreProvider.notifier).state = true;
+    ref.read(cropCalendarListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final crops = await apiService.getCropCalendar(
-        cropType: cropType == 'all' ? null : cropType,
+      final response = await apiService.getCropCalendar(
+        cropType: selectedType == 'all' ? null : selectedType,
+        page: 1,
+        pageSize: 10,
       );
-      setState(() {
-        _crops = crops;
-        _isLoading = false;
-      });
+
+      if (!mounted) return;
+
+      ref.read(cropCalendarListProvider.notifier).state = response.results;
+      ref.read(isLoadingCropCalendarProvider.notifier).state = false;
+      ref.read(cropCalendarHasMoreProvider.notifier).state = response.next != null;
+      ref.read(cropCalendarCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-      if (mounted) {
-        Get.snackbar('Failed to load crop calendar: $e');
-      }
+      if (!mounted) return;
+      ref.read(isLoadingCropCalendarProvider.notifier).state = false;
+      Get.snackbar('Failed to load crop calendar: $e');
+    }
+  }
+
+  Future<void> _loadMoreCrops() async {
+    final isLoading = ref.read(isLoadingMoreCropCalendarProvider);
+    final hasMore = ref.read(cropCalendarHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreCropCalendarProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(cropCalendarCurrentPageProvider);
+      final selectedType = ref.read(selectedCropTypeProvider);
+      
+      final response = await apiService.getCropCalendar(
+        cropType: selectedType == 'all' ? null : selectedType,
+        page: currentPage,
+        pageSize: 10,
+      );
+
+      if (!mounted) return;
+
+      final currentCrops = ref.read(cropCalendarListProvider);
+      ref.read(cropCalendarListProvider.notifier).state = [
+        ...currentCrops,
+        ...response.results,
+      ];
+      ref.read(cropCalendarHasMoreProvider.notifier).state = response.next != null;
+      ref.read(cropCalendarCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(isLoadingMoreCropCalendarProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreCropCalendarProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreCropCalendarProvider);
+    final hasMore = ref.read(cropCalendarHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreCrops();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(isLoadingCropCalendarProvider);
+    final crops = ref.watch(cropCalendarListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreCropCalendarProvider);
+    final hasCrops = crops.isNotEmpty;
+
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
           'crop_calendar'.tr(context),
-          style: Get.bodyLarge.px20.w600.copyWith(color: Colors.white),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: Get.cardColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Get.disabledColor),
       ),
       body: Column(
         children: [
-          _buildTypeFilter(context),
+          CropCalendarFilter(
+            cropTypes: _getCropTypes(context),
+            cropIcons: _cropIcons,
+            cropColors: _cropColors,
+            onFilterChanged: (cropType) => _loadCrops(cropType: cropType, force: true),
+          ),
           Expanded(
-            child: _isLoading
+            child: isLoading && crops.isEmpty
                 ? const Center(child: CircularProgressIndicator.adaptive())
-                : _crops.isEmpty
-                ? _buildEmptyState(context)
-                : _buildCropsList(context),
+                : !hasCrops
+                    ? EmptyStateWidget(
+                        icon: Icons.calendar_today_rounded,
+                        title: 'no_crops_available'.tr(context),
+                        subtitle: 'check_back_later_info'.tr(context),
+                      )
+                    : _buildCropsList(context, isLoadingMore),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTypeFilter(BuildContext context) {
-    final cropTypes = _getCropTypes(context);
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
-        ).rt,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: cropTypes.entries.map((entry) {
-            final isSelected = _selectedType == entry.key;
-            final color = _cropColors[entry.key] ?? Colors.green;
-            final icon = entry.key == 'all'
-                ? Icons.all_inclusive
-                : _cropIcons[entry.key] ?? Icons.agriculture_rounded;
-            return Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: _buildFilterPill(
-                label: entry.value,
-                icon: icon,
-                color: color,
-                isSelected: isSelected,
-                onTap: () {
-                  setState(() {
-                    _selectedType = entry.key;
-                  });
-                  _loadCrops(cropType: entry.key);
-                },
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
+  Widget _buildCropsList(BuildContext context, bool isLoadingMore) {
+    final crops = ref.watch(cropCalendarListProvider);
+    final selectedType = ref.watch(selectedCropTypeProvider);
 
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.calendar_today_rounded,
-            size: 80.st,
-            color: Colors.grey.shade400,
-          ),
-          16.verticalGap,
-          AppText(
-            'no_crops_available'.tr(context),
-            style: Get.bodyLarge.px18.w600.copyWith(
-              color: Colors.grey.shade600,
-            ),
-          ),
-          8.verticalGap,
-          AppText(
-            'check_back_later_info'.tr(context),
-            style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCropsList(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: () => _loadCrops(cropType: _selectedType),
+      onRefresh: () => _loadCrops(cropType: selectedType, force: true),
       child: GridView.builder(
-        padding: EdgeInsets.all(10.rt),
+        controller: _scrollController,
+        padding: const EdgeInsets.all(10),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 16.w,
-          mainAxisSpacing: 16.h,
+          crossAxisSpacing: 16.wt,
+          mainAxisSpacing: 16.ht,
           childAspectRatio: 0.65,
         ),
-        itemCount: _crops.length,
+        itemCount: crops.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
-          final crop = _crops[index];
-          return _buildCropCard(context, crop);
-        },
-      ),
-    );
-  }
-
-  Widget _buildCropCard(BuildContext context, CropCalendar crop) {
-    final color = _cropColors[crop.cropType] ?? Colors.teal;
-    final icon = _cropIcons[crop.cropType] ?? Icons.agriculture_rounded;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.circular(22).rt,
-        border: Border.all(color: color.withValues(alpha: 0.08)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(22).rt,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(22).rt,
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CropDetailPage(crop: crop),
+          if (index == crops.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircularProgressIndicator.adaptive(),
               ),
             );
-          },
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildCropHeader(crop, color, icon),
-              Padding(
-                padding: EdgeInsets.all(16.rt),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTypeBadge(crop.cropTypeDisplay, color),
-                    12.verticalGap,
-                    AppText(
-                      crop.cropName,
-                      style: Get.bodyLarge.px16.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    10.verticalGap,
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.schedule_rounded,
-                          size: 12.st,
-                          color: Colors.grey.shade600,
-                        ),
-                        6.horizontalGap,
-                        AppText(
-                          '${crop.durationDays} days',
-                          style: Get.bodyMedium.px10.copyWith(
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCropHeader(CropCalendar crop, Color color, IconData icon) {
-    return SizedBox(
-      height: 100.h,
-      child: ClipRRect(
-        borderRadius: BorderRadius.vertical(top: const Radius.circular(22)).rt,
-        child: crop.image != null && crop.image!.isNotEmpty
-            ? CachedNetworkImage(
-                imageUrl: crop.image!,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  color: color.withValues(alpha: 0.15),
-                  child: Center(
-                    child: CircularProgressIndicator.adaptive(
-                      valueColor: AlwaysStoppedAnimation<Color>(color),
-                    ),
-                  ),
-                ),
-                errorWidget: (context, url, error) =>
-                    _buildHeaderFallback(color, icon),
-              )
-            : _buildHeaderFallback(color, icon),
-      ),
-    );
-  }
-
-  Widget _buildHeaderFallback(Color color, IconData icon) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.85), color],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Center(
-        child: Icon(icon, size: 42.st, color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _buildTypeBadge(String text, Color color) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(30).rt,
-      ),
-      child: AppText(
-        text,
-        style: Get.bodySmall.px12.w600.copyWith(color: color),
-      ),
-    );
-  }
-
-  Widget _buildFilterPill({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: isSelected ? color : color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : color.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14.st, color: isSelected ? Colors.white : color),
-            6.horizontalGap,
-            AppText(
-              label,
-              style: Get.bodySmall.px12.w600.copyWith(
-                color: isSelected ? Colors.white : color,
-              ),
-            ),
-          ],
-        ),
+          }
+          final crop = crops[index];
+          final color = _cropColors[crop.cropType] ?? Colors.teal;
+          final icon = _cropIcons[crop.cropType] ?? Icons.agriculture_rounded;
+          return CropCard(
+            crop: crop,
+            color: color,
+            icon: icon,
+          );
+        },
       ),
     );
   }

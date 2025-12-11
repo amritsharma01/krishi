@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
+import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -9,17 +10,113 @@ import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/empty_state.dart';
-import 'package:krishi/features/components/error_state.dart';
 import 'package:krishi/features/knowledge/news_detail_page.dart';
 import 'package:krishi/features/knowledge/providers/knowledge_providers.dart';
 import 'package:krishi/models/article.dart';
 
-class NewsPage extends ConsumerWidget {
+class NewsPage extends ConsumerStatefulWidget {
   const NewsPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final newsAsync = ref.watch(newsProvider);
+  ConsumerState<NewsPage> createState() => _NewsPageState();
+}
+
+class _NewsPageState extends ConsumerState<NewsPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadNews();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadNews({bool force = false}) async {
+    if (!force && _hasLoaded && ref.read(newsListProvider).isNotEmpty) {
+      return;
+    }
+
+    ref.read(isLoadingNewsProvider.notifier).state = true;
+    ref.read(newsCurrentPageProvider.notifier).state = 1;
+    ref.read(newsHasMoreProvider.notifier).state = true;
+    ref.read(newsListProvider.notifier).state = [];
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final response = await apiService.getNews(page: 1, pageSize: 10);
+
+      if (mounted) {
+        ref.read(newsListProvider.notifier).state = response.results;
+        ref.read(isLoadingNewsProvider.notifier).state = false;
+        ref.read(newsHasMoreProvider.notifier).state = response.next != null;
+        ref.read(newsCurrentPageProvider.notifier).state = 2;
+        _hasLoaded = true;
+      }
+    } catch (e) {
+      if (mounted) {
+        ref.read(isLoadingNewsProvider.notifier).state = false;
+      }
+    }
+  }
+
+  Future<void> _loadMoreNews() async {
+    final isLoading = ref.read(isLoadingMoreNewsProvider);
+    final hasMore = ref.read(newsHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreNewsProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(newsCurrentPageProvider);
+      final response = await apiService.getNews(page: currentPage, pageSize: 10);
+
+      if (mounted) {
+        final currentNews = ref.read(newsListProvider);
+        ref.read(newsListProvider.notifier).state = [
+          ...currentNews,
+          ...response.results,
+        ];
+        ref.read(newsHasMoreProvider.notifier).state = response.next != null;
+        ref.read(newsCurrentPageProvider.notifier).state = currentPage + 1;
+        ref.read(isLoadingMoreNewsProvider.notifier).state = false;
+      }
+    } catch (e) {
+      if (mounted) {
+        ref.read(isLoadingMoreNewsProvider.notifier).state = false;
+      }
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreNewsProvider);
+    final hasMore = ref.read(newsHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreNews();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isLoading = ref.watch(isLoadingNewsProvider);
+    final news = ref.watch(newsListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreNewsProvider);
 
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
@@ -27,7 +124,7 @@ class NewsPage extends ConsumerWidget {
         backgroundColor: Get.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Get.disabledColor),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Get.disabledColor),
           onPressed: () => Get.pop(),
         ),
         title: AppText(
@@ -35,40 +132,38 @@ class NewsPage extends ConsumerWidget {
           style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
         ),
       ),
-      body: newsAsync.when(
-        data: (newsList) {
-          if (newsList.isEmpty) {
-            return EmptyState(
-              title: 'no_news_available'.tr(context),
-              subtitle: 'no_news_subtitle'.tr(context),
-              icon: Icons.newspaper_outlined,
-            );
-          }
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(newsProvider);
-            },
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16).rt,
-              itemCount: newsList.length,
-              itemBuilder: (context, index) {
-                return _buildNewsCard(context, newsList[index]);
-              },
-            ),
-          );
-        },
-        loading: () => Center(
-          child: CircularProgressIndicator.adaptive(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-          ),
-        ),
-        error: (error, stack) => ErrorState(
-          subtitle: 'error_loading_news_subtitle'.tr(context),
-          onRetry: () {
-            ref.invalidate(newsProvider);
-          },
-        ),
+      body: RefreshIndicator(
+        onRefresh: () => _loadNews(force: true),
+        child: isLoading && news.isEmpty
+            ? Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              )
+            : news.isEmpty
+                ? EmptyState(
+                    title: 'no_news_available'.tr(context),
+                    subtitle: 'no_news_subtitle'.tr(context),
+                    icon: Icons.newspaper_outlined,
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 8).rt,
+                    itemCount: news.length + (isLoadingMore ? 1 : 0),
+                    itemBuilder: (context, index) {
+                      if (index == news.length) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6).rt,
+                          child: Center(
+                            child: CircularProgressIndicator.adaptive(
+                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                            ),
+                          ),
+                        );
+                      }
+                      return _buildNewsCard(context, news[index]);
+                    },
+                  ),
       ),
     );
   }
@@ -76,10 +171,10 @@ class NewsPage extends ConsumerWidget {
   Widget _buildNewsCard(BuildContext context, Article article) {
     return GestureDetector(
       onTap: () {
-        Get.to(NewsDetailPage(news: article));
+        Get.to(NewsDetailPage(newsId: article.id));
       },
       child: Container(
-        margin: EdgeInsets.only(bottom: 16.rt),
+        margin: EdgeInsets.only(bottom: 6.rt),
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(16).rt,

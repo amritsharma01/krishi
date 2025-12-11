@@ -1,4 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Image picking permissions -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Android 13+ photo access -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Backward compatibility for Android 12 and below -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <application
         android:label="krishi"
         android:name="${applicationName}"

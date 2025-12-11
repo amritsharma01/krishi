@@ -32,11 +32,7 @@ class ThemeSwitcher extends ConsumerWidget {
             0,
             currentIndex == 0,
           ),
-          Container(
-            width: 1,
-            height: 24.rt,
-            color: Get.disabledColor.withValues(alpha: 0.1),
-          ),
+
           _buildThemeOption(
             context,
             ref,
@@ -44,11 +40,7 @@ class ThemeSwitcher extends ConsumerWidget {
             1,
             currentIndex == 1,
           ),
-          Container(
-            width: 1,
-            height: 24.rt,
-            color: Get.disabledColor.withValues(alpha: 0.1),
-          ),
+
           _buildThemeOption(
             context,
             ref,
@@ -78,19 +70,20 @@ class ThemeSwitcher extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16).rt,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: EdgeInsets.symmetric(vertical: 14.rt),
+            padding: EdgeInsets.symmetric(vertical: 10.rt),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary.withValues(alpha: 0.1)
+                  ? AppColors.primary.withValues(alpha: 0.2)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(16).rt),
+              borderRadius: BorderRadius.circular(16).rt,
+            ),
             child: Center(
               child: Icon(
                 icon,
                 color: isSelected
                     ? AppColors.primary
                     : Get.disabledColor.withValues(alpha: 0.5),
-                size: 22.st,
+                size: 16.st,
               ),
             ),
           ),

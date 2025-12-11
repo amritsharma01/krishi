@@ -27,25 +27,9 @@ class LanguageSwitcher extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          _buildLanguageOption(
-            context,
-            ref,
-            'EN',
-            0,
-            currentIndex == 0,
-          ),
-          Container(
-            width: 1,
-            height: 24.rt,
-            color: Get.disabledColor.withValues(alpha: 0.1),
-          ),
-          _buildLanguageOption(
-            context,
-            ref,
-            'ने',
-            1,
-            currentIndex == 1,
-          ),
+          _buildLanguageOption(context, ref, 'EN', 0, currentIndex == 0),
+
+          _buildLanguageOption(context, ref, 'ने', 1, currentIndex == 1),
         ],
       ),
     );
@@ -68,7 +52,7 @@ class LanguageSwitcher extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16).rt,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: EdgeInsets.symmetric(vertical: 14.rt),
+            padding: EdgeInsets.symmetric(vertical: 10.rt),
             decoration: BoxDecoration(
               color: isSelected
                   ? AppColors.primary.withValues(alpha: 0.1)
@@ -78,7 +62,7 @@ class LanguageSwitcher extends ConsumerWidget {
             child: Center(
               child: AppText(
                 label,
-                style: Get.bodyMedium.px15.w600.copyWith(
+                style: Get.bodyMedium.px12.w600.copyWith(
                   color: isSelected
                       ? AppColors.primary
                       : Get.disabledColor.withValues(alpha: 0.6),

@@ -47,5 +47,12 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+	<!-- Image picker permissions -->
+	<key>NSCameraUsageDescription</key>
+	<string>We need camera access to let you take product photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need photo library access to let you choose product photos.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We need permission to save edited photos.</string>
 	</dict>
 </plist>

@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import 'package:krishi/core/core_service_providers.dart';
-import 'package:krishi/core/extensions/border_radius.dart';
-import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
-import 'package:krishi/features/resources/notice_detail_page.dart';
-import 'package:krishi/models/resources.dart';
+import 'package:krishi/features/resources/providers/notices_providers.dart';
+import 'package:krishi/features/resources/widgets/empty_state_widget.dart';
+import 'package:krishi/features/resources/widgets/notices_widgets.dart';
 
 class NoticesPage extends ConsumerStatefulWidget {
   const NoticesPage({super.key});
@@ -20,9 +18,8 @@ class NoticesPage extends ConsumerStatefulWidget {
 }
 
 class _NoticesPageState extends ConsumerState<NoticesPage> {
-  List<Notice> _notices = [];
-  bool _isLoading = true;
-  String _selectedFilter = 'all';
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
 
   Map<String, String> _getFilterOptions(BuildContext context) {
     return {
@@ -54,31 +51,107 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
   @override
   void initState() {
     super.initState();
-    _loadNotices();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadNotices();
+    });
   }
 
-  Future<void> _loadNotices({String? noticeType}) async {
-    setState(() {
-      _isLoading = true;
-    });
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadNotices({String? noticeType, bool force = false}) async {
+    if (!mounted) return;
+
+    final selectedFilter = noticeType ?? ref.read(selectedNoticeFilterProvider);
+
+    // Reset if filter changed or force refresh
+    if (noticeType != null || force) {
+      _hasLoaded = false;
+    }
+
+    if (!force && _hasLoaded && ref.read(noticesListProvider).isNotEmpty) {
+      return;
+    }
+
+    ref.read(isLoadingNoticesProvider.notifier).state = true;
+    ref.read(noticesCurrentPageProvider.notifier).state = 1;
+    ref.read(noticesHasMoreProvider.notifier).state = true;
+    ref.read(noticesListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final notices = await apiService.getNotices(
-        noticeType: noticeType == 'all' ? null : noticeType,
+      final response = await apiService.getNotices(
+        noticeType: selectedFilter == 'all' ? null : selectedFilter,
+        page: 1,
+        pageSize: 10,
       );
-      setState(() {
-        _notices = notices;
-        _isLoading = false;
-      });
+
+      if (!mounted) return;
+
+      ref.read(noticesListProvider.notifier).state = response.results;
+      ref.read(isLoadingNoticesProvider.notifier).state = false;
+      ref.read(noticesHasMoreProvider.notifier).state = response.next != null;
+      ref.read(noticesCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
       if (!mounted || e is FormatException) {
         return;
       }
+      ref.read(isLoadingNoticesProvider.notifier).state = false;
       Get.snackbar('Failed to load notices: $e');
+    }
+  }
+
+  Future<void> _loadMoreNotices() async {
+    final isLoading = ref.read(isLoadingMoreNoticesProvider);
+    final hasMore = ref.read(noticesHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreNoticesProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(noticesCurrentPageProvider);
+      final selectedFilter = ref.read(selectedNoticeFilterProvider);
+
+      final response = await apiService.getNotices(
+        noticeType: selectedFilter == 'all' ? null : selectedFilter,
+        page: currentPage,
+        pageSize: 10,
+      );
+
+      if (!mounted) return;
+
+      final currentNotices = ref.read(noticesListProvider);
+      ref.read(noticesListProvider.notifier).state = [
+        ...currentNotices,
+        ...response.results,
+      ];
+      ref.read(noticesHasMoreProvider.notifier).state = response.next != null;
+      ref.read(noticesCurrentPageProvider.notifier).state = currentPage + 1;
+      ref.read(isLoadingMoreNoticesProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreNoticesProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreNoticesProvider);
+    final hasMore = ref.read(noticesHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreNotices();
     }
   }
 
@@ -114,306 +187,75 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(isLoadingNoticesProvider);
+    final notices = ref.watch(noticesListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreNoticesProvider);
+    final hasNotices = notices.isNotEmpty;
+
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
           'notices_announcements'.tr(context),
-          style: Get.bodyLarge.px18.w600.copyWith(color: Colors.white),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        centerTitle: true,
-        backgroundColor: Get.primaryColor,
+        backgroundColor: Get.cardColor,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: Get.disabledColor),
       ),
       body: Column(
         children: [
-          _buildFilterChips(context),
+          NoticesFilterChips(
+            filterOptions: _getFilterOptions(context),
+            filterIcons: _filterIcons,
+            filterColors: _filterColors,
+            onFilterChanged: (noticeType) =>
+                _loadNotices(noticeType: noticeType, force: true),
+          ),
           Expanded(
-            child: _isLoading
+            child: isLoading && notices.isEmpty
                 ? const Center(child: CircularProgressIndicator.adaptive())
-                : _notices.isEmpty
-                    ? _buildEmptyState(context)
-                    : _buildNoticesList(context),
+                : !hasNotices
+                ? EmptyStateWidget(
+                    icon: Icons.notifications_off_rounded,
+                    title: 'no_notices_available'.tr(context),
+                    subtitle: 'check_back_later_updates'.tr(context),
+                  )
+                : _buildNoticesList(context, isLoadingMore),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChips(BuildContext context) {
-    final filterOptions = _getFilterOptions(context);
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
-        ).rt,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          children: filterOptions.entries.map((entry) {
-            final isSelected = _selectedFilter == entry.key;
-            final color = _filterColors[entry.key] ?? Get.primaryColor;
-            final icon = entry.key == 'all'
-                ? Icons.all_inclusive
-                : _filterIcons[entry.key] ?? Icons.article_rounded;
-            return Padding(
-              padding: EdgeInsets.only(right: 8.w),
-              child: _buildFilterPill(
-                label: entry.value,
-                icon: icon,
-                color: color,
-                isSelected: isSelected,
-                onTap: () {
-                  setState(() {
-                    _selectedFilter = entry.key;
-                  });
-                  _loadNotices(noticeType: entry.key);
-                },
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
+  Widget _buildNoticesList(BuildContext context, bool isLoadingMore) {
+    final notices = ref.watch(noticesListProvider);
+    final selectedFilter = ref.watch(selectedNoticeFilterProvider);
 
-  Widget _buildFilterPill({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-        decoration: BoxDecoration(
-          color: isSelected ? color : color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(
-            color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 14.st,
-              color: isSelected ? Colors.white : color,
-            ),
-            6.horizontalGap,
-            AppText(
-              label,
-              style: Get.bodySmall.px12.w600.copyWith(
-                color: isSelected ? Colors.white : color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.notifications_off_rounded,
-            size: 80.st,
-            color: Get.disabledColor.withValues(alpha: 0.6),
-          ),
-          16.verticalGap,
-          AppText(
-            'no_notices_available'.tr(context),
-            style: Get.bodyLarge.px18.w600.copyWith(
-              color: Get.bodyLarge.color ??
-                  (Get.isDark ? Colors.white : Colors.black87),
-            ),
-          ),
-          8.verticalGap,
-          AppText(
-            'check_back_later_updates'.tr(context),
-            style: Get.bodyMedium.copyWith(
-              color: Get.disabledColor.withValues(alpha: 0.9),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNoticesList(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: () => _loadNotices(noticeType: _selectedFilter),
+      onRefresh: () => _loadNotices(noticeType: selectedFilter, force: true),
       child: ListView.builder(
-        padding: EdgeInsets.all(16.rt),
-        itemCount: _notices.length,
+        controller: _scrollController,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5).rt,
+        itemCount: notices.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
-          final notice = _notices[index];
-          return _buildNoticeCard(context, notice);
-        },
-      ),
-    );
-  }
-
-  Widget _buildNoticeCard(BuildContext context, Notice notice) {
-    final typeColor = _getNoticeTypeColor(notice.noticeType);
-    final typeIcon = _getNoticeTypeIcon(notice.noticeType);
-    final titleColor = Get.bodyLarge.color ??
-        (Get.isDark ? Colors.white : Colors.black87);
-    final bodyColor = Get.bodyMedium.color ??
-        (Get.isDark ? Colors.white70 : Colors.black87);
-    final mutedColor = Get.disabledColor.withValues(alpha: 0.9);
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.circular(18).rt,
-        border: Border.all(
-          color: Get.disabledColor.withValues(alpha: 0.2),
-        ),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => NoticeDetailPage(notice: notice),
+          if (index == notices.length) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16).rt,
+              child: Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(Get.primaryColor),
+                ),
               ),
             );
-          },
-          borderRadius: BorderRadius.circular(16).rt,
-          child: Padding(
-            padding: EdgeInsets.all(16.rt),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-                      decoration: BoxDecoration(
-                        color: typeColor.withValues(alpha: Get.isDark ? 0.2 : 0.12),
-                        borderRadius: BorderRadius.circular(24).rt,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(typeIcon, size: 14.st, color: typeColor),
-                          6.horizontalGap,
-                          AppText(
-                            notice.noticeTypeDisplay,
-                            style: Get.bodySmall.copyWith(
-                              color: typeColor,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Spacer(),
-                    Icon(Icons.calendar_today_outlined, size: 14.st, color: mutedColor),
-                    6.horizontalGap,
-                    AppText(
-                      DateFormat('MMM dd, yyyy').format(notice.publishedDate),
-                      style: Get.bodySmall.copyWith(
-                        color: mutedColor,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                12.verticalGap,
-                AppText(
-                  notice.title,
-                  style: Get.bodyLarge.px16.w600.copyWith(color: titleColor),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                8.verticalGap,
-                AppText(
-                  notice.description,
-                  style: Get.bodyMedium.copyWith(
-                    color: bodyColor.withValues(alpha: 0.85),
-                    height: 1.4,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (notice.pdfFile != null || notice.image != null) ...[
-                  12.verticalGap,
-                  Wrap(
-                    spacing: 8.w,
-                    runSpacing: 6.h,
-                    children: [
-                      if (notice.pdfFile != null)
-                        _buildAttachmentChip(
-                          label: 'pdf_attached'.tr(context),
-                          icon: Icons.picture_as_pdf_rounded,
-                          color: Colors.red.shade600,
-                        ),
-                      if (notice.image != null)
-                        _buildAttachmentChip(
-                          label: 'image_attached'.tr(context),
-                          icon: Icons.image_rounded,
-                          color: Colors.blue.shade600,
-                        ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAttachmentChip({
-    required String label,
-    required IconData icon,
-    required Color color,
-  }) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: Get.isDark ? 0.18 : 0.12),
-        borderRadius: BorderRadius.circular(10).rt,
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14.st, color: color),
-          6.horizontalGap,
-          AppText(
-            label,
-            style: Get.bodySmall.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+          }
+          final notice = notices[index];
+          return NoticeCard(
+            notice: notice,
+            typeColor: _getNoticeTypeColor(notice.noticeType),
+            typeIcon: _getNoticeTypeIcon(notice.noticeType),
+          );
+        },
       ),
     );
   }

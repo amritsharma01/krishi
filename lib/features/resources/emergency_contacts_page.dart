@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/core_service_providers.dart';
-import 'package:krishi/core/extensions/border_radius.dart';
-import 'package:krishi/core/extensions/int.dart';
-import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
-import 'package:krishi/models/resources.dart';
+import 'package:krishi/features/resources/providers/emergency_contacts_providers.dart';
+import 'package:krishi/features/resources/widgets/empty_state_widget.dart';
+import 'package:krishi/features/resources/widgets/emergency_contacts_widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EmergencyContactsPage extends ConsumerStatefulWidget {
@@ -21,9 +20,8 @@ class EmergencyContactsPage extends ConsumerStatefulWidget {
 }
 
 class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
-  List<Contact> _contacts = [];
-  final ValueNotifier<bool> _isLoading = ValueNotifier(true);
-  final ValueNotifier<String> _selectedType = ValueNotifier('all');
+  final ScrollController _scrollController = ScrollController();
+  bool _hasLoaded = false;
 
   Map<String, String> _getContactTypes(BuildContext context) {
     return {
@@ -55,33 +53,110 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
   @override
   void initState() {
     super.initState();
-    _loadContacts();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadContacts();
+    });
   }
 
   @override
   void dispose() {
-    _isLoading.dispose();
-    _selectedType.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadContacts({String? contactType}) async {
-    _isLoading.value = true;
+  Future<void> _loadContacts({String? contactType, bool force = false}) async {
+    if (!mounted) return;
+
+    final selectedType = contactType ?? ref.read(selectedContactTypeProvider);
+
+    // Reset if contact type changed or force refresh
+    if (contactType != null || force) {
+      _hasLoaded = false;
+    }
+
+    if (!force &&
+        _hasLoaded &&
+        ref.read(emergencyContactsListProvider).isNotEmpty) {
+      return;
+    }
+
+    ref.read(isLoadingEmergencyContactsProvider.notifier).state = true;
+    ref.read(emergencyContactsCurrentPageProvider.notifier).state = 1;
+    ref.read(emergencyContactsHasMoreProvider.notifier).state = true;
+    ref.read(emergencyContactsListProvider.notifier).state = [];
 
     try {
       final apiService = ref.read(krishiApiServiceProvider);
-      final contacts = await apiService.getContacts(
-        contactType: contactType == 'all' ? null : contactType,
+      final response = await apiService.getContacts(
+        contactType: selectedType == 'all' ? null : selectedType,
+        page: 1,
+        pageSize: 10,
       );
-      if (mounted) {
-        _contacts = contacts;
-        _isLoading.value = false;
-      }
+
+      if (!mounted) return;
+
+      ref.read(emergencyContactsListProvider.notifier).state = response.results;
+      ref.read(isLoadingEmergencyContactsProvider.notifier).state = false;
+      ref.read(emergencyContactsHasMoreProvider.notifier).state =
+          response.next != null;
+      ref.read(emergencyContactsCurrentPageProvider.notifier).state = 2;
+      _hasLoaded = true;
     } catch (e) {
-      if (mounted) {
-        _isLoading.value = false;
-        Get.snackbar('error_loading_products'.tr(context));
-      }
+      if (!mounted) return;
+      ref.read(isLoadingEmergencyContactsProvider.notifier).state = false;
+      Get.snackbar('error_loading_products'.tr(context));
+    }
+  }
+
+  Future<void> _loadMoreContacts() async {
+    final isLoading = ref.read(isLoadingMoreEmergencyContactsProvider);
+    final hasMore = ref.read(emergencyContactsHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    ref.read(isLoadingMoreEmergencyContactsProvider.notifier).state = true;
+
+    try {
+      final apiService = ref.read(krishiApiServiceProvider);
+      final currentPage = ref.read(emergencyContactsCurrentPageProvider);
+      final selectedType = ref.read(selectedContactTypeProvider);
+
+      final response = await apiService.getContacts(
+        contactType: selectedType == 'all' ? null : selectedType,
+        page: currentPage,
+        pageSize: 10,
+      );
+
+      if (!mounted) return;
+
+      final currentContacts = ref.read(emergencyContactsListProvider);
+      ref.read(emergencyContactsListProvider.notifier).state = [
+        ...currentContacts,
+        ...response.results,
+      ];
+      ref.read(emergencyContactsHasMoreProvider.notifier).state =
+          response.next != null;
+      ref.read(emergencyContactsCurrentPageProvider.notifier).state =
+          currentPage + 1;
+      ref.read(isLoadingMoreEmergencyContactsProvider.notifier).state = false;
+    } catch (e) {
+      if (!mounted) return;
+      ref.read(isLoadingMoreEmergencyContactsProvider.notifier).state = false;
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final isLoading = ref.read(isLoadingMoreEmergencyContactsProvider);
+    final hasMore = ref.read(emergencyContactsHasMoreProvider);
+
+    if (isLoading || !hasMore) return;
+
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold) {
+      _loadMoreContacts();
     }
   }
 
@@ -109,370 +184,89 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = ref.watch(isLoadingEmergencyContactsProvider);
+    final contacts = ref.watch(emergencyContactsListProvider);
+    final isLoadingMore = ref.watch(isLoadingMoreEmergencyContactsProvider);
+    final hasContacts = contacts.isNotEmpty;
+
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
       appBar: AppBar(
         title: AppText(
           'emergency_contacts'.tr(context),
-          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        backgroundColor: Get.scaffoldBackgroundColor,
+        backgroundColor: Get.cardColor,
         elevation: 0,
         iconTheme: IconThemeData(color: Get.disabledColor),
       ),
       body: Column(
         children: [
-          _buildTypeFilter(context),
+          EmergencyContactsFilter(
+            contactTypes: _getContactTypes(context),
+            contactIcons: _contactIcons,
+            contactColors: _contactColors,
+            onFilterChanged: (contactType) =>
+                _loadContacts(contactType: contactType, force: true),
+          ),
           Expanded(
-            child: ValueListenableBuilder<bool>(
-              valueListenable: _isLoading,
-              builder: (context, isLoading, _) {
-                return isLoading
-                    ? Center(
-                        child: CircularProgressIndicator.adaptive(
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                        ),
-                      )
-                    : _contacts.isEmpty
-                    ? _buildEmptyState(context)
-                    : _buildContactsList(context);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTypeFilter(BuildContext context) {
-    final contactTypes = _getContactTypes(context);
-    return ValueListenableBuilder<String>(
-      valueListenable: _selectedType,
-      builder: (context, selectedType, _) {
-        return Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
-          decoration: BoxDecoration(
-            color: Get.cardColor,
-            borderRadius: BorderRadius.vertical(
-              bottom: const Radius.circular(28),
-            ).rt,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: contactTypes.entries.map((entry) {
-                final isSelected = selectedType == entry.key;
-                final color = _contactColors[entry.key] ?? Colors.red;
-                final icon = entry.key == 'all'
-                    ? Icons.all_inclusive
-                    : _contactIcons[entry.key] ?? Icons.phone_rounded;
-                return Padding(
-                  padding: EdgeInsets.only(right: 8.wt),
-                  child: _buildFilterPill(
-                    label: entry.value,
-                    icon: icon,
-                    color: color,
-                    isSelected: isSelected,
-                    onTap: () {
-                      _selectedType.value = entry.key;
-                      _loadContacts(contactType: entry.key);
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.contacts_rounded,
-            size: 80.st,
-            color: Colors.grey.shade400,
-          ),
-          16.verticalGap,
-          AppText(
-            'no_contacts_available'.tr(context),
-            style: Get.bodyLarge.px18.w600.copyWith(
-              color: Colors.grey.shade600,
-            ),
-          ),
-          8.verticalGap,
-          AppText(
-            'check_back_later'.tr(context),
-            style: Get.bodyMedium.copyWith(color: Colors.grey.shade500),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactsList(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () => _loadContacts(contactType: _selectedType.value),
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16).rt,
-        itemCount: _contacts.length,
-        itemBuilder: (context, index) {
-          final contact = _contacts[index];
-          return _buildContactCard(context, contact);
-        },
-      ),
-    );
-  }
-
-  Widget _buildFilterPill({
-    required String label,
-    required IconData icon,
-    required Color color,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.symmetric(horizontal: 12.wt, vertical: 6.ht),
-        decoration: BoxDecoration(
-          color: isSelected ? color : color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(
-            color: isSelected ? Colors.transparent : color.withValues(alpha: 0.3),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 14.st, color: isSelected ? Colors.white : color),
-            6.horizontalGap,
-            AppText(
-              label,
-              style: Get.bodySmall.px12.w600.copyWith(
-                color: isSelected ? Colors.white : color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoPill({required IconData icon, required String text}) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.rt, vertical: 8.rt),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12).rt,
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16.st, color: AppColors.primary),
-          6.horizontalGap,
-          Flexible(
-            child: AppText(
-              text,
-              style: Get.bodySmall.px12.w600.copyWith(color: Get.disabledColor),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12).rt,
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 12.rt),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12).rt,
-            border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 18.st, color: color),
-              8.horizontalGap,
-              Flexible(
-                child: AppText(
-                  label,
-                  style: Get.bodyMedium.px14.w600.copyWith(color: color),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContactCard(BuildContext context, Contact contact) {
-    final color = _contactColors[contact.contactType] ?? AppColors.primary;
-    final icon = _contactIcons[contact.contactType] ?? Icons.phone_rounded;
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.rt),
-      decoration: BoxDecoration(
-        color: Get.cardColor,
-        borderRadius: BorderRadius.circular(20).rt,
-        border: Border.all(
-          color: Get.disabledColor.withValues(alpha: 0.1),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20).rt,
-        child: Padding(
-          padding: const EdgeInsets.all(20).rt,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with icon and title
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(12).rt,
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14).rt,
-                      border: Border.all(color: color.withValues(alpha: 0.2)),
-                    ),
-                    child: Icon(icon, color: color, size: 28.st),
-                  ),
-                  16.horizontalGap,
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppText(
-                          contact.title,
-                          style: Get.bodyLarge.px18.w700.copyWith(
-                            color: Get.disabledColor,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        6.verticalGap,
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 10.rt,
-                            vertical: 4.rt,
-                          ),
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(8).rt,
-                          ),
-                          child: AppText(
-                            contact.contactTypeDisplay,
-                            style: Get.bodySmall.px11.w600.copyWith(
-                              color: color,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              if (contact.description.isNotEmpty) ...[
-                16.verticalGap,
-                AppText(
-                  contact.description,
-                  style: Get.bodyMedium.px14.copyWith(
-                    color: Get.disabledColor.withValues(alpha: 0.8),
-                    height: 1.5,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-              20.verticalGap,
-              // Key Information Pills
-              Wrap(
-                spacing: 8.rt,
-                runSpacing: 8.rt,
-                children: [
-                  _buildInfoPill(
-                    icon: Icons.phone_rounded,
-                    text: contact.phoneNumber,
-                  ),
-                  if (contact.address.isNotEmpty)
-                    _buildInfoPill(
-                      icon: Icons.location_on_rounded,
-                      text: contact.address,
-                    ),
-                ],
-              ),
-              if (contact.email.isNotEmpty) ...[
-                8.verticalGap,
-                _buildInfoPill(icon: Icons.email_rounded, text: contact.email),
-              ],
-              20.verticalGap,
-              // Contact Actions
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildContactButton(
-                      icon: Icons.phone_rounded,
-                      label: 'call'.tr(context),
-                      color: color,
-                      onTap: () => _makePhoneCall(context, contact.phoneNumber),
-                    ),
-                  ),
-                  if (contact.email.isNotEmpty) ...[
-                    12.horizontalGap,
-                    Expanded(
-                      child: _buildContactButton(
-                        icon: Icons.email_rounded,
-                        label: 'email'.tr(context),
-                        color: Colors.orange,
-                        onTap: () => _sendEmail(context, contact.email),
+            child: isLoading && contacts.isEmpty
+                ? Center(
+                    child: CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.primary,
                       ),
                     ),
-                  ],
-                ],
-              ),
-            ],
+                  )
+                : !hasContacts
+                ? EmptyStateWidget(
+                    icon: Icons.contacts_rounded,
+                    title: 'no_contacts_available'.tr(context),
+                    subtitle: 'check_back_later'.tr(context),
+                  )
+                : _buildContactsList(context, isLoadingMore),
           ),
-        ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactsList(BuildContext context, bool isLoadingMore) {
+    final contacts = ref.watch(emergencyContactsListProvider);
+    final selectedType = ref.watch(selectedContactTypeProvider);
+
+    return RefreshIndicator(
+      onRefresh: () => _loadContacts(contactType: selectedType, force: true),
+      child: ListView.builder(
+        controller: _scrollController,
+        padding: const EdgeInsets.all(6),
+        itemCount: contacts.length + (isLoadingMore ? 1 : 0),
+        itemBuilder: (context, index) {
+          if (index == contacts.length) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                ),
+              ),
+            );
+          }
+          final contact = contacts[index];
+          final color =
+              _contactColors[contact.contactType] ?? AppColors.primary;
+          final icon =
+              _contactIcons[contact.contactType] ?? Icons.phone_rounded;
+          return ContactCard(
+            contact: contact,
+            color: color,
+            icon: icon,
+            onCall: () => _makePhoneCall(context, contact.phoneNumber),
+            onEmail: contact.email.isNotEmpty
+                ? () => _sendEmail(context, contact.email)
+                : null,
+          );
+        },
       ),
     );
   }
