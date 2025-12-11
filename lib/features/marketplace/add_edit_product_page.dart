@@ -719,8 +719,13 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
               ),
               keyboardType: TextInputType.phone,
               validator: (value) {
-                if (value == null || value.isEmpty) {
+                final trimmed = value?.trim() ?? '';
+                if (trimmed.isEmpty) {
                   return 'required_field'.tr(context);
+                }
+                // Require exactly 10 digits (same rule as checkout)
+                if (!RegExp(r'^\\d{10}\$').hasMatch(trimmed)) {
+                  return 'phone_length_error'.tr(context);
                 }
                 return null;
               },
@@ -750,7 +755,8 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 if (trimmed.isEmpty) {
                   return 'required_field'.tr(context);
                 }
-                if (trimmed.length < 5) {
+                // Align with global rule: minimum 10 characters
+                if (trimmed.length < 10) {
                   return 'address_min_length'.tr(context);
                 }
                 return null;

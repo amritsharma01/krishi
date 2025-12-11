@@ -51,7 +51,7 @@ class WelcomeCard extends ConsumerWidget {
         boxShadow: [
           BoxShadow(
             color: AppColors.primary.withValues(alpha: 0.2),
-            blurRadius: 20,
+            blurRadius: 10,
             offset: const Offset(0, 8),
             spreadRadius: 2,
           ),

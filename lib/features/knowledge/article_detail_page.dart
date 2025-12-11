@@ -61,24 +61,25 @@ class ArticleDetailPage extends ConsumerWidget {
           _buildAppBar(articleData),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(20).rt,
+              padding: const EdgeInsets.all(10).rt,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
                     articleData.title,
-                    style: Get.bodyLarge.px22.w700.copyWith(
-                      color: Get.bodyLarge.color ??
+                    style: Get.bodyLarge.px20.w700.copyWith(
+                      color:
+                          Get.bodyLarge.color ??
                           (Get.isDark ? Colors.white : Colors.black87),
                       height: 1.35,
                     ),
                     maxLines: 10,
                     overflow: TextOverflow.visible,
                   ),
-                  14.verticalGap,
+                  4.verticalGap,
                   Wrap(
-                    spacing: 10.rt,
-                    runSpacing: 8.rt,
+                    spacing: 8.rt,
+                    runSpacing: 4.rt,
                     children: [
                       _buildMetaChip(
                         icon: Icons.person_outline,
@@ -90,11 +91,9 @@ class ArticleDetailPage extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  10.verticalGap,
-                  Divider(
-                    color: Get.disabledColor.withValues(alpha: 0.2),
-                  ),
-                  10.verticalGap,
+                  6.verticalGap,
+                  Divider(color: Get.disabledColor.withValues(alpha: 0.2)),
+                  6.verticalGap,
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(18).rt,
@@ -107,8 +106,9 @@ class ArticleDetailPage extends ConsumerWidget {
                     ),
                     child: AppText(
                       articleData.content,
-                      style: Get.bodyMedium.px15.w400.copyWith(
-                        color: Get.bodyMedium.color ??
+                      style: Get.bodyMedium.px12.w400.copyWith(
+                        color:
+                            Get.bodyMedium.color ??
                             (Get.isDark ? Colors.white : Colors.black87),
                         height: 1.7,
                       ),
@@ -151,10 +151,7 @@ class ArticleDetailPage extends ConsumerWidget {
         ),
       ),
       flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [
-          StretchMode.blurBackground,
-          StretchMode.fadeTitle,
-        ],
+        stretchModes: const [StretchMode.blurBackground, StretchMode.fadeTitle],
         background: Stack(
           fit: StackFit.expand,
           children: [
@@ -166,9 +163,7 @@ class ArticleDetailPage extends ConsumerWidget {
                         _buildHeroPlaceholder(),
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
-                      return _buildHeroPlaceholder(
-                        isLoading: true,
-                      );
+                      return _buildHeroPlaceholder(isLoading: true);
                     },
                   )
                 : _buildHeroPlaceholder(),
@@ -213,19 +208,22 @@ class ArticleDetailPage extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(12).rt,
-        border: Border.all(
-          color: Get.disabledColor.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14.st, color: Get.disabledColor.withValues(alpha: 0.8)),
+          Icon(
+            icon,
+            size: 14.st,
+            color: Get.disabledColor.withValues(alpha: 0.8),
+          ),
           6.horizontalGap,
           AppText(
             label,
-            style: Get.bodySmall.copyWith(
-              color: Get.bodySmall.color ??
+            style: Get.bodySmall.px10.copyWith(
+              color:
+                  Get.bodySmall.color ??
                   (Get.isDark ? Colors.white70 : Colors.black87),
             ),
           ),
@@ -259,4 +257,3 @@ class ArticleDetailPage extends ConsumerWidget {
     }
   }
 }
-

@@ -505,7 +505,57 @@ class MarketPrice {
   }
 }
 
-// 10. Soil Test Center
+// 10. Dynamic Market Prices Response
+class DynamicMarketPricesResponse {
+  final int count;
+  final String? next;
+  final String? previous;
+  final DynamicMarketPricesData results;
+
+  DynamicMarketPricesResponse({
+    required this.count,
+    this.next,
+    this.previous,
+    required this.results,
+  });
+
+  factory DynamicMarketPricesResponse.fromJson(Map<String, dynamic> json) {
+    return DynamicMarketPricesResponse(
+      count: json['count'] as int? ?? 0,
+      next: json['next'] as String?,
+      previous: json['previous'] as String?,
+      results: DynamicMarketPricesData.fromJson(
+        json['results'] as Map<String, dynamic>,
+      ),
+    );
+  }
+}
+
+class DynamicMarketPricesData {
+  final List<String> columns;
+  final List<List<String>> data;
+
+  DynamicMarketPricesData({
+    required this.columns,
+    required this.data,
+  });
+
+  factory DynamicMarketPricesData.fromJson(Map<String, dynamic> json) {
+    final columnsList = json['columns'] as List<dynamic>? ?? [];
+    final dataList = json['data'] as List<dynamic>? ?? [];
+
+    return DynamicMarketPricesData(
+      columns: columnsList.map((e) => e.toString()).toList(),
+      data: dataList
+          .map((row) => (row as List<dynamic>)
+              .map((cell) => cell?.toString() ?? '')
+              .toList())
+          .toList(),
+    );
+  }
+}
+
+// 11. Soil Test Center
 class SoilTest {
   final int id;
   final String title;

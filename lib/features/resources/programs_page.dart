@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/core_service_providers.dart';
 import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
@@ -197,19 +198,21 @@ class _ProgramsPageState extends ConsumerState<ProgramsPage> {
               hintText: 'search_programs'.tr(context),
               onChanged: _onSearchChanged,
               onClear: _clearSearch,
-              showClearButton: ref.watch(programsSearchQueryProvider).isNotEmpty,
+              showClearButton: ref
+                  .watch(programsSearchQueryProvider)
+                  .isNotEmpty,
             ),
           ),
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator.adaptive())
                 : hasPrograms
-                    ? _buildProgramsList()
-                    : EmptyStateWidget(
-                        icon: Icons.assignment_turned_in_rounded,
-                        title: 'no_programs_available'.tr(context),
-                        subtitle: 'programs_empty_state_subtitle'.tr(context),
-                      ),
+                ? _buildProgramsList()
+                : EmptyStateWidget(
+                    icon: Icons.assignment_turned_in_rounded,
+                    title: 'no_programs_available'.tr(context),
+                    subtitle: 'programs_empty_state_subtitle'.tr(context),
+                  ),
           ),
         ],
       ),
@@ -224,7 +227,7 @@ class _ProgramsPageState extends ConsumerState<ProgramsPage> {
       onRefresh: () => _loadPrograms(refresh: true),
       child: ListView.builder(
         controller: _scrollController,
-        padding: EdgeInsets.fromLTRB(16.wt, 16.ht, 16.wt, 24.ht),
+        padding: EdgeInsets.all(6).rt,
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: programs.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {

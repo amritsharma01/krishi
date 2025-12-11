@@ -102,7 +102,7 @@ class NoticeDetailPage extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20.rt),
+        padding: EdgeInsets.all(10.rt),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -115,18 +115,18 @@ class NoticeDetailPage extends StatelessWidget {
               20.verticalGap,
               NoticeDetailImage(imageUrl: Get.imageUrl(notice.image!)),
             ],
-            20.verticalGap,
+            10.verticalGap,
             NoticeDetailDescription(description: notice.description),
             if (notice.pdfFile != null &&
                 notice.pdfFile!.trim().isNotEmpty) ...[
-              20.verticalGap,
+              10.verticalGap,
               NoticePdfButton(
                 pdfUrl: notice.pdfFile!,
                 onOpenPdf: (url) => _openPdf(context, url),
               ),
             ],
             if (notice.createdByEmail.isNotEmpty) ...[
-              20.verticalGap,
+              10.verticalGap,
               NoticePostedBy(email: notice.createdByEmail),
             ],
           ],
@@ -134,5 +134,4 @@ class NoticeDetailPage extends StatelessWidget {
       ),
     );
   }
-
 }

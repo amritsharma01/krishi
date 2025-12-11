@@ -104,7 +104,8 @@ class NoticeDetailHeader extends StatelessWidget {
           AppText(
             notice.title,
             style: Get.bodyLarge.px18.w700.copyWith(
-              color: Get.bodyLarge.color ??
+              color:
+                  Get.bodyLarge.color ??
                   (Get.isDark ? Colors.white : Colors.black87),
               height: 1.4,
             ),
@@ -184,8 +185,9 @@ class NoticeDetailDescription extends StatelessWidget {
       ),
       child: AppText(
         description,
-        style: Get.bodyMedium.px14.copyWith(
-          color: Get.bodyMedium.color ??
+        style: Get.bodyMedium.px12.copyWith(
+          color:
+              Get.bodyMedium.color ??
               (Get.isDark ? Colors.white70 : Colors.black87),
           height: 1.7,
         ),
@@ -296,7 +298,8 @@ class NoticePostedBy extends StatelessWidget {
                 AppText(
                   email,
                   style: Get.bodyMedium.px14.w600.copyWith(
-                    color: Get.bodyMedium.color ??
+                    color:
+                        Get.bodyMedium.color ??
                         (Get.isDark ? Colors.white : Colors.black87),
                   ),
                 ),
@@ -308,4 +311,3 @@ class NoticePostedBy extends StatelessWidget {
     );
   }
 }
-

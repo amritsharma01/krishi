@@ -47,20 +47,21 @@ class UserManualDetailPage extends StatelessWidget {
   Future<void> _openVideo(BuildContext context, String url) async {
     try {
       String videoUrl = url.trim();
-      
+
       if (videoUrl.isEmpty) {
         Get.snackbar('video_url_empty'.tr(context));
         return;
       }
-      
+
       if (!videoUrl.startsWith('http://') && !videoUrl.startsWith('https://')) {
-        if (videoUrl.length == 11 && RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(videoUrl)) {
+        if (videoUrl.length == 11 &&
+            RegExp(r'^[a-zA-Z0-9_-]{11}$').hasMatch(videoUrl)) {
           videoUrl = 'https://www.youtube.com/watch?v=$videoUrl';
         } else {
           videoUrl = 'https://$videoUrl';
         }
       }
-      
+
       if (videoUrl.contains('youtu.be/')) {
         final parts = videoUrl.split('youtu.be/');
         if (parts.length > 1) {
@@ -68,27 +69,29 @@ class UserManualDetailPage extends StatelessWidget {
           videoUrl = 'https://www.youtube.com/watch?v=$videoId';
         }
       }
-      
+
       String? videoId;
       if (videoUrl.contains('youtube.com/watch?v=')) {
         final match = RegExp(r'[?&]v=([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
         videoId = match?.group(1);
       } else if (videoUrl.contains('youtube.com/embed/')) {
-        final match = RegExp(r'/embed/([a-zA-Z0-9_-]{11})').firstMatch(videoUrl);
+        final match = RegExp(
+          r'/embed/([a-zA-Z0-9_-]{11})',
+        ).firstMatch(videoUrl);
         videoId = match?.group(1);
       }
-      
+
       if (videoId != null && videoId.isNotEmpty) {
         videoUrl = 'https://www.youtube.com/watch?v=$videoId';
       }
-      
+
       if (!videoUrl.contains('youtube.com') && !videoUrl.contains('youtu.be')) {
         Get.snackbar('invalid_video_url'.tr(context));
         return;
       }
-      
+
       final uri = Uri.parse(videoUrl);
-      
+
       try {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } catch (e) {
@@ -125,18 +128,19 @@ class UserManualDetailPage extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20.rt),
+        padding: EdgeInsets.all(10.rt),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             UserManualDetailHeader(manual: manual, color: color, icon: icon),
             if (manual.image != null && manual.image!.trim().isNotEmpty) ...[
-              20.verticalGap,
+              10.verticalGap,
               UserManualDetailImage(imageUrl: Get.imageUrl(manual.image!)),
             ],
-            20.verticalGap,
+            10.verticalGap,
             UserManualDetailContent(content: manual.content),
-            if (manual.videoUrl != null && manual.videoUrl!.trim().isNotEmpty) ...[
+            if (manual.videoUrl != null &&
+                manual.videoUrl!.trim().isNotEmpty) ...[
               20.verticalGap,
               UserManualVideoButton(
                 videoUrl: manual.videoUrl!,
@@ -148,6 +152,4 @@ class UserManualDetailPage extends StatelessWidget {
       ),
     );
   }
-
 }
-

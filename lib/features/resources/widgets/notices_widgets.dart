@@ -90,20 +90,18 @@ class NoticeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final titleColor = Get.bodyLarge.color ??
-        (Get.isDark ? Colors.white : Colors.black87);
-    final bodyColor = Get.bodyMedium.color ??
-        (Get.isDark ? Colors.white70 : Colors.black87);
+    final titleColor =
+        Get.bodyLarge.color ?? (Get.isDark ? Colors.white : Colors.black87);
+    final bodyColor =
+        Get.bodyMedium.color ?? (Get.isDark ? Colors.white70 : Colors.black87);
     final mutedColor = Get.disabledColor.withValues(alpha: 0.9);
 
     return Container(
-      margin: EdgeInsets.only(bottom: 16.ht),
+      margin: EdgeInsets.only(bottom: 6.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(18).rt,
-        border: Border.all(
-          color: Get.disabledColor.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: Get.disabledColor.withValues(alpha: 0.2)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -125,11 +123,14 @@ class NoticeCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 6.h,
+                      ),
                       decoration: BoxDecoration(
                         color: typeColor.withValues(
-                            alpha: Get.isDark ? 0.2 : 0.12),
+                          alpha: Get.isDark ? 0.2 : 0.12,
+                        ),
                         borderRadius: BorderRadius.circular(24).rt,
                       ),
                       child: Row(
@@ -141,6 +142,7 @@ class NoticeCard extends StatelessWidget {
                             notice.noticeTypeDisplay,
                             style: Get.bodySmall.copyWith(
                               color: typeColor,
+                              fontSize: 10.sp,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -148,29 +150,33 @@ class NoticeCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Icon(Icons.calendar_today_outlined,
-                        size: 14.st, color: mutedColor),
+                    Icon(
+                      Icons.calendar_today_outlined,
+                      size: 12.st,
+                      color: mutedColor,
+                    ),
                     6.horizontalGap,
                     AppText(
                       DateFormat('MMM dd, yyyy').format(notice.publishedDate),
                       style: Get.bodySmall.copyWith(
+                        fontSize: 10.sp,
                         color: mutedColor,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
                 ),
-                12.verticalGap,
+                8.verticalGap,
                 AppText(
                   notice.title,
-                  style: Get.bodyLarge.px16.w600.copyWith(color: titleColor),
+                  style: Get.bodyLarge.px14.w600.copyWith(color: titleColor),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                8.verticalGap,
+                6.verticalGap,
                 AppText(
                   notice.description,
-                  style: Get.bodyMedium.copyWith(
+                  style: Get.bodyMedium.px12.copyWith(
                     color: bodyColor.withValues(alpha: 0.85),
                     height: 1.4,
                   ),
@@ -221,7 +227,7 @@ class _AttachmentChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10.wt, vertical: 6.ht),
+      padding: EdgeInsets.symmetric(horizontal: 10.wt, vertical: 4.ht),
       decoration: BoxDecoration(
         color: color.withValues(alpha: Get.isDark ? 0.18 : 0.12),
         borderRadius: BorderRadius.circular(10).rt,
@@ -230,11 +236,12 @@ class _AttachmentChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14.st, color: color),
+          Icon(icon, size: 12.st, color: color),
           6.horizontalGap,
           AppText(
             label,
             style: Get.bodySmall.copyWith(
+              fontSize: 10.sp,
               color: color,
               fontWeight: FontWeight.w600,
             ),
@@ -244,4 +251,3 @@ class _AttachmentChip extends StatelessWidget {
     );
   }
 }
-

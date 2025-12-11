@@ -83,7 +83,7 @@ class ProgramCard extends StatelessWidget {
     final dateText = DateFormat('MMM dd, yyyy').format(program.createdAt);
 
     return Container(
-      margin: EdgeInsets.only(bottom: 16.ht),
+      margin: EdgeInsets.only(bottom: 6.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(20).rt,
@@ -97,7 +97,7 @@ class ProgramCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: EdgeInsets.all(16.rt),
+        padding: EdgeInsets.all(10.rt),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -121,22 +121,23 @@ class ProgramCard extends StatelessWidget {
                     children: [
                       AppText(
                         program.title,
-                        style: Get.bodyLarge.px16.w700.copyWith(
+                        style: Get.bodyLarge.px14.w700.copyWith(
                           color: titleColor,
                         ),
                       ),
-                      4.verticalGap,
+
                       Row(
                         children: [
                           Icon(
                             Icons.calendar_today_rounded,
-                            size: 12.st,
+                            size: 10.st,
                             color: Get.disabledColor.withValues(alpha: 0.7),
                           ),
                           4.horizontalGap,
                           AppText(
                             dateText,
                             style: Get.bodySmall.copyWith(
+                              fontSize: 10.st,
                               color: Get.disabledColor.withValues(alpha: 0.7),
                             ),
                           ),
@@ -147,15 +148,16 @@ class ProgramCard extends StatelessWidget {
                 ),
               ],
             ),
-            12.verticalGap,
+            Divider(),
             AppText(
               program.description,
               style: Get.bodyMedium.copyWith(
+                fontSize: 14.st,
                 color: bodyColor.withValues(alpha: 0.9),
                 height: 1.5,
               ),
             ),
-            16.verticalGap,
+            Divider(),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -163,7 +165,7 @@ class ProgramCard extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Get.primaryColor,
                   side: BorderSide(color: Get.primaryColor),
-                  padding: EdgeInsets.symmetric(vertical: 12.ht),
+                  padding: EdgeInsets.symmetric(vertical: 6.ht),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14).rt,
                   ),
@@ -171,7 +173,9 @@ class ProgramCard extends StatelessWidget {
                 icon: const Icon(Icons.open_in_new_rounded),
                 label: AppText(
                   'apply_now'.tr(context),
-                  style: Get.bodyMedium.w600.copyWith(color: Get.primaryColor),
+                  style: Get.bodyMedium.px12.w600.copyWith(
+                    color: Get.primaryColor,
+                  ),
                 ),
               ),
             ),

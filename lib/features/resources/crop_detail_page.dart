@@ -59,44 +59,44 @@ class CropDetailPage extends StatelessWidget {
           CropDetailHeader(crop: crop, color: color, icon: icon),
           SliverToBoxAdapter(
             child: Padding(
-              padding: EdgeInsets.all(20.rt),
+              padding: EdgeInsets.all(10.rt),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CropDetailTitle(crop: crop, color: color, icon: icon),
-                  20.verticalGap,
+                  10.verticalGap,
                   CropQuickInfo(crop: crop),
-                  20.verticalGap,
+                  6.verticalGap,
                   CropDetailSection(
                     icon: Icons.thermostat_rounded,
                     title: 'climate_requirement'.tr(context),
                     content: crop.climateRequirement,
                   ),
-                  16.verticalGap,
+                  6.verticalGap,
                   CropDetailSection(
                     icon: Icons.landscape_rounded,
                     title: 'soil_type'.tr(context),
                     content: crop.soilType,
                   ),
-                  16.verticalGap,
+                  6.verticalGap,
                   CropDetailSection(
                     icon: Icons.water_drop_rounded,
                     title: 'water_requirement'.tr(context),
                     content: crop.waterRequirement,
                   ),
-                  16.verticalGap,
+                  6.verticalGap,
                   CropDetailSection(
                     icon: Icons.checklist_rounded,
                     title: 'best_practices'.tr(context),
                     content: crop.bestPractices,
                   ),
-                  16.verticalGap,
+                  6.verticalGap,
                   CropDetailSection(
                     icon: Icons.bug_report_rounded,
                     title: 'common_pests_diseases'.tr(context),
                     content: crop.commonPests,
                   ),
-                  32.verticalGap,
+                  6.verticalGap,
                 ],
               ),
             ),

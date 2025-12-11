@@ -268,6 +268,16 @@ class KrishiApiService {
     }
   }
 
+  /// Get single news item
+  Future<Article> getNewsDetail(int id) async {
+    try {
+      final response = await apiManager.get(ApiEndpoints.newsDetail(id));
+      return Article.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   // ==================== Marketplace ====================
 
   /// Get all categories
@@ -1377,6 +1387,22 @@ class KrishiApiService {
     try {
       final response = await apiManager.get(ApiEndpoints.marketPriceDetail(id));
       return MarketPrice.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<DynamicMarketPricesResponse> getDynamicMarketPrices({
+    int page = 1,
+  }) async {
+    try {
+      final response = await apiManager.get(
+        ApiEndpoints.dynamicMarketPrices,
+        queryParameters: {'page': page},
+      );
+      return DynamicMarketPricesResponse.fromJson(
+        response.data as Map<String, dynamic>,
+      );
     } catch (e) {
       rethrow;
     }

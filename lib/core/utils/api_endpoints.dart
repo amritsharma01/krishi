@@ -76,6 +76,7 @@ final class ApiEndpoints {
   static String programDetail(int id) => "resources/programs/$id/";
   static const String marketPrices = "resources/market-prices/";
   static String marketPriceDetail(int id) => "resources/market-prices/$id/";
+  static const String dynamicMarketPrices = "resources/dynamic-market-prices/";
   static const String soilTests = "resources/soil-tests/";
   static String soilTestDetail(int id) => "resources/soil-tests/$id/";
   static String orderUpdateContactDetails(int id) =>

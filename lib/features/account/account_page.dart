@@ -34,7 +34,7 @@ class AccountPage extends ConsumerWidget {
         elevation: 0,
         title: AppText(
           'my_account'.tr(context),
-          style: Get.bodyLarge.px22.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
       ),
       body: SafeArea(
@@ -70,18 +70,18 @@ class AccountPage extends ConsumerWidget {
                     child: const LanguageSwitcher(),
                   ),
                   6.verticalGap,
-                  _buildDeveloperBanner(context),
-                  6.verticalGap,
-                  SettingsTile(
-                    icon: Icons.smartphone_outlined,
-                    iconColor: Colors.orange,
-                    title: 'platform_dev'.tr(context),
-                    subtitle: 'test_platform'.tr(context),
-                    trailing: Container(),
-                  ),
-                  6.verticalGap,
-                  const PlatformSwitcher(),
-                  6.verticalGap,
+                  // _buildDeveloperBanner(context),
+                  // 6.verticalGap,
+                  // SettingsTile(
+                  //   icon: Icons.smartphone_outlined,
+                  //   iconColor: Colors.orange,
+                  //   title: 'platform_dev'.tr(context),
+                  //   subtitle: 'test_platform'.tr(context),
+                  //   trailing: Container(),
+                  // ),
+                  // 6.verticalGap,
+                  // const PlatformSwitcher(),
+                  // 6.verticalGap,
                   AppText(
                     'account_actions'.tr(context),
                     style: Get.bodyLarge.px16.w700.copyWith(
@@ -91,20 +91,20 @@ class AccountPage extends ConsumerWidget {
                   6.verticalGap,
                   _buildEditProfileTile(context, ref),
                   6.verticalGap,
-                  SettingsTile(
-                    icon: Icons.notifications_outlined,
-                    title: 'notifications'.tr(context),
-                    subtitle: 'manage_notifications'.tr(context),
-                    trailing: Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16.st,
-                      color: Get.disabledColor.o5,
-                    ),
-                    onTap: () {
-                      // TODO: Navigate to notifications settings
-                    },
-                  ),
-                  6.verticalGap,
+                  // SettingsTile(
+                  //   icon: Icons.notifications_outlined,
+                  //   title: 'notifications'.tr(context),
+                  //   subtitle: 'manage_notifications'.tr(context),
+                  //   trailing: Icon(
+                  //     Icons.arrow_forward_ios,
+                  //     size: 16.st,
+                  //     color: Get.disabledColor.o5,
+                  //   ),
+                  //   onTap: () {
+                  //     // TODO: Navigate to notifications settings
+                  //   },
+                  // ),
+                  // 6.verticalGap,
                   SettingsTile(
                     icon: Icons.info_outline,
                     title: 'about'.tr(context),
@@ -118,7 +118,7 @@ class AccountPage extends ConsumerWidget {
                   ),
                   6.verticalGap,
                   _buildLogoutButton(context, ref),
-                  6.verticalGap,
+                  16.verticalGap,
                 ],
               ),
             ),

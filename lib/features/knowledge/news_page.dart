@@ -124,7 +124,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
         backgroundColor: Get.scaffoldBackgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Get.disabledColor),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: Get.disabledColor),
           onPressed: () => Get.pop(),
         ),
         title: AppText(
@@ -148,12 +148,12 @@ class _NewsPageState extends ConsumerState<NewsPage> {
                   )
                 : ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.all(16).rt,
+                    padding: const EdgeInsets.symmetric(horizontal: 8).rt,
                     itemCount: news.length + (isLoadingMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == news.length) {
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16).rt,
+                          padding: const EdgeInsets.symmetric(vertical: 6).rt,
                           child: Center(
                             child: CircularProgressIndicator.adaptive(
                               valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
@@ -171,10 +171,10 @@ class _NewsPageState extends ConsumerState<NewsPage> {
   Widget _buildNewsCard(BuildContext context, Article article) {
     return GestureDetector(
       onTap: () {
-        Get.to(NewsDetailPage(news: article));
+        Get.to(NewsDetailPage(newsId: article.id));
       },
       child: Container(
-        margin: EdgeInsets.only(bottom: 16.rt),
+        margin: EdgeInsets.only(bottom: 6.rt),
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(16).rt,

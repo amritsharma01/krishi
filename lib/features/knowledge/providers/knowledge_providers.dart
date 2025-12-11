@@ -23,3 +23,11 @@ final articleDetailProvider = FutureProvider.autoDispose.family<Article, int>(
     return await apiService.getArticle(articleId);
   },
 );
+
+// News Detail Provider
+final newsDetailProvider = FutureProvider.autoDispose.family<Article, int>(
+  (ref, newsId) async {
+    final apiService = ref.watch(krishiApiServiceProvider);
+    return await apiService.getNewsDetail(newsId);
+  },
+);

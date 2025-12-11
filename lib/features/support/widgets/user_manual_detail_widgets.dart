@@ -24,7 +24,7 @@ class UserManualDetailHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.rt),
+      padding: EdgeInsets.all(10.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(20).rt,
@@ -74,11 +74,12 @@ class UserManualDetailHeader extends StatelessWidget {
               ),
             ],
           ),
-          16.verticalGap,
+          6.verticalGap,
           AppText(
             manual.title,
-            style: Get.bodyLarge.px20.w700.copyWith(
-              color: Get.bodyLarge.color ??
+            style: Get.bodyLarge.px14.w700.copyWith(
+              color:
+                  Get.bodyLarge.color ??
                   (Get.isDark ? Colors.white : Colors.black87),
               height: 1.4,
             ),
@@ -150,7 +151,7 @@ class UserManualDetailContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(18.rt),
+      padding: EdgeInsets.all(10.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(16).rt,
@@ -158,8 +159,9 @@ class UserManualDetailContent extends StatelessWidget {
       ),
       child: AppText(
         content,
-        style: Get.bodyMedium.px14.copyWith(
-          color: Get.bodyMedium.color ??
+        style: Get.bodyMedium.px12.copyWith(
+          color:
+              Get.bodyMedium.color ??
               (Get.isDark ? Colors.white70 : Colors.black87),
           height: 1.7,
         ),
@@ -217,4 +219,3 @@ class UserManualVideoButton extends StatelessWidget {
     );
   }
 }
-

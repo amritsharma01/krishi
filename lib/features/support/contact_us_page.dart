@@ -65,12 +65,12 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
     if (!mounted) return;
 
     final selectedType = contactType ?? ref.read(selectedContactUsTypeProvider);
-    
+
     // Reset if contact type changed or force refresh
     if (contactType != null || force) {
       _hasLoaded = false;
     }
-    
+
     if (!force && _hasLoaded && ref.read(contactUsListProvider).isNotEmpty) {
       return;
     }
@@ -113,7 +113,7 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
       final apiService = ref.read(krishiApiServiceProvider);
       final currentPage = ref.read(contactUsCurrentPageProvider);
       final selectedType = ref.read(selectedContactUsTypeProvider);
-      
+
       final response = await apiService.getContacts(
         contactType: selectedType == 'all' ? null : selectedType,
         page: currentPage,
@@ -192,7 +192,7 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
       appBar: AppBar(
         title: AppText(
           'contact_us'.tr(context),
-          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
         backgroundColor: Get.scaffoldBackgroundColor,
         elevation: 0,
@@ -212,46 +212,48 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
               child: isLoading && contacts.isEmpty
                   ? Center(
                       child: CircularProgressIndicator.adaptive(
-                        valueColor: AlwaysStoppedAnimation<Color>(Get.primaryColor),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Get.primaryColor,
+                        ),
                       ),
                     )
                   : !hasContacts
-                      ? EmptyStateWidget(
-                          icon: Icons.contacts_rounded,
-                          title: 'no_contacts_available'.tr(context),
-                          subtitle: 'check_back_later'.tr(context),
-                        )
-                      : ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(16),
-                          itemCount: contacts.length + (isLoadingMore ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == contacts.length) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                child: Center(
-                                  child: CircularProgressIndicator.adaptive(
-                                    valueColor: AlwaysStoppedAnimation<Color>(Get.primaryColor),
-                                  ),
+                  ? EmptyStateWidget(
+                      icon: Icons.contacts_rounded,
+                      title: 'no_contacts_available'.tr(context),
+                      subtitle: 'check_back_later'.tr(context),
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(16),
+                      itemCount: contacts.length + (isLoadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == contacts.length) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Center(
+                              child: CircularProgressIndicator.adaptive(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Get.primaryColor,
                                 ),
-                              );
-                            }
-                            final contact = contacts[index];
-                            return ContactUsCard(
-                              contact: contact,
-                              contactColors: _contactColors,
-                              contactIcons: _contactIcons,
-                              onMakePhoneCall: _makePhoneCall,
-                              onSendEmail: _sendEmail,
-                            );
-                          },
-                        ),
+                              ),
+                            ),
+                          );
+                        }
+                        final contact = contacts[index];
+                        return ContactUsCard(
+                          contact: contact,
+                          contactColors: _contactColors,
+                          contactIcons: _contactIcons,
+                          onMakePhoneCall: _makePhoneCall,
+                          onSendEmail: _sendEmail,
+                        );
+                      },
+                    ),
             ),
           ),
         ],
       ),
     );
   }
-
 }
-

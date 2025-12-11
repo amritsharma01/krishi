@@ -30,12 +30,13 @@ class ContactUsFilter extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedType = ref.watch(selectedContactUsTypeProvider);
 
+    // Match VideosCategoryFilter styling (ideos page)
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.wt, vertical: 12.ht),
+      padding: EdgeInsets.symmetric(horizontal: 6.wt, vertical: 5.ht),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.vertical(
-          bottom: const Radius.circular(28),
+          bottom: const Radius.circular(20),
         ).rt,
         boxShadow: [
           BoxShadow(
@@ -55,7 +56,7 @@ class ContactUsFilter extends ConsumerWidget {
                 ? Icons.all_inclusive
                 : contactIcons[entry.key] ?? Icons.phone_rounded;
             return Padding(
-              padding: EdgeInsets.only(right: 8.wt),
+              padding: EdgeInsets.only(right: 5.wt),
               child: FilterPill(
                 label: entry.value,
                 icon: icon,
@@ -165,7 +166,7 @@ class ContactUsCard extends StatelessWidget {
     final icon = contactIcons[contact.contactType] ?? Icons.phone_rounded;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 16.rt),
+      margin: EdgeInsets.only(bottom: 6.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(20).rt,
@@ -182,14 +183,14 @@ class ContactUsCard extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: EdgeInsets.all(20.rt),
+        padding: EdgeInsets.all(10.rt),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 Container(
-                  padding: EdgeInsets.all(12.rt),
+                  padding: EdgeInsets.all(8.rt),
                   decoration: BoxDecoration(
                     color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14).rt,
@@ -204,17 +205,17 @@ class ContactUsCard extends StatelessWidget {
                     children: [
                       AppText(
                         contact.title,
-                        style: Get.bodyLarge.px18.w700.copyWith(
+                        style: Get.bodyLarge.px14.w700.copyWith(
                           color: Get.disabledColor,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      6.verticalGap,
+                      2.verticalGap,
                       Container(
                         padding: EdgeInsets.symmetric(
                           horizontal: 10.wt,
-                          vertical: 4.ht,
+                          vertical: 2.ht,
                         ),
                         decoration: BoxDecoration(
                           color: color.withValues(alpha: 0.1),
@@ -222,7 +223,7 @@ class ContactUsCard extends StatelessWidget {
                         ),
                         child: AppText(
                           contact.contactTypeDisplay,
-                          style: Get.bodySmall.px12.w600.copyWith(color: color),
+                          style: Get.bodySmall.px10.w600.copyWith(color: color),
                         ),
                       ),
                     ],
@@ -231,31 +232,32 @@ class ContactUsCard extends StatelessWidget {
               ],
             ),
             if (contact.description.isNotEmpty) ...[
-              16.verticalGap,
+              Divider(),
               AppText(
                 contact.description,
                 style: Get.bodyMedium.px14.copyWith(
                   color: Get.disabledColor.withValues(alpha: 0.8),
-                  height: 1.5,
+                  height: 1.2,
                 ),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
+            Divider(),
             if (contact.address.isNotEmpty) ...[
-              12.verticalGap,
+              6.verticalGap,
               Row(
                 children: [
                   Icon(
                     Icons.location_on_outlined,
-                    size: 16.st,
+                    size: 14.st,
                     color: Get.disabledColor.withValues(alpha: 0.7),
                   ),
                   8.horizontalGap,
                   Expanded(
                     child: AppText(
                       contact.address,
-                      style: Get.bodySmall.px13.copyWith(
+                      style: Get.bodySmall.px10.copyWith(
                         color: Get.disabledColor.withValues(alpha: 0.7),
                       ),
                       maxLines: 2,
@@ -265,7 +267,7 @@ class ContactUsCard extends StatelessWidget {
                 ],
               ),
             ],
-            20.verticalGap,
+            8.verticalGap,
             Column(
               children: [
                 Row(
@@ -282,7 +284,7 @@ class ContactUsCard extends StatelessWidget {
                   ],
                 ),
                 if (contact.email.isNotEmpty) ...[
-                  12.verticalGap,
+                  4.verticalGap,
                   SizedBox(
                     width: double.infinity,
                     child: ContactUsButton(
@@ -325,7 +327,7 @@ class ContactUsButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12).rt,
         child: Container(
           width: double.infinity,
-          padding: EdgeInsets.symmetric(vertical: 12.rt, horizontal: 8.rt),
+          padding: EdgeInsets.symmetric(vertical: 10.rt, horizontal: 8.rt),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12).rt,
@@ -339,7 +341,7 @@ class ContactUsButton extends StatelessWidget {
               Flexible(
                 child: AppText(
                   label,
-                  style: Get.bodyMedium.px14.w600.copyWith(color: color),
+                  style: Get.bodyMedium.px12.w600.copyWith(color: color),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

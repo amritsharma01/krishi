@@ -68,13 +68,14 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
   Future<void> _loadManuals({String? category, bool force = false}) async {
     if (!mounted) return;
 
-    final selectedCategory = category ?? ref.read(selectedUserGuideCategoryProvider);
-    
+    final selectedCategory =
+        category ?? ref.read(selectedUserGuideCategoryProvider);
+
     // Reset if category changed or force refresh
     if (category != null || force) {
       _hasLoaded = false;
     }
-    
+
     if (!force && _hasLoaded && ref.read(userGuidesListProvider).isNotEmpty) {
       return;
     }
@@ -96,7 +97,8 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
 
       ref.read(userGuidesListProvider.notifier).state = response.results;
       ref.read(isLoadingUserGuidesProvider.notifier).state = false;
-      ref.read(userGuidesHasMoreProvider.notifier).state = response.next != null;
+      ref.read(userGuidesHasMoreProvider.notifier).state =
+          response.next != null;
       ref.read(userGuidesCurrentPageProvider.notifier).state = 2;
       _hasLoaded = true;
     } catch (e) {
@@ -118,7 +120,7 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
       final apiService = ref.read(krishiApiServiceProvider);
       final currentPage = ref.read(userGuidesCurrentPageProvider);
       final selectedCategory = ref.read(selectedUserGuideCategoryProvider);
-      
+
       final response = await apiService.getUserManuals(
         category: selectedCategory == 'all' ? null : selectedCategory,
         page: currentPage,
@@ -132,7 +134,8 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
         ...currentManuals,
         ...response.results,
       ];
-      ref.read(userGuidesHasMoreProvider.notifier).state = response.next != null;
+      ref.read(userGuidesHasMoreProvider.notifier).state =
+          response.next != null;
       ref.read(userGuidesCurrentPageProvider.notifier).state = currentPage + 1;
       ref.read(isLoadingMoreUserGuidesProvider.notifier).state = false;
     } catch (e) {
@@ -166,7 +169,7 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
       appBar: AppBar(
         title: AppText(
           'user_guide'.tr(context),
-          style: Get.bodyLarge.px20.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
         backgroundColor: Get.scaffoldBackgroundColor,
         elevation: 0,
@@ -179,7 +182,8 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
             categoryIcons: _categoryIcons,
             categoryColors: _categoryColors,
             onFilterSelected: (category) {
-              ref.read(selectedUserGuideCategoryProvider.notifier).state = category;
+              ref.read(selectedUserGuideCategoryProvider.notifier).state =
+                  category;
               _loadManuals(category: category, force: true);
             },
           ),
@@ -189,46 +193,51 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
               child: isLoading && manuals.isEmpty
                   ? Center(
                       child: CircularProgressIndicator.adaptive(
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primary,
+                        ),
                       ),
                     )
                   : !hasManuals
-                      ? EmptyStateWidget(
-                          icon: Icons.menu_book_rounded,
-                          title: 'no_manuals_available'.tr(context),
-                          subtitle: 'check_back_later'.tr(context),
-                        )
-                      : ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.all(16),
-                          itemCount: manuals.length + (isLoadingMore ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == manuals.length) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                child: Center(
-                                  child: CircularProgressIndicator.adaptive(
-                                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                                  ),
+                  ? EmptyStateWidget(
+                      icon: Icons.menu_book_rounded,
+                      title: 'no_manuals_available'.tr(context),
+                      subtitle: 'check_back_later'.tr(context),
+                    )
+                  : ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.all(16),
+                      itemCount: manuals.length + (isLoadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == manuals.length) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            child: Center(
+                              child: CircularProgressIndicator.adaptive(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  AppColors.primary,
                                 ),
-                              );
-                            }
-                            final manual = manuals[index];
-                            return UserGuideCard(
-                              manual: manual,
-                              categoryColors: _categoryColors,
-                              categoryIcons: _categoryIcons,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => UserManualDetailPage(manual: manual),
-                                  ),
-                                );
-                              },
+                              ),
+                            ),
+                          );
+                        }
+                        final manual = manuals[index];
+                        return UserGuideCard(
+                          manual: manual,
+                          categoryColors: _categoryColors,
+                          categoryIcons: _categoryIcons,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    UserManualDetailPage(manual: manual),
+                              ),
                             );
                           },
-                        ),
+                        );
+                      },
+                    ),
             ),
           ),
         ],

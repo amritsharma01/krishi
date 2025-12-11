@@ -46,10 +46,7 @@ class CropDetailHeader extends StatelessWidget {
         ),
       ),
       flexibleSpace: FlexibleSpaceBar(
-        stretchModes: const [
-          StretchMode.blurBackground,
-          StretchMode.fadeTitle,
-        ],
+        stretchModes: const [StretchMode.blurBackground, StretchMode.fadeTitle],
         background: Stack(
           fit: StackFit.expand,
           children: [
@@ -131,9 +128,7 @@ class CropDetailTitle extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
               decoration: BoxDecoration(
-                color: color.withValues(
-                  alpha: Get.isDark ? 0.15 : 0.1,
-                ),
+                color: color.withValues(alpha: Get.isDark ? 0.15 : 0.1),
                 borderRadius: BorderRadius.circular(12).rt,
               ),
               child: Row(
@@ -150,11 +145,12 @@ class CropDetailTitle extends StatelessWidget {
             ),
           ],
         ),
-        12.verticalGap,
+        6.verticalGap,
         AppText(
           crop.cropName,
-          style: Get.bodyLarge.px20.w700.copyWith(
-            color: Get.bodyLarge.color ??
+          style: Get.bodyLarge.px16.w700.copyWith(
+            color:
+                Get.bodyLarge.color ??
                 (Get.isDark ? Colors.white : Colors.black87),
             height: 1.35,
           ),
@@ -187,17 +183,16 @@ class CropQuickInfo extends StatelessWidget {
             label: 'growing_duration'.tr(context),
             value: '${crop.durationDays} days',
           ),
-          12.verticalGap,
+
           Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
-          12.verticalGap,
+
           CropQuickInfoRow(
             icon: Icons.wb_sunny_rounded,
             label: 'planting_season'.tr(context),
             value: crop.plantingSeason,
           ),
-          12.verticalGap,
+
           Divider(color: Get.disabledColor.withValues(alpha: 0.1)),
-          12.verticalGap,
           CropQuickInfoRow(
             icon: Icons.agriculture_rounded,
             label: 'harvesting_season'.tr(context),
@@ -237,15 +232,16 @@ class CropQuickInfoRow extends StatelessWidget {
             children: [
               AppText(
                 label,
-                style: Get.bodySmall.px12.copyWith(
+                style: Get.bodySmall.px10.copyWith(
                   color: Get.disabledColor.withValues(alpha: 0.7),
                 ),
               ),
               4.verticalGap,
               AppText(
                 value,
-                style: Get.bodyMedium.px14.w600.copyWith(
-                  color: Get.bodyMedium.color ??
+                style: Get.bodyMedium.px12.w600.copyWith(
+                  color:
+                      Get.bodyMedium.color ??
                       (Get.isDark ? Colors.white : Colors.black87),
                 ),
               ),
@@ -285,26 +281,28 @@ class CropDetailSection extends StatelessWidget {
             children: [
               Icon(
                 icon,
-                size: 18.st,
+                size: 16.st,
                 color: Get.disabledColor.withValues(alpha: 0.7),
               ),
               10.horizontalGap,
               Expanded(
                 child: AppText(
                   title,
-                  style: Get.bodyMedium.px15.w600.copyWith(
-                    color: Get.bodyMedium.color ??
+                  style: Get.bodyMedium.px14.w600.copyWith(
+                    color:
+                        Get.bodyMedium.color ??
                         (Get.isDark ? Colors.white : Colors.black87),
                   ),
                 ),
               ),
             ],
           ),
-          12.verticalGap,
+          8.verticalGap,
           AppText(
             content,
-            style: Get.bodyMedium.px14.copyWith(
-              color: Get.bodyMedium.color ??
+            style: Get.bodyMedium.px12.copyWith(
+              color:
+                  Get.bodyMedium.color ??
                   (Get.isDark ? Colors.white70 : Colors.black87),
               height: 1.6,
             ),
@@ -316,4 +314,3 @@ class CropDetailSection extends StatelessWidget {
     );
   }
 }
-

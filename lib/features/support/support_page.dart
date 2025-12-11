@@ -24,19 +24,19 @@ class SupportPage extends StatelessWidget {
         elevation: 0,
         title: AppText(
           'help_center'.tr(context),
-          style: Get.bodyLarge.px22.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
           physics: Get.scrollPhysics,
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SupportHeader(),
-                10.verticalGap,
+                6.verticalGap,
                 SupportOption(
                   title: 'faq',
                   subtitle: 'common_questions',
@@ -51,7 +51,7 @@ class SupportPage extends StatelessWidget {
                     );
                   },
                 ),
-                8.verticalGap,
+                6.verticalGap,
                 SupportOption(
                   title: 'contact_us',
                   subtitle: 'get_in_touch',
@@ -68,7 +68,7 @@ class SupportPage extends StatelessWidget {
                     );
                   },
                 ),
-                8.verticalGap,
+                6.verticalGap,
                 SupportOption(
                   title: 'user_guide',
                   subtitle: 'learn_how_to_use',
@@ -85,9 +85,9 @@ class SupportPage extends StatelessWidget {
                     );
                   },
                 ),
-                14.verticalGap,
+                6.verticalGap,
                 const QuickContactInfo(),
-                20.verticalGap,
+                8.verticalGap,
               ],
             ),
           ),
@@ -95,5 +95,4 @@ class SupportPage extends StatelessWidget {
       ),
     );
   }
-
 }

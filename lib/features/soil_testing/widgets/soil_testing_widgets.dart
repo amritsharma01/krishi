@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
+import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
@@ -71,28 +72,31 @@ class SoilTestingHeader extends ConsumerWidget {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 5.wt),
             child: TextField(
-            controller: searchController,
-            onChanged: onSearchChanged,
-            decoration: InputDecoration(
-              hintText: 'search_soil_tests'.tr(context),
-              prefixIcon: Icon(Icons.search_rounded, color: Get.disabledColor),
-              suffixIcon: ref.watch(soilTestsSearchQueryProvider).isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      onPressed: onClearSearch,
-                    )
-                  : null,
-              filled: true,
-              fillColor: Get.scaffoldBackgroundColor,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16).rt,
-                borderSide: BorderSide(
-                  color: Get.disabledColor.withValues(alpha: 0.08),
+              controller: searchController,
+              onChanged: onSearchChanged,
+              decoration: InputDecoration(
+                hintText: 'search_soil_tests'.tr(context),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  color: Get.disabledColor,
                 ),
+                suffixIcon: ref.watch(soilTestsSearchQueryProvider).isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.close_rounded),
+                        onPressed: onClearSearch,
+                      )
+                    : null,
+                filled: true,
+                fillColor: Get.scaffoldBackgroundColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16).rt,
+                  borderSide: BorderSide(
+                    color: Get.disabledColor.withValues(alpha: 0.08),
+                  ),
+                ),
+                contentPadding: EdgeInsets.zero,
               ),
-              contentPadding: EdgeInsets.zero,
-            ),
-            textInputAction: TextInputAction.search,
+              textInputAction: TextInputAction.search,
             ),
           ),
         ],
@@ -140,7 +144,7 @@ class SoilTestingList extends ConsumerWidget {
     return ListView.builder(
       controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 6).rt,
       itemCount: centers.length + (isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == centers.length) {
@@ -159,7 +163,7 @@ class SoilTestingList extends ConsumerWidget {
           );
         }
         return Padding(
-          padding: EdgeInsets.only(bottom: 12.ht),
+          padding: EdgeInsets.only(bottom: 4.ht),
           child: SoilTestCard(
             center: centers[index],
             onMakePhoneCall: onMakePhoneCall,
@@ -222,11 +226,11 @@ class SoilTestCard extends StatelessWidget {
                   children: [
                     AppText(
                       center.title,
-                      style: Get.bodyLarge.px16.w700.copyWith(
+                      style: Get.bodyLarge.px14.w700.copyWith(
                         color: titleColor,
                       ),
                     ),
-                    4.verticalGap,
+
                     Row(
                       children: [
                         Icon(
@@ -239,6 +243,7 @@ class SoilTestCard extends StatelessWidget {
                           child: AppText(
                             center.municipalityName,
                             style: Get.bodySmall.copyWith(
+                              fontSize: 12.st,
                               color: Get.disabledColor.withValues(alpha: 0.7),
                             ),
                           ),
@@ -250,21 +255,24 @@ class SoilTestCard extends StatelessWidget {
               ),
             ],
           ),
-          12.verticalGap,
+          Divider(),
           AppText(
+            maxLines: 3,
             center.description,
             style: Get.bodyMedium.copyWith(
+              fontSize: 14.st,
               color: Get.disabledColor.withValues(alpha: 0.85),
-              height: 1.4,
+              height: 1.2,
             ),
           ),
-          16.verticalGap,
+
+          Divider(),
           SoilTestDetailRow(
             icon: Icons.person_rounded,
             label: 'contact_person'.tr(context),
             value: center.contactPerson ?? 'not_available'.tr(context),
           ),
-          8.verticalGap,
+          4.verticalGap,
           SoilTestDetailRow(
             icon: Icons.phone_rounded,
             label: 'phone_number'.tr(context),
@@ -278,7 +286,7 @@ class SoilTestCard extends StatelessWidget {
             ),
           ),
           if (center.email != null && center.email!.isNotEmpty) ...[
-            8.verticalGap,
+            4.verticalGap,
             SoilTestDetailRow(
               icon: Icons.email_rounded,
               label: 'email'.tr(context),
@@ -293,14 +301,14 @@ class SoilTestCard extends StatelessWidget {
               ),
             ),
           ],
-          8.verticalGap,
+          4.verticalGap,
           SoilTestDetailRow(
             icon: Icons.home_work_rounded,
             label: 'address'.tr(context),
             value: center.address,
           ),
           if (center.cost != null && center.cost!.isNotEmpty) ...[
-            8.verticalGap,
+            4.verticalGap,
             SoilTestDetailRow(
               icon: Icons.paid_rounded,
               label: 'testing_cost'.tr(context),
@@ -308,7 +316,7 @@ class SoilTestCard extends StatelessWidget {
             ),
           ],
           if (center.duration != null && center.duration!.isNotEmpty) ...[
-            8.verticalGap,
+            4.verticalGap,
             SoilTestDetailRow(
               icon: Icons.schedule_rounded,
               label: 'duration_label'.tr(context),
@@ -317,7 +325,7 @@ class SoilTestCard extends StatelessWidget {
           ],
           if (center.requirements != null &&
               center.requirements!.isNotEmpty) ...[
-            16.verticalGap,
+            6.verticalGap,
             Container(
               padding: EdgeInsets.all(12.rt),
               decoration: BoxDecoration(
@@ -330,13 +338,16 @@ class SoilTestCard extends StatelessWidget {
                   AppText(
                     'requirements_label'.tr(context),
                     style: Get.bodyMedium.w700.copyWith(
+                      fontSize: 14.st,
                       color: AppColors.primary,
                     ),
                   ),
-                  6.verticalGap,
+
                   AppText(
+                    maxLines: 3,
                     center.requirements!,
                     style: Get.bodySmall.copyWith(
+                      fontSize: 12.st,
                       color: Get.disabledColor.withValues(alpha: 0.85),
                       height: 1.4,
                     ),
@@ -370,26 +381,32 @@ class SoilTestDetailRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          icon,
-          color: Get.disabledColor.withValues(alpha: 0.7),
-          size: 18.st,
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(
+            icon,
+            color: Get.disabledColor.withValues(alpha: 0.7),
+            size: 14.st,
+          ),
         ),
-        10.horizontalGap,
+
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppText(
                 label,
-                style: Get.bodySmall.px11.w600.copyWith(
+                style: Get.bodySmall.px10.w600.copyWith(
                   color: Get.disabledColor.withValues(alpha: 0.6),
                 ),
               ),
-              2.verticalGap,
+
               AppText(
                 value,
-                style: Get.bodyMedium.copyWith(color: Get.disabledColor),
+                style: Get.bodyMedium.copyWith(
+                  color: Get.disabledColor,
+                  fontSize: 12.st,
+                ),
               ),
             ],
           ),

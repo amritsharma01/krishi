@@ -34,7 +34,7 @@ class ProfileCard extends ConsumerWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(15.rt),
+      padding: EdgeInsets.all(10.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(30).rt,
@@ -82,7 +82,7 @@ class ProfileCard extends ConsumerWidget {
 
   Widget _buildContactInfo(String? phone, String? address) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.rt, vertical: 12.rt),
+      padding: EdgeInsets.symmetric(horizontal: 16.rt, vertical: 6.rt),
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(16).rt,

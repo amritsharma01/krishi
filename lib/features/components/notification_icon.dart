@@ -40,7 +40,8 @@ class NotificationIcon extends ConsumerWidget {
           AppIcons.notification,
           key: Get.key('${Get.brightness}_${unreadCount}_$isLoading'),
           size: 20,
-          onTap: () => _openNotifications(context, ref),
+          // onTap: () => _openNotifications(context, ref),
+          onTap: () {},
           color: Get.disabledColor.o5,
         ),
         Positioned(
@@ -56,24 +57,24 @@ class NotificationIcon extends ConsumerWidget {
                   ),
                 )
               : hasUnread
-                  ? Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: unreadCount > 9 ? 5.wt : 4.wt,
-                        vertical: 2.ht,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Get.primaryColor,
-                        borderRadius: BorderRadius.circular(12.rt),
-                      ),
-                      child: Text(
-                        unreadCount > 99 ? '99+' : '$unreadCount',
-                        style: Get.bodyMedium.px10.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
-                  : const SizedBox.shrink(),
+              ? Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: unreadCount > 9 ? 5.wt : 4.wt,
+                    vertical: 2.ht,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Get.primaryColor,
+                    borderRadius: BorderRadius.circular(12.rt),
+                  ),
+                  child: Text(
+                    unreadCount > 99 ? '99+' : '$unreadCount',
+                    style: Get.bodyMedium.px10.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
         ),
       ],
     );
@@ -82,9 +83,7 @@ class NotificationIcon extends ConsumerWidget {
   Future<void> _openNotifications(BuildContext context, WidgetRef ref) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => const NotificationsPage(),
-      ),
+      MaterialPageRoute(builder: (_) => const NotificationsPage()),
     );
     await ref.read(unreadNotificationsProvider.notifier).refresh();
   }

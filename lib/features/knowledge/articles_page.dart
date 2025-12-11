@@ -58,7 +58,8 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
       if (mounted) {
         ref.read(articlesListProvider.notifier).state = response.results;
         ref.read(isLoadingArticlesProvider.notifier).state = false;
-        ref.read(articlesHasMoreProvider.notifier).state = response.next != null;
+        ref.read(articlesHasMoreProvider.notifier).state =
+            response.next != null;
         ref.read(articlesCurrentPageProvider.notifier).state = 2;
         _hasLoaded = true;
       }
@@ -80,7 +81,10 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
     try {
       final apiService = ref.read(krishiApiServiceProvider);
       final currentPage = ref.read(articlesCurrentPageProvider);
-      final response = await apiService.getArticles(page: currentPage, pageSize: 10);
+      final response = await apiService.getArticles(
+        page: currentPage,
+        pageSize: 10,
+      );
 
       if (mounted) {
         final currentArticles = ref.read(articlesListProvider);
@@ -88,7 +92,8 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
           ...currentArticles,
           ...response.results,
         ];
-        ref.read(articlesHasMoreProvider.notifier).state = response.next != null;
+        ref.read(articlesHasMoreProvider.notifier).state =
+            response.next != null;
         ref.read(articlesCurrentPageProvider.notifier).state = currentPage + 1;
         ref.read(isLoadingMoreArticlesProvider.notifier).state = false;
       }
@@ -141,29 +146,31 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
                 ),
               )
             : articles.isEmpty
-                ? EmptyState(
-                    title: 'no_articles_available'.tr(context),
-                    subtitle: 'no_articles_subtitle'.tr(context),
-                    icon: Icons.article_outlined,
-                  )
-                : ListView.builder(
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(16).rt,
-                    itemCount: articles.length + (isLoadingMore ? 1 : 0),
-                    itemBuilder: (context, index) {
-                      if (index == articles.length) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 16).rt,
-                          child: Center(
-                            child: CircularProgressIndicator.adaptive(
-                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                            ),
+            ? EmptyState(
+                title: 'no_articles_available'.tr(context),
+                subtitle: 'no_articles_subtitle'.tr(context),
+                icon: Icons.article_outlined,
+              )
+            : ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.symmetric(horizontal: 8).rt,
+                itemCount: articles.length + (isLoadingMore ? 1 : 0),
+                itemBuilder: (context, index) {
+                  if (index == articles.length) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6).rt,
+                      child: Center(
+                        child: CircularProgressIndicator.adaptive(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.primary,
                           ),
-                        );
-                      }
-                      return _buildArticleCard(context, articles[index]);
-                    },
-                  ),
+                        ),
+                      ),
+                    );
+                  }
+                  return _buildArticleCard(context, articles[index]);
+                },
+              ),
       ),
     );
   }
@@ -174,7 +181,7 @@ class _ArticlesPageState extends ConsumerState<ArticlesPage> {
         Get.to(ArticleDetailPage(articleId: article.id));
       },
       child: Container(
-        margin: EdgeInsets.only(bottom: 16.rt),
+        margin: EdgeInsets.only(bottom: 6.rt),
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(16).rt,

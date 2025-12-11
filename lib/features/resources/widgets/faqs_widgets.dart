@@ -20,7 +20,7 @@ class FAQCard extends ConsumerWidget {
     final isExpanded = expandedIndex == index;
 
     return Container(
-      margin: EdgeInsets.only(bottom: 16.rt),
+      margin: EdgeInsets.only(bottom: 6.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(20).rt,
@@ -54,7 +54,7 @@ class FAQCard extends ConsumerWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            padding: EdgeInsets.all(20.rt),
+            padding: EdgeInsets.all(8.rt),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -63,8 +63,8 @@ class FAQCard extends ConsumerWidget {
                   children: [
                     // Question Badge with gradient
                     Container(
-                      width: 44.rt,
-                      height: 44.rt,
+                      width: 34.rt,
+                      height: 34.rt,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
@@ -92,14 +92,14 @@ class FAQCard extends ConsumerWidget {
                         ),
                       ),
                     ),
-                    16.horizontalGap,
+                    10.horizontalGap,
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppText(
                             faq.question,
-                            style: Get.bodyLarge.px15.w700.copyWith(
+                            style: Get.bodyLarge.px12.w700.copyWith(
                               color: Get.disabledColor,
                               height: 1.4,
                             ),
@@ -115,13 +115,17 @@ class FAQCard extends ConsumerWidget {
                                 Icon(
                                   Icons.touch_app_rounded,
                                   size: 14.st,
-                                  color: Get.primaryColor.withValues(alpha: 0.6),
+                                  color: Get.primaryColor.withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ),
                                 6.horizontalGap,
                                 AppText(
                                   'Tap to view answer',
-                                  style: Get.bodySmall.px11.copyWith(
-                                    color: Get.primaryColor.withValues(alpha: 0.7),
+                                  style: Get.bodySmall.px10.copyWith(
+                                    color: Get.primaryColor.withValues(
+                                      alpha: 0.7,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -150,7 +154,7 @@ class FAQCard extends ConsumerWidget {
                           color: isExpanded
                               ? Get.primaryColor
                               : Get.disabledColor.withValues(alpha: 0.6),
-                          size: 28.st,
+                          size: 18.st,
                         ),
                       ),
                     ),
@@ -160,14 +164,18 @@ class FAQCard extends ConsumerWidget {
                   firstChild: const SizedBox.shrink(),
                   secondChild: Column(
                     children: [
-                      20.verticalGap,
+                      8.verticalGap,
                       Container(
                         padding: EdgeInsets.all(18.rt),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              Colors.green.shade50.withValues(alpha: Get.isDark ? 0.1 : 1),
-                              Colors.green.shade100.withValues(alpha: Get.isDark ? 0.05 : 1),
+                              Colors.green.shade50.withValues(
+                                alpha: Get.isDark ? 0.1 : 1,
+                              ),
+                              Colors.green.shade100.withValues(
+                                alpha: Get.isDark ? 0.05 : 1,
+                              ),
                             ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
@@ -182,8 +190,8 @@ class FAQCard extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: 40.rt,
-                              height: 40.rt,
+                              width: 30.rt,
+                              height: 30.rt,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   colors: [
@@ -215,9 +223,11 @@ class FAQCard extends ConsumerWidget {
                             Expanded(
                               child: AppText(
                                 faq.answer,
-                                style: Get.bodyMedium.px14.w400.copyWith(
+                                style: Get.bodyMedium.px12.w400.copyWith(
                                   height: 1.7,
-                                  color: Get.disabledColor.withValues(alpha: 0.9),
+                                  color: Get.disabledColor.withValues(
+                                    alpha: 0.9,
+                                  ),
                                 ),
                                 maxLines: null,
                                 overflow: TextOverflow.visible,

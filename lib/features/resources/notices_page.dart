@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/core_service_providers.dart';
+import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
@@ -67,12 +68,12 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
     if (!mounted) return;
 
     final selectedFilter = noticeType ?? ref.read(selectedNoticeFilterProvider);
-    
+
     // Reset if filter changed or force refresh
     if (noticeType != null || force) {
       _hasLoaded = false;
     }
-    
+
     if (!force && _hasLoaded && ref.read(noticesListProvider).isNotEmpty) {
       return;
     }
@@ -118,7 +119,7 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
       final apiService = ref.read(krishiApiServiceProvider);
       final currentPage = ref.read(noticesCurrentPageProvider);
       final selectedFilter = ref.read(selectedNoticeFilterProvider);
-      
+
       final response = await apiService.getNotices(
         noticeType: selectedFilter == 'all' ? null : selectedFilter,
         page: currentPage,
@@ -208,18 +209,19 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
             filterOptions: _getFilterOptions(context),
             filterIcons: _filterIcons,
             filterColors: _filterColors,
-            onFilterChanged: (noticeType) => _loadNotices(noticeType: noticeType, force: true),
+            onFilterChanged: (noticeType) =>
+                _loadNotices(noticeType: noticeType, force: true),
           ),
           Expanded(
             child: isLoading && notices.isEmpty
                 ? const Center(child: CircularProgressIndicator.adaptive())
                 : !hasNotices
-                    ? EmptyStateWidget(
-                        icon: Icons.notifications_off_rounded,
-                        title: 'no_notices_available'.tr(context),
-                        subtitle: 'check_back_later_updates'.tr(context),
-                      )
-                    : _buildNoticesList(context, isLoadingMore),
+                ? EmptyStateWidget(
+                    icon: Icons.notifications_off_rounded,
+                    title: 'no_notices_available'.tr(context),
+                    subtitle: 'check_back_later_updates'.tr(context),
+                  )
+                : _buildNoticesList(context, isLoadingMore),
           ),
         ],
       ),
@@ -234,12 +236,12 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
       onRefresh: () => _loadNotices(noticeType: selectedFilter, force: true),
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5).rt,
         itemCount: notices.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
           if (index == notices.length) {
             return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              padding: const EdgeInsets.symmetric(vertical: 16).rt,
               child: Center(
                 child: CircularProgressIndicator.adaptive(
                   valueColor: AlwaysStoppedAnimation<Color>(Get.primaryColor),

@@ -47,9 +47,7 @@ class SupportHeader extends StatelessWidget {
           16.verticalGap,
           AppText(
             'how_can_we_help'.tr(context),
-            style: Get.bodyLarge.px18.w700.copyWith(
-              color: Get.disabledColor,
-            ),
+            style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
             textAlign: TextAlign.center,
           ),
         ],
@@ -112,14 +110,14 @@ class SupportOption extends StatelessWidget {
                 children: [
                   AppText(
                     title.tr(context),
-                    style: Get.bodyMedium.px14.w700.copyWith(
+                    style: Get.bodyMedium.px12.w700.copyWith(
                       color: Get.disabledColor,
                     ),
                   ),
-                  4.verticalGap,
+
                   AppText(
                     subtitle.tr(context),
-                    style: Get.bodySmall.px12.w500.copyWith(
+                    style: Get.bodySmall.px10.w500.copyWith(
                       color: Get.disabledColor.withValues(alpha: 0.6),
                     ),
                   ),
@@ -158,9 +156,7 @@ class QuickContactInfo extends StatelessWidget {
         children: [
           AppText(
             'quick_contact'.tr(context),
-            style: Get.bodyMedium.px16.w700.copyWith(
-              color: Get.disabledColor,
-            ),
+            style: Get.bodyMedium.px16.w700.copyWith(color: Get.disabledColor),
           ),
           6.verticalGap,
           QuickContactRow(
@@ -168,10 +164,7 @@ class QuickContactInfo extends StatelessWidget {
             text: 'support@krishi.com',
           ),
           6.verticalGap,
-          QuickContactRow(
-            icon: Icons.phone_rounded,
-            text: '+977 9800000000',
-          ),
+          QuickContactRow(icon: Icons.phone_rounded, text: '+977 9800000000'),
           6.verticalGap,
           QuickContactRow(
             icon: Icons.access_time_rounded,
@@ -187,11 +180,7 @@ class QuickContactRow extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const QuickContactRow({
-    super.key,
-    required this.icon,
-    required this.text,
-  });
+  const QuickContactRow({super.key, required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -211,4 +200,3 @@ class QuickContactRow extends StatelessWidget {
     );
   }
 }
-

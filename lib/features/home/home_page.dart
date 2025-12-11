@@ -53,7 +53,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
-              padding: const EdgeInsets.all(10).rt,
+              padding: const EdgeInsets.all(6).rt,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
