@@ -37,7 +37,7 @@
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>GIDClientID</key>
-	<string>22500384416-na6m3vogct8oj99i8l3vrq4blf2ubqg9.apps.googleusercontent.com</string>
+	<string>22500384416-5choujjs47148lfal8k3g2ugs0nic29j.apps.googleusercontent.com</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
