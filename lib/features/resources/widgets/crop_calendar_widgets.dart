@@ -5,6 +5,7 @@ import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
+import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/resources/crop_detail_page.dart';
@@ -149,7 +150,7 @@ class CropCard extends StatelessWidget {
                           4.horizontalGap,
                           Flexible(
                             child: AppText(
-                              '${crop.durationDays} days',
+                              '${crop.durationDays} ${'days'.tr(context)}',
                               style: Get.bodySmall.px10.copyWith(
                                 color: Get.disabledColor.withValues(alpha: 0.6),
                               ),

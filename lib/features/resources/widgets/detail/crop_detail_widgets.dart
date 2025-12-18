@@ -181,7 +181,7 @@ class CropQuickInfo extends StatelessWidget {
           CropQuickInfoRow(
             icon: Icons.schedule_rounded,
             label: 'growing_duration'.tr(context),
-            value: '${crop.durationDays} days',
+            value: '${crop.durationDays} ${'days'.tr(context)}',
           ),
 
           Divider(color: Get.disabledColor.withValues(alpha: 0.1)),

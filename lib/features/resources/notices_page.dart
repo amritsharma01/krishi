@@ -148,21 +148,6 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
     }
   }
 
-  Color _getNoticeTypeColor(String type) {
-    switch (type) {
-      case 'urgent':
-        return Colors.red;
-      case 'important':
-        return Colors.orange;
-      case 'event':
-        return Colors.blue;
-      case 'training':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
   IconData _getNoticeTypeIcon(String type) {
     switch (type) {
       case 'urgent':
@@ -244,7 +229,6 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
           final notice = notices[index];
           return NoticeCard(
             notice: notice,
-            typeColor: _getNoticeTypeColor(notice.noticeType),
             typeIcon: _getNoticeTypeIcon(notice.noticeType),
           );
         },

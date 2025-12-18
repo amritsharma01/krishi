@@ -249,7 +249,7 @@ class _NewsPageState extends ConsumerState<NewsPage> {
                   ),
                   12.verticalGap,
                   AppText(
-                    article.content,
+                    _stripMarkdown(article.content),
                     style: Get.bodyMedium.px14.copyWith(
                       color: Get.disabledColor.withValues(alpha: 0.7),
                     ),
@@ -292,6 +292,23 @@ class _NewsPageState extends ConsumerState<NewsPage> {
         ),
       ),
     );
+  }
+
+  String _stripMarkdown(String text) {
+    // Remove markdown formatting for preview
+    return text
+        .replaceAll(RegExp(r'\*\*(.+?)\*\*'), r'$1') // Bold
+        .replaceAll(RegExp(r'\*(.+?)\*'), r'$1') // Italic
+        .replaceAll(RegExp(r'__(.+?)__'), r'$1') // Bold
+        .replaceAll(RegExp(r'_(.+?)_'), r'$1') // Italic
+        .replaceAll(RegExp(r'#+\s+'), '') // Headers
+        .replaceAll(RegExp(r'\[(.+?)\]\(.+?\)'), r'$1') // Links
+        .replaceAll(RegExp(r'^[-*+]\s+', multiLine: true), '') // Lists
+        .replaceAll(RegExp(r'^\d+\.\s+', multiLine: true), '') // Numbered lists
+        .replaceAll(RegExp(r'`(.+?)`'), r'$1') // Inline code
+        .replaceAll(RegExp(r'```[\s\S]*?```'), '') // Code blocks
+        .replaceAll(RegExp(r'\n+'), ' ') // Multiple newlines to single space
+        .trim();
   }
 
   String _formatDate(DateTime date, BuildContext context) {

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:krishi/core/configs/app_colors.dart';
-import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
@@ -41,9 +39,6 @@ class SupportPage extends StatelessWidget {
                   title: 'faq',
                   subtitle: 'common_questions',
                   icon: Icons.quiz_rounded,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF1E88E5), Color(0xFF42A5F5)],
-                  ),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -56,9 +51,6 @@ class SupportPage extends StatelessWidget {
                   title: 'contact_us',
                   subtitle: 'get_in_touch',
                   icon: Icons.phone_rounded,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
-                  ),
                   onTap: () {
                     Navigator.push(
                       context,
@@ -73,9 +65,6 @@ class SupportPage extends StatelessWidget {
                   title: 'user_guide',
                   subtitle: 'learn_how_to_use',
                   icon: Icons.menu_book_rounded,
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFF6F00), Color(0xFFFF8F00)],
-                  ),
                   onTap: () {
                     Navigator.push(
                       context,

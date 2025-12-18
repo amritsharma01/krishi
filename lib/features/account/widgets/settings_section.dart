@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
-import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/services/get.dart';
 import 'package:krishi/features/components/app_text.dart';
@@ -27,7 +26,7 @@ class SettingsSection extends StatelessWidget {
       padding: EdgeInsets.all(8.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(25).rt,
+        borderRadius: BorderRadius.circular(15).rt,
         border: Border.all(
           color: Get.disabledColor.withValues(alpha: 0.1),
           width: 1,

@@ -37,7 +37,7 @@ class ProfileCard extends ConsumerWidget {
       padding: EdgeInsets.all(10.rt),
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(30).rt,
+        borderRadius: BorderRadius.circular(20).rt,
         border: Border.all(
           color: Get.disabledColor.withValues(alpha: 0.1),
           width: 1,

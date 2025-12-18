@@ -14,21 +14,6 @@ class UserManualDetailPage extends StatelessWidget {
 
   const UserManualDetailPage({super.key, required this.manual});
 
-  Color _getCategoryColor() {
-    switch (manual.category) {
-      case 'buying':
-        return Colors.blue;
-      case 'selling':
-        return Colors.green;
-      case 'account':
-        return Colors.purple;
-      case 'orders':
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
-  }
-
   IconData _getCategoryIcon() {
     switch (manual.category) {
       case 'buying':
@@ -112,7 +97,6 @@ class UserManualDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _getCategoryColor();
     final icon = _getCategoryIcon();
 
     return Scaffold(
@@ -132,7 +116,7 @@ class UserManualDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            UserManualDetailHeader(manual: manual, color: color, icon: icon),
+            UserManualDetailHeader(manual: manual, icon: icon),
             if (manual.image != null && manual.image!.trim().isNotEmpty) ...[
               10.verticalGap,
               UserManualDetailImage(imageUrl: Get.imageUrl(manual.image!)),

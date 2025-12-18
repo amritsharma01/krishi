@@ -113,10 +113,10 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ],
       ),
-      actions: [
-        Center(child: const NotificationIcon()),
-        16.horizontalGap,
-      ],
+      // actions: [
+      //   Center(child: const NotificationIcon()),
+      //   16.horizontalGap,
+      // ],
     );
   }
 }

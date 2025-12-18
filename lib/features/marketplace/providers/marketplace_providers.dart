@@ -63,7 +63,8 @@ final selectedUnitProvider = StateProvider.autoDispose<Unit?>((ref) => null);
 final selectedImageProvider = StateProvider.autoDispose<File?>((ref) => null);
 
 // Marketplace page providers
-final isMarketplaceBuyTabProvider = StateProvider<bool>((ref) => true);
+enum MarketplaceTab { buy, sell, cart }
+final marketplaceTabProvider = StateProvider<MarketplaceTab>((ref) => MarketplaceTab.buy);
 final buyProductsProvider = StateProvider<List<Product>>((ref) => []);
 final userListingsProvider = StateProvider<List<Product>>((ref) => []);
 final isLoadingBuyProductsProvider = StateProvider<bool>((ref) => true);

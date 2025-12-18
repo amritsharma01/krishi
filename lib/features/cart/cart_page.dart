@@ -83,19 +83,19 @@ class _CartPageState extends ConsumerState<CartPage> {
 
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
-      appBar: AppBar(
-        automaticallyImplyLeading: true,
-        backgroundColor: Get.scaffoldBackgroundColor,
-        elevation: 0,
-        title: AppText(
-          'my_cart'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Get.disabledColor),
-          onPressed: () => Get.pop(),
-        ),
-      ),
+      // appBar: AppBar(
+      //   automaticallyImplyLeading: true,
+      //   backgroundColor: Get.scaffoldBackgroundColor,
+      //   elevation: 0,
+      //   title: AppText(
+      //     'my_cart'.tr(context),
+      //     style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+      //   ),
+      //   leading: IconButton(
+      //     icon: Icon(Icons.arrow_back, color: Get.disabledColor),
+      //     onPressed: () => Get.pop(),
+      //   ),
+      // ),
       body: cartAsync.when(
         data: (cart) => _buildBody(cart),
         loading: () => Center(

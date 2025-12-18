@@ -1081,7 +1081,7 @@ class AppTranslations {
     'alt_call': {'en': 'Alt. Call', 'ne': 'वैकल्पिक कल'},
 
     // Experts Page
-    'agri_experts': {'en': 'Agri Experts', 'ne': 'कृषि विशेषज्ञहरू'},
+    'agri_experts': {'en': 'Agriculture Experts', 'ne': 'कृषि विशेषज्ञहरू'},
     'no_experts_available': {
       'en': 'No experts available',
       'ne': 'कुनै विशेषज्ञ उपलब्ध छैन',
@@ -1315,6 +1315,24 @@ class AppTranslations {
 
     // Navigation
     'market': {'en': 'Market', 'ne': 'बजार'},
+
+    // Units and Currency
+    'days': {'en': 'days', 'ne': 'दिन'},
+    'currency_symbol': {'en': 'Rs.', 'ne': 'रु.'},
+
+    // Support Page
+    'support_email': {'en': 'support@krishi.com', 'ne': 'support@krishi.com'},
+    'support_phone': {'en': '+977 9800000000', 'ne': '+९७७ ९८००००००००'},
+    'support_hours': {
+      'en': 'Mon - Fri, 9:00 AM - 5:00 PM',
+      'ne': 'सोम - शुक्र, बिहान ९:०० - साँझ ५:००',
+    },
+
+    // Market Prices
+    'view_market_prices': {
+      'en': 'View Market Prices',
+      'ne': 'बजार मूल्य हेर्नुहोस्',
+    },
   };
 
   static String translate(String key, String languageCode) {

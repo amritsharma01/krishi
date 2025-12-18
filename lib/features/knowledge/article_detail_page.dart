@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
@@ -104,16 +105,34 @@ class ArticleDetailPage extends ConsumerWidget {
                         color: Get.disabledColor.withValues(alpha: 0.12),
                       ),
                     ),
-                    child: AppText(
-                      articleData.content,
-                      style: Get.bodyMedium.px12.w400.copyWith(
-                        color:
-                            Get.bodyMedium.color ??
-                            (Get.isDark ? Colors.white : Colors.black87),
-                        height: 1.7,
+                    child: MarkdownBody(
+                      data: articleData.content,
+                      styleSheet: MarkdownStyleSheet(
+                        p: Get.bodyMedium.px12.w400.copyWith(
+                          color: Get.bodyMedium.color ??
+                              (Get.isDark ? Colors.white : Colors.black87),
+                          height: 1.7,
+                        ),
+                        h1: Get.bodyLarge.px18.w700.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                        h2: Get.bodyLarge.px16.w700.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                        h3: Get.bodyLarge.px14.w600.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                        strong: Get.bodyMedium.px12.w700.copyWith(
+                          color: Get.disabledColor,
+                        ),
+                        em: Get.bodyMedium.px12.w500.copyWith(
+                          color: Get.disabledColor,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        listBullet: Get.bodyMedium.px12.copyWith(
+                          color: Get.disabledColor,
+                        ),
                       ),
-                      maxLines: 100,
-                      overflow: TextOverflow.visible,
                     ),
                   ),
                   32.verticalGap,

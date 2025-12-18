@@ -724,7 +724,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                   return 'required_field'.tr(context);
                 }
                 // Require exactly 10 digits (same rule as checkout)
-                if (!RegExp(r'^\\d{10}\$').hasMatch(trimmed)) {
+                if (!RegExp(r'^\d{10}$').hasMatch(trimmed)) {
                   return 'phone_length_error'.tr(context);
                 }
                 return null;
@@ -827,7 +827,7 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                         controller: _priceController,
                         decoration: InputDecoration(
                           hintText: 'enter_base_price'.tr(context),
-                          prefixText: 'Rs. ',
+                          prefixText: '${'currency_symbol'.tr(context)} ',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12).rt,
                           ),
@@ -919,12 +919,6 @@ class _AddEditProductPageState extends ConsumerState<AddEditProductPage> {
                 ),
               ),
               maxLines: 4,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'required_field'.tr(context);
-                }
-                return null;
-              },
             ),
             8.verticalGap,
 

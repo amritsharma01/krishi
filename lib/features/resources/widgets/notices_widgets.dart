@@ -75,13 +75,11 @@ class NoticesFilterChips extends ConsumerWidget {
 
 class NoticeCard extends StatelessWidget {
   final Notice notice;
-  final Color typeColor;
   final IconData typeIcon;
 
   const NoticeCard({
     super.key,
     required this.notice,
-    required this.typeColor,
     required this.typeIcon,
   });
 
@@ -125,20 +123,18 @@ class NoticeCard extends StatelessWidget {
                         vertical: 6.h,
                       ),
                       decoration: BoxDecoration(
-                        color: typeColor.withValues(
-                          alpha: Get.isDark ? 0.2 : 0.12,
-                        ),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(24).rt,
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(typeIcon, size: 14.st, color: typeColor),
+                          Icon(typeIcon, size: 14.st, color: AppColors.primary),
                           6.horizontalGap,
                           AppText(
                             notice.noticeTypeDisplay,
                             style: Get.bodySmall.copyWith(
-                              color: typeColor,
+                              color: AppColors.primary,
                               fontSize: 10.sp,
                               fontWeight: FontWeight.w700,
                             ),

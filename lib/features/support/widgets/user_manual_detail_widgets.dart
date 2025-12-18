@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
@@ -11,13 +12,11 @@ import 'package:krishi/models/resources.dart';
 
 class UserManualDetailHeader extends StatelessWidget {
   final UserManual manual;
-  final Color color;
   final IconData icon;
 
   const UserManualDetailHeader({
     super.key,
     required this.manual,
-    required this.color,
     required this.icon,
   });
 
@@ -28,13 +27,15 @@ class UserManualDetailHeader extends StatelessWidget {
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(20).rt,
-        border: Border.all(color: color.withValues(alpha: 0.2), width: 1.5),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.1),
+          width: 1,
+        ),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-            spreadRadius: 0,
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -46,27 +47,22 @@ class UserManualDetailHeader extends StatelessWidget {
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [color, color.withValues(alpha: 0.8)],
-                  ),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14).rt,
-                  boxShadow: [
-                    BoxShadow(
-                      color: color.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, color: Colors.white, size: 15.st),
+                    Icon(icon, color: AppColors.primary, size: 15.st),
                     6.horizontalGap,
                     AppText(
                       manual.categoryDisplay,
                       style: Get.bodySmall.px12.w700.copyWith(
-                        color: Colors.white,
+                        color: AppColors.primary,
                       ),
                     ),
                   ],

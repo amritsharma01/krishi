@@ -60,7 +60,6 @@ class SupportOption extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
-  final Gradient gradient;
   final VoidCallback onTap;
 
   const SupportOption({
@@ -68,68 +67,76 @@ class SupportOption extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
-    required this.gradient,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Get.cardColor,
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(
-            color: Get.disabledColor.withValues(alpha: 0.08),
-            width: 1,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16).rt,
+        splashColor: AppColors.primary.withValues(alpha: 0.1),
+        highlightColor: AppColors.primary.withValues(alpha: 0.05),
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Get.cardColor,
+            borderRadius: BorderRadius.circular(16).rt,
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                gradient: gradient,
-                borderRadius: BorderRadius.circular(12).rt,
-              ),
-              child: Icon(icon, color: AppColors.white, size: 24.st),
-            ),
-            16.horizontalGap,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    title.tr(context),
-                    style: Get.bodyMedium.px12.w700.copyWith(
-                      color: Get.disabledColor,
-                    ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12).rt,
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                    width: 1,
                   ),
-
-                  AppText(
-                    subtitle.tr(context),
-                    style: Get.bodySmall.px10.w500.copyWith(
-                      color: Get.disabledColor.withValues(alpha: 0.6),
-                    ),
-                  ),
-                ],
+                ),
+                child: Icon(icon, color: AppColors.primary, size: 24.st),
               ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Get.disabledColor.withValues(alpha: 0.3),
-              size: 18.st,
-            ),
-          ],
+              16.horizontalGap,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      title.tr(context),
+                      style: Get.bodyMedium.px12.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    AppText(
+                      subtitle.tr(context),
+                      style: Get.bodySmall.px10.w500.copyWith(
+                        color: Get.disabledColor.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: AppColors.primary.withValues(alpha: 0.7),
+                size: 18.st,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -161,14 +168,14 @@ class QuickContactInfo extends StatelessWidget {
           6.verticalGap,
           QuickContactRow(
             icon: Icons.email_rounded,
-            text: 'support@krishi.com',
+            text: 'support_email'.tr(context),
           ),
           6.verticalGap,
-          QuickContactRow(icon: Icons.phone_rounded, text: '+977 9800000000'),
+          QuickContactRow(icon: Icons.phone_rounded, text: 'support_phone'.tr(context)),
           6.verticalGap,
           QuickContactRow(
             icon: Icons.access_time_rounded,
-            text: 'Mon - Fri, 9:00 AM - 5:00 PM',
+            text: 'support_hours'.tr(context),
           ),
         ],
       ),
