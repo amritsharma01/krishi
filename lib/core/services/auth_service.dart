@@ -208,4 +208,12 @@ class AuthService extends ChangeNotifier {
     await box.set(StorageKeys.isLoggedIn, false);
     notifyListeners();
   }
+
+  /// Called when token expires (401 error)
+  /// Updates auth state without signing out from Google
+  void handleTokenExpiration() {
+    _isAuthenticated = false;
+    _isInitialized = true;
+    notifyListeners();
+  }
 }

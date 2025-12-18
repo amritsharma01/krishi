@@ -334,11 +334,9 @@ class _VideosPageState extends ConsumerState<VideosPage> {
           }
           final video = videos[index];
           final thumbnailUrl = _getThumbnailUrl(video);
-          final categoryColor = _categoryColors[video.category] ?? Colors.red;
           return VideoCard(
             video: video,
             thumbnailUrl: thumbnailUrl,
-            categoryColor: categoryColor,
             onTap: () => _openVideo(context, video.youtubeUrl),
           );
         },

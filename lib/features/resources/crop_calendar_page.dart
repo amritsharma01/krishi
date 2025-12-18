@@ -206,12 +206,12 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
       onRefresh: () => _loadCrops(cropType: selectedType, force: true),
       child: GridView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(8),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 16.wt,
-          mainAxisSpacing: 16.ht,
-          childAspectRatio: 0.65,
+          crossAxisSpacing: 8.wt,
+          mainAxisSpacing: 8.ht,
+          childAspectRatio: 0.7,
         ),
         itemCount: crops.length + (isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
@@ -224,11 +224,9 @@ class _CropCalendarPageState extends ConsumerState<CropCalendarPage> {
             );
           }
           final crop = crops[index];
-          final color = _cropColors[crop.cropType] ?? Colors.teal;
           final icon = _cropIcons[crop.cropType] ?? Icons.agriculture_rounded;
           return CropCard(
             crop: crop,
-            color: color,
             icon: icon,
           );
         },

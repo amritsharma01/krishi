@@ -253,13 +253,10 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
             );
           }
           final contact = contacts[index];
-          final color =
-              _contactColors[contact.contactType] ?? AppColors.primary;
           final icon =
               _contactIcons[contact.contactType] ?? Icons.phone_rounded;
           return ContactCard(
             contact: contact,
-            color: color,
             icon: icon,
             onCall: () => _makePhoneCall(context, contact.phoneNumber),
             onEmail: contact.email.isNotEmpty

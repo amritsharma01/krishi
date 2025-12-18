@@ -40,13 +40,6 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
     'training': Icons.school_rounded,
   };
 
-  final Map<String, Color> _filterColors = {
-    'general': Colors.grey,
-    'important': Colors.orange,
-    'urgent': Colors.red,
-    'event': Colors.blue,
-    'training': Colors.green,
-  };
 
   @override
   void initState() {
@@ -208,7 +201,6 @@ class _NoticesPageState extends ConsumerState<NoticesPage> {
           NoticesFilterChips(
             filterOptions: _getFilterOptions(context),
             filterIcons: _filterIcons,
-            filterColors: _filterColors,
             onFilterChanged: (noticeType) =>
                 _loadNotices(noticeType: noticeType, force: true),
           ),

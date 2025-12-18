@@ -7,6 +7,8 @@ import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/features/auth/logout_notifier.dart';
 import 'package:krishi/features/navigation/main_navigation.dart';
 import 'package:krishi/features/account/providers/user_profile_providers.dart';
+import 'package:krishi/features/cart/providers/cart_providers.dart';
+import 'package:krishi/features/cart/providers/checkout_providers.dart';
 import 'package:flutter/material.dart';
 
 class LoginState {
@@ -51,11 +53,18 @@ class LoginNotifier extends StateNotifier<LoginState> {
           debugPrint('Error resetting logout state: $e');
         }
 
-        // Invalidate user-related providers to ensure fresh data is loaded for the new account
-        // This is critical when switching accounts
-        ref.invalidate(userProfileProvider);
+        // Invalidate persistent providers to ensure fresh data for the new account
+        // Persistent StateNotifierProviders cache state and won't reload automatically
+        ref.invalidate(userProfileProvider); // Persistent StateNotifierProvider
+        ref.invalidate(cartProvider); // Persistent StateNotifierProvider
+        ref.invalidate(checkoutStateProvider); // Persistent StateNotifierProvider
+        
+        // Invalidate StateProviders (these are lightweight, but ensures clean state)
         ref.invalidate(isUpdatingProfileProvider);
         ref.invalidate(selectedProfileImageProvider);
+        
+        // Auto-dispose providers will reload naturally when watched, but invalidating ensures immediate fresh data
+        ref.invalidate(checkoutUserProfileProvider);
 
         // Ensure tab index is set to 0 (homepage) on login
         final storage = ref.read(storageServiceProvider);

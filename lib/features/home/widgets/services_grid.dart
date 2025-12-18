@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -29,7 +30,6 @@ class ServicesGrid extends StatelessWidget {
               child: _DirectoryCard(
                 title: 'agri_experts',
                 icon: Icons.people_rounded,
-                color: const Color(0xFF00897B),
                 onTap: () => Get.to(const ExpertsPage()),
               ),
             ),
@@ -38,7 +38,6 @@ class ServicesGrid extends StatelessWidget {
               child: _DirectoryCard(
                 title: 'service_providers',
                 icon: Icons.business_rounded,
-                color: const Color(0xFF1565C0),
                 onTap: () => Get.to(const ServiceProvidersPage()),
               ),
             ),
@@ -47,7 +46,6 @@ class ServicesGrid extends StatelessWidget {
               child: _DirectoryCard(
                 title: 'emergency_contacts',
                 icon: Icons.emergency_rounded,
-                color: const Color(0xFFC62828),
                 onTap: () => Get.to(const EmergencyContactsPage()),
               ),
             ),
@@ -61,55 +59,63 @@ class ServicesGrid extends StatelessWidget {
 class _DirectoryCard extends StatelessWidget {
   final String title;
   final IconData icon;
-  final Color color;
   final VoidCallback onTap;
 
   const _DirectoryCard({
     required this.title,
     required this.icon,
-    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5).rt,
-        decoration: BoxDecoration(
-          color: Get.cardColor,
-          borderRadius: BorderRadius.circular(14).rt,
-          border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.15),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14).rt,
+        splashColor: AppColors.primary.withValues(alpha: 0.1),
+        highlightColor: AppColors.primary.withValues(alpha: 0.05),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5).rt,
+          decoration: BoxDecoration(
+            color: Get.cardColor,
+            borderRadius: BorderRadius.circular(14).rt,
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              width: 1,
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10).rt,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12).rt,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+                spreadRadius: 0,
               ),
-              child: Icon(icon, color: color, size: 28.st),
-            ),
-            3.verticalGap,
-            AppText(
-              title.tr(context),
-              style: Get.bodySmall.px10.w600.copyWith(color: Get.disabledColor),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(10).rt,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12).rt,
+                ),
+                child: Icon(icon, color: AppColors.primary, size: 28.st),
+              ),
+              3.verticalGap,
+              AppText(
+                title.tr(context),
+                style: Get.bodySmall.px10.w600.copyWith(color: Get.disabledColor),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );

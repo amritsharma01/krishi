@@ -1,4 +1,5 @@
 import 'package:krishi/core/configs/app_colors.dart';
+import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
@@ -8,7 +9,6 @@ import 'package:krishi/features/components/app_text.dart';
 import 'package:krishi/features/components/notification_icon.dart';
 import 'package:krishi/features/notifications/providers/notifications_providers.dart';
 import 'package:krishi/features/home/home_notifier.dart';
-import 'package:krishi/features/home/widgets/welcome_card.dart';
 import 'package:krishi/features/home/widgets/orders_tiles.dart';
 import 'package:krishi/features/home/widgets/main_services_section.dart';
 import 'package:krishi/features/home/widgets/services_grid.dart';
@@ -57,8 +57,8 @@ class _HomePageState extends ConsumerState<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const WelcomeCard(),
-                  10.verticalGap,
+                  // const WelcomeCard(),
+                  // 10.verticalGap,
                   const OrdersTiles(),
                   10.verticalGap,
                   const MainServicesSection(),
@@ -82,17 +82,34 @@ class _HomePageState extends ConsumerState<HomePage> {
       automaticallyImplyLeading: false,
       backgroundColor: Get.scaffoldBackgroundColor,
       elevation: 0,
+      surfaceTintColor: Colors.transparent,
       title: Row(
         children: [
-          SizedBox(
+          Container(
             height: 40.rt,
             width: 40.rt,
-            child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10).rt,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10).rt,
+              child: Image.asset('assets/logo.png', fit: BoxFit.contain),
+            ),
           ),
           12.horizontalGap,
           AppText(
             'krishi'.tr(context),
-            style: Get.bodyLarge.px20.w700.copyWith(color: AppColors.primary),
+            style: Get.bodyLarge.px20.w700.copyWith(
+              color: AppColors.primary,
+              letterSpacing: -0.5,
+            ),
           ),
         ],
       ),

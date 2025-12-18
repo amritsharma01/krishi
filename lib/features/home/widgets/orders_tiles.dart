@@ -26,9 +26,6 @@ class OrdersTiles extends ConsumerWidget {
             subtitle: 'orders_as_seller',
             count: homeState.ordersCounts.salesCount,
             icon: Icons.inventory_2_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF43A047), Color(0xFF66BB6A)],
-            ),
             onTap: () => Get.to(const OrdersListPage.sales()),
             isLoading: homeState.isLoadingOrders,
           ),
@@ -40,9 +37,6 @@ class OrdersTiles extends ConsumerWidget {
             subtitle: 'orders_as_buyer',
             count: homeState.ordersCounts.purchasesCount,
             icon: Icons.shopping_bag_rounded,
-            gradient: const LinearGradient(
-              colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
-            ),
             onTap: () => Get.to(const OrdersListPage.purchases()),
             isLoading: homeState.isLoadingOrders,
           ),
@@ -57,7 +51,6 @@ class _OrderCard extends StatelessWidget {
   final String subtitle;
   final int count;
   final IconData icon;
-  final Gradient gradient;
   final VoidCallback onTap;
   final bool isLoading;
 
@@ -66,7 +59,6 @@ class _OrderCard extends StatelessWidget {
     required this.subtitle,
     required this.count,
     required this.icon,
-    required this.gradient,
     required this.onTap,
     required this.isLoading,
   });
@@ -77,20 +69,21 @@ class _OrderCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: !isLoading ? onTap : null,
-        borderRadius: BorderRadius.circular(20).rt,
-        splashColor: AppColors.primary.withValues(alpha: 0.12),
-        highlightColor: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(10).rt,
+        splashColor: AppColors.primary.withValues(alpha: 0.1),
+        highlightColor: AppColors.primary.withValues(alpha: 0.05),
         child: Container(
           constraints: BoxConstraints(minHeight: 90.ht),
           padding: const EdgeInsets.all(16).rt,
           decoration: BoxDecoration(
             color: Get.cardColor,
-            borderRadius: BorderRadius.circular(20).rt,
+            borderRadius: BorderRadius.circular(15).rt,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+                spreadRadius: 0,
               ),
             ],
           ),
@@ -103,8 +96,15 @@ class _OrderCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(6).rt,
                     decoration: BoxDecoration(
-                      gradient: gradient,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(14).rt,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Icon(icon, color: AppColors.white, size: 24.st),
                   ),

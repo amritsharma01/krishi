@@ -14,14 +14,12 @@ import 'package:krishi/models/resources.dart';
 class UserGuideFilter extends ConsumerWidget {
   final Map<String, String> categories;
   final Map<String, IconData> categoryIcons;
-  final Map<String, Color> categoryColors;
   final Function(String) onFilterSelected;
 
   const UserGuideFilter({
     super.key,
     required this.categories,
     required this.categoryIcons,
-    required this.categoryColors,
     required this.onFilterSelected,
   });
 
@@ -29,7 +27,6 @@ class UserGuideFilter extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCategory = ref.watch(selectedUserGuideCategoryProvider);
 
-    // Match the Videos page (ideos) filter styling
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 6.wt, vertical: 5.ht),
       decoration: BoxDecoration(
@@ -50,7 +47,6 @@ class UserGuideFilter extends ConsumerWidget {
         child: Row(
           children: categories.entries.map((entry) {
             final isSelected = selectedCategory == entry.key;
-            final color = categoryColors[entry.key] ?? AppColors.primary;
             final icon = entry.key == 'all'
                 ? Icons.all_inclusive
                 : categoryIcons[entry.key] ?? Icons.help_outline_rounded;
@@ -59,7 +55,6 @@ class UserGuideFilter extends ConsumerWidget {
               child: FilterPill(
                 label: entry.value,
                 icon: icon,
-                color: color,
                 isSelected: isSelected,
                 onTap: () => onFilterSelected(entry.key),
               ),
@@ -73,14 +68,12 @@ class UserGuideFilter extends ConsumerWidget {
 
 class UserGuideList extends ConsumerWidget {
   final Future<void> Function(String?) onRefresh;
-  final Map<String, Color> categoryColors;
   final Map<String, IconData> categoryIcons;
   final Function(UserManual) onManualTap;
 
   const UserGuideList({
     super.key,
     required this.onRefresh,
-    required this.categoryColors,
     required this.categoryIcons,
     required this.onManualTap,
   });
@@ -99,7 +92,6 @@ class UserGuideList extends ConsumerWidget {
           final manual = manuals[index];
           return UserGuideCard(
             manual: manual,
-            categoryColors: categoryColors,
             categoryIcons: categoryIcons,
             onTap: () => onManualTap(manual),
           );
@@ -111,21 +103,18 @@ class UserGuideList extends ConsumerWidget {
 
 class UserGuideCard extends StatelessWidget {
   final UserManual manual;
-  final Map<String, Color> categoryColors;
   final Map<String, IconData> categoryIcons;
   final VoidCallback onTap;
 
   const UserGuideCard({
     super.key,
     required this.manual,
-    required this.categoryColors,
     required this.categoryIcons,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final color = categoryColors[manual.category] ?? AppColors.primary;
     final icon = categoryIcons[manual.category] ?? Icons.help_outline_rounded;
 
     return Container(
@@ -161,11 +150,11 @@ class UserGuideCard extends StatelessWidget {
                     Container(
                       padding: EdgeInsets.all(10.rt),
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.12),
+                        color: AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(14).rt,
-                        border: Border.all(color: color.withValues(alpha: 0.2)),
+                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                       ),
-                      child: Icon(icon, color: color, size: 18.st),
+                      child: Icon(icon, color: AppColors.primary, size: 18.st),
                     ),
                     16.horizontalGap,
                     Expanded(
@@ -187,13 +176,13 @@ class UserGuideCard extends StatelessWidget {
                               vertical: 2.ht,
                             ),
                             decoration: BoxDecoration(
-                              color: color.withValues(alpha: 0.1),
+                              color: AppColors.primary.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8).rt,
                             ),
                             child: AppText(
                               manual.categoryDisplay,
                               style: Get.bodySmall.px10.w600.copyWith(
-                                color: color,
+                                color: AppColors.primary,
                               ),
                             ),
                           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
@@ -16,14 +17,12 @@ import 'package:krishi/models/resources.dart';
 class NoticesFilterChips extends ConsumerWidget {
   final Map<String, String> filterOptions;
   final Map<String, IconData> filterIcons;
-  final Map<String, Color> filterColors;
   final Future<void> Function(String?) onFilterChanged;
 
   const NoticesFilterChips({
     super.key,
     required this.filterOptions,
     required this.filterIcons,
-    required this.filterColors,
     required this.onFilterChanged,
   });
 
@@ -51,7 +50,6 @@ class NoticesFilterChips extends ConsumerWidget {
         child: Row(
           children: filterOptions.entries.map((entry) {
             final isSelected = selectedFilter == entry.key;
-            final color = filterColors[entry.key] ?? Get.primaryColor;
             final icon = entry.key == 'all'
                 ? Icons.all_inclusive
                 : filterIcons[entry.key] ?? Icons.article_rounded;
@@ -60,7 +58,6 @@ class NoticesFilterChips extends ConsumerWidget {
               child: FilterPill(
                 label: entry.value,
                 icon: icon,
-                color: color,
                 isSelected: isSelected,
                 onTap: () {
                   ref.read(selectedNoticeFilterProvider.notifier).state =
@@ -193,13 +190,11 @@ class NoticeCard extends StatelessWidget {
                         _AttachmentChip(
                           label: 'pdf_attached'.tr(context),
                           icon: Icons.picture_as_pdf_rounded,
-                          color: Colors.red.shade600,
                         ),
                       if (notice.image != null)
                         _AttachmentChip(
                           label: 'image_attached'.tr(context),
                           icon: Icons.image_rounded,
-                          color: Colors.blue.shade600,
                         ),
                     ],
                   ),
@@ -216,12 +211,10 @@ class NoticeCard extends StatelessWidget {
 class _AttachmentChip extends StatelessWidget {
   final String label;
   final IconData icon;
-  final Color color;
 
   const _AttachmentChip({
     required this.label,
     required this.icon,
-    required this.color,
   });
 
   @override
@@ -229,20 +222,20 @@ class _AttachmentChip extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10.wt, vertical: 4.ht),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: Get.isDark ? 0.18 : 0.12),
+        color: AppColors.primary.withValues(alpha: Get.isDark ? 0.18 : 0.12),
         borderRadius: BorderRadius.circular(10).rt,
-        border: Border.all(color: color.withValues(alpha: 0.4)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12.st, color: color),
+          Icon(icon, size: 12.st, color: AppColors.primary),
           6.horizontalGap,
           AppText(
             label,
             style: Get.bodySmall.copyWith(
               fontSize: 10.sp,
-              color: color,
+              color: AppColors.primary,
               fontWeight: FontWeight.w600,
             ),
           ),

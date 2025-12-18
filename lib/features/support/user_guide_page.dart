@@ -41,14 +41,6 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
     'other': Icons.help_outline_rounded,
   };
 
-  final Map<String, Color> _categoryColors = {
-    'buying': Colors.blue,
-    'selling': Colors.green,
-    'account': Colors.purple,
-    'orders': Colors.orange,
-    'other': Colors.grey,
-  };
-
   @override
   void initState() {
     super.initState();
@@ -171,7 +163,7 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
           'user_guide'.tr(context),
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        backgroundColor: Get.scaffoldBackgroundColor,
+        backgroundColor: Get.cardColor,
         elevation: 0,
         iconTheme: IconThemeData(color: Get.disabledColor),
       ),
@@ -180,7 +172,6 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
           UserGuideFilter(
             categories: _getCategories(context),
             categoryIcons: _categoryIcons,
-            categoryColors: _categoryColors,
             onFilterSelected: (category) {
               ref.read(selectedUserGuideCategoryProvider.notifier).state =
                   category;
@@ -224,7 +215,6 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
                         final manual = manuals[index];
                         return UserGuideCard(
                           manual: manual,
-                          categoryColors: _categoryColors,
                           categoryIcons: _categoryIcons,
                           onTap: () {
                             Navigator.push(

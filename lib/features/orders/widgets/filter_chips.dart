@@ -84,32 +84,39 @@ class _FilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8).rt,
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Get.cardColor,
-          borderRadius: BorderRadius.circular(20).rt,
-          border: Border.all(
-            color: isSelected
-                ? AppColors.primary
-                : Get.disabledColor.withValues(alpha: 0.2),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20).rt,
+        splashColor: AppColors.primary.withValues(alpha: 0.1),
+        highlightColor: AppColors.primary.withValues(alpha: 0.05),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8).rt,
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.primary : Get.cardColor,
+            borderRadius: BorderRadius.circular(20).rt,
+            border: Border.all(
+              color: isSelected
+                  ? AppColors.primary
+                  : AppColors.primary.withValues(alpha: 0.2),
+              width: 1,
+            ),
+            boxShadow: [
+              if (isSelected)
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+            ],
           ),
-          boxShadow: [
-            if (isSelected)
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.2),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
-              ),
-          ],
-        ),
-        child: AppText(
-          '${filter['label']} ($count)',
-          style: Get.bodySmall.px12.w600.copyWith(
-            color: isSelected ? Colors.white : Get.disabledColor,
+          child: AppText(
+            '${filter['label']} ($count)',
+            style: Get.bodySmall.px12.w600.copyWith(
+              color: isSelected ? Colors.white : AppColors.primary,
+            ),
           ),
         ),
       ),

@@ -15,14 +15,12 @@ import 'package:krishi/models/resources.dart';
 class ContactUsFilter extends ConsumerWidget {
   final Map<String, String> contactTypes;
   final Map<String, IconData> contactIcons;
-  final Map<String, Color> contactColors;
   final Function(String) onFilterSelected;
 
   const ContactUsFilter({
     super.key,
     required this.contactTypes,
     required this.contactIcons,
-    required this.contactColors,
     required this.onFilterSelected,
   });
 
@@ -30,7 +28,6 @@ class ContactUsFilter extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedType = ref.watch(selectedContactUsTypeProvider);
 
-    // Match VideosCategoryFilter styling (ideos page)
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 6.wt, vertical: 5.ht),
       decoration: BoxDecoration(
@@ -51,7 +48,6 @@ class ContactUsFilter extends ConsumerWidget {
         child: Row(
           children: contactTypes.entries.map((entry) {
             final isSelected = selectedType == entry.key;
-            final color = contactColors[entry.key] ?? AppColors.primary;
             final icon = entry.key == 'all'
                 ? Icons.all_inclusive
                 : contactIcons[entry.key] ?? Icons.phone_rounded;
@@ -60,7 +56,6 @@ class ContactUsFilter extends ConsumerWidget {
               child: FilterPill(
                 label: entry.value,
                 icon: icon,
-                color: color,
                 isSelected: isSelected,
                 onTap: () => onFilterSelected(entry.key),
               ),
@@ -74,7 +69,6 @@ class ContactUsFilter extends ConsumerWidget {
 
 class ContactUsList extends ConsumerWidget {
   final Future<void> Function(String?) onRefresh;
-  final Map<String, Color> contactColors;
   final Map<String, IconData> contactIcons;
   final Future<void> Function(BuildContext, String) onMakePhoneCall;
   final Future<void> Function(BuildContext, String) onSendEmail;
@@ -84,7 +78,6 @@ class ContactUsList extends ConsumerWidget {
   const ContactUsList({
     super.key,
     required this.onRefresh,
-    required this.contactColors,
     required this.contactIcons,
     required this.onMakePhoneCall,
     required this.onSendEmail,
@@ -133,7 +126,6 @@ class ContactUsList extends ConsumerWidget {
           final contact = contacts[index];
           return ContactUsCard(
             contact: contact,
-            contactColors: contactColors,
             contactIcons: contactIcons,
             onMakePhoneCall: onMakePhoneCall,
             onSendEmail: onSendEmail,
@@ -146,7 +138,6 @@ class ContactUsList extends ConsumerWidget {
 
 class ContactUsCard extends StatelessWidget {
   final Contact contact;
-  final Map<String, Color> contactColors;
   final Map<String, IconData> contactIcons;
   final Future<void> Function(BuildContext, String) onMakePhoneCall;
   final Future<void> Function(BuildContext, String) onSendEmail;
@@ -154,7 +145,6 @@ class ContactUsCard extends StatelessWidget {
   const ContactUsCard({
     super.key,
     required this.contact,
-    required this.contactColors,
     required this.contactIcons,
     required this.onMakePhoneCall,
     required this.onSendEmail,
@@ -162,7 +152,6 @@ class ContactUsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = contactColors[contact.contactType] ?? AppColors.primary;
     final icon = contactIcons[contact.contactType] ?? Icons.phone_rounded;
 
     return Container(
@@ -192,11 +181,11 @@ class ContactUsCard extends StatelessWidget {
                 Container(
                   padding: EdgeInsets.all(8.rt),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.12),
+                    color: AppColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14).rt,
-                    border: Border.all(color: color.withValues(alpha: 0.2)),
+                    border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                   ),
-                  child: Icon(icon, color: color, size: 28.st),
+                  child: Icon(icon, color: AppColors.primary, size: 28.st),
                 ),
                 16.horizontalGap,
                 Expanded(
@@ -218,12 +207,12 @@ class ContactUsCard extends StatelessWidget {
                           vertical: 2.ht,
                         ),
                         decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8).rt,
                         ),
                         child: AppText(
                           contact.contactTypeDisplay,
-                          style: Get.bodySmall.px10.w600.copyWith(color: color),
+                          style: Get.bodySmall.px10.w600.copyWith(color: AppColors.primary),
                         ),
                       ),
                     ],

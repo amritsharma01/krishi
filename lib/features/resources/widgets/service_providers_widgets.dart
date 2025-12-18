@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
-import 'package:krishi/core/extensions/padding.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
 import 'package:krishi/core/extensions/translation_extension.dart';
 import 'package:krishi/core/services/get.dart';
@@ -50,7 +49,6 @@ class ServiceProvidersFilter extends ConsumerWidget {
         child: Row(
           children: serviceTypes.entries.map((entry) {
             final isSelected = selectedType == entry.key;
-            final color = serviceColors[entry.key] ?? Colors.teal;
             final icon = entry.key == 'all'
                 ? Icons.all_inclusive
                 : serviceIcons[entry.key] ?? Icons.business_rounded;
@@ -59,7 +57,6 @@ class ServiceProvidersFilter extends ConsumerWidget {
               child: FilterPill(
                 label: entry.value,
                 icon: icon,
-                color: color,
                 isSelected: isSelected,
                 onTap: () {
                   ref.read(selectedServiceTypeProvider.notifier).state =
@@ -77,7 +74,6 @@ class ServiceProvidersFilter extends ConsumerWidget {
 
 class ServiceProviderCard extends StatelessWidget {
   final ServiceProvider provider;
-  final Color color;
   final IconData icon;
   final VoidCallback onCall;
   final VoidCallback? onAltCall;
@@ -86,7 +82,6 @@ class ServiceProviderCard extends StatelessWidget {
   const ServiceProviderCard({
     super.key,
     required this.provider,
-    required this.color,
     required this.icon,
     required this.onCall,
     this.onAltCall,
@@ -125,11 +120,11 @@ class ServiceProviderCard extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(10.rt),
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
+                      color: AppColors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14).rt,
-                      border: Border.all(color: color.withValues(alpha: 0.2)),
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                     ),
-                    child: Icon(icon, color: color, size: 18.st),
+                    child: Icon(icon, color: AppColors.primary, size: 18.st),
                   ),
                   16.horizontalGap,
                   Expanded(

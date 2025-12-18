@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../get.dart';
 import '../storage_services/hive_keys.dart';
+import '../../core_service_providers.dart';
+import '../../../features/cart/providers/cart_providers.dart';
+import '../../../features/cart/providers/checkout_providers.dart';
 
 typedef QueryType = Map<String, dynamic>?;
 
@@ -159,18 +162,43 @@ class ApiManager {
               // Clear tokens
               await tokenStorage.clearTokens();
 
-              // Update auth state directly in storage to trigger navigation to login
-              // This avoids circular dependency with authServiceProvider
+              // Update auth state in storage and authServiceProvider
               try {
                 final box = Get.box;
                 final isLoggedIn =
                     await box.get(StorageKeys.isLoggedIn) ?? false;
                 if (isLoggedIn) {
                   await box.set(StorageKeys.isLoggedIn, false);
-                  if (kDebugMode) {
-                    print(
-                      '✅ Auth state updated in storage - user will be redirected to login',
-                    );
+                  
+                  // Update authServiceProvider state to trigger UI update
+                  // This ensures main.dart reacts to the auth state change
+                  try {
+                    final authService = ref.read(authServiceProvider);
+                    // Update internal state without signing out from Google
+                    // (token is already expired, no need to sign out from Google)
+                    authService.handleTokenExpiration();
+                    
+                    // Invalidate persistent providers that cache account-specific data
+                    // These won't automatically clear when tokens expire
+                    ref.invalidate(cartProvider); // Persistent StateNotifierProvider
+                    ref.invalidate(checkoutStateProvider); // Persistent StateNotifierProvider
+                    // Auto-dispose providers will reload naturally, but invalidating ensures immediate cleanup
+                    ref.invalidate(checkoutUserProfileProvider);
+                    
+                    if (kDebugMode) {
+                      print(
+                        '✅ Auth state updated - user will be redirected to login',
+                      );
+                    }
+                  } catch (authError) {
+                    if (kDebugMode) {
+                      print('⚠️ Error updating authService state: $authError');
+                    }
+                    // Fallback: invalidate providers to force rebuild
+                    ref.invalidate(authServiceProvider);
+                    ref.invalidate(cartProvider); // Persistent StateNotifierProvider
+                    ref.invalidate(checkoutStateProvider); // Persistent StateNotifierProvider
+                    ref.invalidate(checkoutUserProfileProvider); // Auto-dispose, but ensures cleanup
                   }
                 }
               } catch (e) {

@@ -38,13 +38,6 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
     'general': Icons.info_rounded,
   };
 
-  final Map<String, Color> _contactColors = {
-    'support': Colors.blue,
-    'technical': Colors.purple,
-    'sales': Colors.green,
-    'general': Colors.orange,
-  };
-
   @override
   void initState() {
     super.initState();
@@ -194,7 +187,7 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
           'contact_us'.tr(context),
           style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
         ),
-        backgroundColor: Get.scaffoldBackgroundColor,
+        backgroundColor: Get.cardColor,
         elevation: 0,
         iconTheme: IconThemeData(color: Get.disabledColor),
       ),
@@ -203,7 +196,6 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
           ContactUsFilter(
             contactTypes: _getContactTypes(context),
             contactIcons: _contactIcons,
-            contactColors: _contactColors,
             onFilterSelected: _onFilterSelected,
           ),
           Expanded(
@@ -243,7 +235,6 @@ class _ContactUsPageState extends ConsumerState<ContactUsPage> {
                         final contact = contacts[index];
                         return ContactUsCard(
                           contact: contact,
-                          contactColors: _contactColors,
                           contactIcons: _contactIcons,
                           onMakePhoneCall: _makePhoneCall,
                           onSendEmail: _sendEmail,

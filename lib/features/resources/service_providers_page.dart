@@ -261,13 +261,10 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
             );
           }
           final provider = providers[index];
-          final color =
-              _serviceColors[provider.serviceType] ?? AppColors.primary;
           final icon =
               _serviceIcons[provider.serviceType] ?? Icons.business_rounded;
           return ServiceProviderCard(
             provider: provider,
-            color: color,
             icon: icon,
             onCall: () => _makePhoneCall(context, provider.phoneNumber),
             onAltCall: provider.alternatePhone.isNotEmpty

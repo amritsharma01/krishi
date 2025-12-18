@@ -8,9 +8,6 @@ import 'package:krishi/core/services/cache_service.dart';
 import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/services/storage_services/hive_keys.dart';
 import 'package:krishi/features/auth/login_page.dart';
-import 'package:krishi/features/account/providers/user_profile_providers.dart';
-import 'package:krishi/features/notifications/providers/notifications_providers.dart';
-import 'package:krishi/features/marketplace/providers/marketplace_providers.dart';
 import 'package:krishi/features/cart/providers/cart_providers.dart';
 import 'package:krishi/features/cart/providers/checkout_providers.dart';
 
@@ -29,50 +26,17 @@ class LogoutNotifier extends StateNotifier<LogoutState> {
 
   LogoutNotifier(this.ref) : super(const LogoutState());
 
-  /// Invalidates all user-related providers to clear cached data
-  void _invalidateAllUserData() {
-    // FIRST: Invalidate core providers to clear auth tokens
-    ref.invalidate(krishiApiServiceProvider);
+  /// Invalidates auth service and persistent user-specific data providers
+  /// Only persistent providers (StateNotifierProvider without autoDispose) need invalidation
+  /// Auto-dispose providers will naturally reload when watched again
+  void _invalidateAuthState() {
     ref.invalidate(authServiceProvider);
-
-    // User profile providers
-    ref.invalidate(userProfileProvider);
-    ref.invalidate(isUpdatingProfileProvider);
-    ref.invalidate(selectedProfileImageProvider);
-
-    // Notification providers
-    ref.invalidate(unreadNotificationsProvider);
-    ref.invalidate(notificationsListProvider);
-    ref.invalidate(isLoadingNotificationsProvider);
-    ref.invalidate(isLoadingMoreProvider);
-    ref.invalidate(hasMoreNotificationsProvider);
-    ref.invalidate(currentPageProvider);
-    ref.invalidate(isDeletingAllProvider);
-    ref.invalidate(pendingSwipeDeletesProvider);
-    ref.invalidate(markedAllOnOpenProvider);
-
-    // Marketplace providers
-    ref.invalidate(isMarketplaceBuyTabProvider);
-    ref.invalidate(buyProductsProvider);
-    ref.invalidate(userListingsProvider);
-    ref.invalidate(isLoadingBuyProductsProvider);
-    ref.invalidate(isLoadingUserListingsProvider);
-    ref.invalidate(selectedCategoryIdProvider);
-    ref.invalidate(sellStatusFilterProvider);
-    ref.invalidate(buyCurrentPageProvider);
-    ref.invalidate(buyHasMoreProvider);
-    ref.invalidate(isLoadingMoreBuyProductsProvider);
-    ref.invalidate(sellCurrentPageProvider);
-    ref.invalidate(sellHasMoreProvider);
-    ref.invalidate(isLoadingMoreUserListingsProvider);
-
-    // Cart providers
-    ref.invalidate(cartProvider);
-    ref.invalidate(updatingItemIdsProvider);
-    ref.invalidate(deletingItemIdsProvider);
-
-    // Checkout providers
-    ref.invalidate(checkoutStateProvider);
+    // Invalidate persistent providers that cache state in memory
+    // These won't automatically reload when tokens change
+    ref.invalidate(cartProvider); // Persistent StateNotifierProvider
+    ref.invalidate(checkoutStateProvider); // Persistent StateNotifierProvider
+    // Note: checkoutUserProfileProvider is auto-dispose, so it will reload naturally
+    // But invalidating it ensures immediate fresh data
     ref.invalidate(checkoutUserProfileProvider);
   }
 
@@ -98,8 +62,9 @@ class LogoutNotifier extends StateNotifier<LogoutState> {
         debugPrint('Error clearing profile cache: $e');
       }
 
-      // Clear all cached user data AFTER signing out
-      _invalidateAllUserData();
+      // Invalidate auth service to ensure state refresh
+      // Other providers will naturally fail/return empty when there's no token
+      _invalidateAuthState();
 
       if (!context.mounted) return;
 

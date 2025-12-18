@@ -49,7 +49,6 @@ class EmergencyContactsFilter extends ConsumerWidget {
         child: Row(
           children: contactTypes.entries.map((entry) {
             final isSelected = selectedType == entry.key;
-            final color = contactColors[entry.key] ?? Colors.red;
             final icon = entry.key == 'all'
                 ? Icons.all_inclusive
                 : contactIcons[entry.key] ?? Icons.phone_rounded;
@@ -58,7 +57,6 @@ class EmergencyContactsFilter extends ConsumerWidget {
               child: FilterPill(
                 label: entry.value,
                 icon: icon,
-                color: color,
                 isSelected: isSelected,
                 onTap: () {
                   ref.read(selectedContactTypeProvider.notifier).state =
@@ -76,7 +74,6 @@ class EmergencyContactsFilter extends ConsumerWidget {
 
 class ContactCard extends StatelessWidget {
   final Contact contact;
-  final Color color;
   final IconData icon;
   final VoidCallback onCall;
   final VoidCallback? onEmail;
@@ -84,7 +81,6 @@ class ContactCard extends StatelessWidget {
   const ContactCard({
     super.key,
     required this.contact,
-    required this.color,
     required this.icon,
     required this.onCall,
     this.onEmail,
@@ -122,11 +118,11 @@ class ContactCard extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(10.rt),
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
+                      color: AppColors.primary.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(14).rt,
-                      border: Border.all(color: color.withValues(alpha: 0.2)),
+                      border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
                     ),
-                    child: Icon(icon, color: color, size: 18.st),
+                    child: Icon(icon, color: AppColors.primary, size: 18.st),
                   ),
                   16.horizontalGap,
                   Expanded(

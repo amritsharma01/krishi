@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -32,7 +34,6 @@ class KnowledgeBaseGrid extends StatelessWidget {
                   child: _KnowledgeCard(
                     title: 'krishi_gyaan'.tr(context),
                     icon: Icons.local_library_rounded,
-                    accentColor: const Color(0xFF6A1B9A),
                     onTap: () => Get.to(ArticlesPage()),
                   ),
                 ),
@@ -41,7 +42,6 @@ class KnowledgeBaseGrid extends StatelessWidget {
                   child: _KnowledgeCard(
                     title: 'news_information'.tr(context),
                     icon: Icons.article_rounded,
-                    accentColor: const Color(0xFFD32F2F),
                     onTap: () => Get.to(const NewsPage()),
                   ),
                 ),
@@ -54,7 +54,6 @@ class KnowledgeBaseGrid extends StatelessWidget {
                   child: _KnowledgeCard(
                     title: 'videos'.tr(context),
                     icon: Icons.video_library_rounded,
-                    accentColor: const Color(0xFFE65100),
                     onTap: () => Get.to(const VideosPage()),
                   ),
                 ),
@@ -63,7 +62,6 @@ class KnowledgeBaseGrid extends StatelessWidget {
                   child: _KnowledgeCard(
                     title: 'crop_calendar'.tr(context),
                     icon: Icons.calendar_month_rounded,
-                    accentColor: const Color(0xFF558B2F),
                     onTap: () => Get.to(const CropCalendarPage()),
                   ),
                 ),
@@ -79,61 +77,74 @@ class KnowledgeBaseGrid extends StatelessWidget {
 class _KnowledgeCard extends StatelessWidget {
   final String title;
   final IconData icon;
-  final Color accentColor;
   final VoidCallback onTap;
 
   const _KnowledgeCard({
     required this.title,
     required this.icon,
-    required this.accentColor,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        height: 40.ht,
-        decoration: BoxDecoration(
-          color: accentColor.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(16).rt,
-          border: Border.all(
-            color: accentColor.withValues(alpha: 0.15),
-            width: 1,
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3).rt,
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(4).rt,
-                decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12).rt,
-                ),
-                child: Icon(icon, color: accentColor, size: 22.st),
-              ),
-              16.horizontalGap,
-              Expanded(
-                child: AppText(
-                  title,
-                  style: Get.bodyLarge.px10.w600.copyWith(
-                    color: Get.disabledColor,
-                    height: 1.3,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              8.horizontalGap,
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: accentColor.withValues(alpha: 0.6),
-                size: 14.st,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10).rt,
+        splashColor: AppColors.primary.withValues(alpha: 0.1),
+        highlightColor: AppColors.primary.withValues(alpha: 0.05),
+        child: Container(
+          height: 40.ht,
+          decoration: BoxDecoration(
+            color: Get.cardColor,
+            borderRadius: BorderRadius.circular(10).rt,
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+                spreadRadius: 0,
               ),
             ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3).rt,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4).rt,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12).rt,
+                  ),
+                  child: Icon(icon, color: AppColors.primary, size: 18.st),
+                ),
+                16.horizontalGap,
+                Expanded(
+                  child: AppText(
+                    title,
+                    style: Get.bodySmall.w700.copyWith(
+                      fontSize: 8.sp,
+                      color: Get.disabledColor,
+                      height: 1.3,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                8.horizontalGap,
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: AppColors.primary.withValues(alpha: 0.5),
+                  size: 12.st,
+                ),
+              ],
+            ),
           ),
         ),
       ),

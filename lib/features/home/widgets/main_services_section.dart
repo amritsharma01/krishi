@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/padding.dart';
@@ -28,7 +29,6 @@ class MainServicesSection extends StatelessWidget {
           titleKey: 'soil_testing',
           descriptionKey: 'test_soil_quality',
           icon: Icons.science_rounded,
-          accentColor: const Color(0xFF5E35B1),
           onTap: () => Get.to(const SoilTestingPage()),
         ),
         5.verticalGap,
@@ -36,7 +36,6 @@ class MainServicesSection extends StatelessWidget {
           titleKey: 'notices',
           descriptionKey: 'important_announcements',
           icon: Icons.notifications_active_rounded,
-          accentColor: const Color(0xFFFF8F00),
           onTap: () => Get.to(const NoticesPage()),
         ),
         5.verticalGap,
@@ -44,7 +43,6 @@ class MainServicesSection extends StatelessWidget {
           titleKey: 'programs',
           descriptionKey: 'agricultural_development_programs',
           icon: Icons.agriculture_rounded,
-          accentColor: const Color(0xFF2E7D32),
           onTap: () => Get.to(const ProgramsPage()),
         ),
       ],
@@ -56,78 +54,81 @@ class _MainServiceCard extends StatelessWidget {
   final String titleKey;
   final String descriptionKey;
   final IconData icon;
-  final Color accentColor;
   final VoidCallback onTap;
 
   const _MainServiceCard({
     required this.titleKey,
     required this.descriptionKey,
     required this.icon,
-    required this.accentColor,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8).rt,
-        decoration: BoxDecoration(
-          color: Get.cardColor,
-          borderRadius: BorderRadius.circular(20).rt,
-          border: Border.all(color: accentColor.withValues(alpha: 0.15)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 18,
-              offset: const Offset(0, 10),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10).rt,
+        splashColor: AppColors.primary.withValues(alpha: 0.1),
+        highlightColor: AppColors.primary.withValues(alpha: 0.05),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8).rt,
+          decoration: BoxDecoration(
+            color: Get.cardColor,
+            borderRadius: BorderRadius.circular(10).rt,
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              width: 1,
             ),
-            BoxShadow(
-              color: accentColor.withValues(alpha: 0.08),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10).rt,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: accentColor.withValues(alpha: 0.12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+                spreadRadius: 0,
               ),
-              child: Icon(icon, color: accentColor, size: 24.st),
-            ),
-            16.horizontalGap,
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    titleKey.tr(context),
-                    style: Get.bodyLarge.px12.w700.copyWith(
-                      color: Get.disabledColor,
-                    ),
-                  ),
-                  AppText(
-                    descriptionKey.tr(context),
-                    style: Get.bodySmall.px10.w500.copyWith(
-                      color: Get.disabledColor.withValues(alpha: 0.65),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10).rt,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                ),
+                child: Icon(icon, color: AppColors.primary, size: 20.st),
               ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: accentColor,
-              size: 16.st,
-            ),
-          ],
+              16.horizontalGap,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      titleKey.tr(context),
+                      style: Get.bodyLarge.px12.w700.copyWith(
+                        color: Get.disabledColor,
+                      ),
+                    ),
+                    AppText(
+                      descriptionKey.tr(context),
+                      style: Get.bodySmall.px10.w500.copyWith(
+                        color: Get.disabledColor.withValues(alpha: 0.65),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: AppColors.primary.withValues(alpha: 0.5),
+                size: 16.st,
+              ),
+            ],
+          ),
         ),
       ),
     );

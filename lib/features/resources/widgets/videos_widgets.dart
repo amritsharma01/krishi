@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:krishi/core/configs/app_colors.dart';
 import 'package:krishi/core/extensions/border_radius.dart';
 import 'package:krishi/core/extensions/int.dart';
 import 'package:krishi/core/extensions/text_style_extensions.dart';
@@ -48,7 +49,6 @@ class VideosCategoryFilter extends ConsumerWidget {
         child: Row(
           children: categories.entries.map((entry) {
             final isSelected = selectedCategory == entry.key;
-            final color = categoryColors[entry.key] ?? Colors.red;
             final icon = entry.key == 'all'
                 ? Icons.all_inclusive
                 : categoryIcons[entry.key] ?? Icons.video_library_rounded;
@@ -57,7 +57,6 @@ class VideosCategoryFilter extends ConsumerWidget {
               child: FilterPill(
                 label: entry.value,
                 icon: icon,
-                color: color,
                 isSelected: isSelected,
                 onTap: () {
                   ref.read(selectedVideoCategoryProvider.notifier).state =
@@ -76,14 +75,12 @@ class VideosCategoryFilter extends ConsumerWidget {
 class VideoCard extends StatelessWidget {
   final Video video;
   final String thumbnailUrl;
-  final Color categoryColor;
   final VoidCallback onTap;
 
   const VideoCard({
     super.key,
     required this.video,
     required this.thumbnailUrl,
-    required this.categoryColor,
     required this.onTap,
   });
 
@@ -134,7 +131,7 @@ class VideoCard extends StatelessWidget {
                               color: Get.cardColor.withValues(alpha: 0.3),
                               child: Center(
                                 child: CircularProgressIndicator(
-                                  color: categoryColor,
+                                  color: AppColors.primary,
                                   strokeWidth: 2,
                                 ),
                               ),
@@ -207,13 +204,13 @@ class VideoCard extends StatelessWidget {
                         vertical: 5.ht,
                       ),
                       decoration: BoxDecoration(
-                        color: categoryColor.withValues(alpha: 0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8).rt,
                       ),
                       child: AppText(
                         video.categoryDisplay,
                         style: Get.bodySmall.px12.w600.copyWith(
-                          color: categoryColor,
+                          color: AppColors.primary,
                         ),
                       ),
                     ),
