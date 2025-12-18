@@ -178,20 +178,24 @@ class _SoilTestingPageState extends ConsumerState<SoilTestingPage> {
   }
 
   Future<void> _launchPhone(String phoneNumber) async {
-    final uri = Uri.parse('tel:$phoneNumber');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      Get.snackbar('failed_to_open_form'.tr(context));
+    try {
+      final uri = Uri.parse('tel:$phoneNumber');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar('failed_to_open_form'.tr(context));
+      }
     }
   }
 
   Future<void> _launchEmail(String email) async {
-    final uri = Uri.parse('mailto:$email');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      Get.snackbar('failed_to_open_form'.tr(context));
+    try {
+      final uri = Uri.parse('mailto:$email');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar('failed_to_open_form'.tr(context));
+      }
     }
   }
 }

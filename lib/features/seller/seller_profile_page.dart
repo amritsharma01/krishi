@@ -64,10 +64,10 @@ class _SellerProfilePageState extends ConsumerState<SellerProfilePage> {
   }
 
   Future<void> _makePhoneCall(String phoneNumber) async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    } else {
+    try {
+      final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+      await launchUrl(phoneUri, mode: LaunchMode.externalApplication);
+    } catch (e) {
       if (mounted) {
         Get.snackbar('call_failed'.tr(context), color: Colors.red);
       }

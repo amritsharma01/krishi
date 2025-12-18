@@ -167,11 +167,13 @@ class _ServiceProvidersPageState extends ConsumerState<ServiceProvidersPage> {
   }
 
   Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
-    final uri = Uri.parse('tel:$phoneNumber');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      Get.snackbar('could_not_make_call'.tr(context));
+    try {
+      final uri = Uri.parse('tel:$phoneNumber');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar('could_not_make_call'.tr(context));
+      }
     }
   }
 
