@@ -31,11 +31,14 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   bool _hasPrefilled = false;
 
   void _showFieldValidationError(String message) {
-    Get.snackbar(message, color: Colors.red);
+    if (mounted) {
+      Get.snackbar(message, color: Colors.red);
+    }
   }
 
   bool _validateAddressAndPhone() {
-    final context = Get.context;
+    if (!mounted) return false;
+    
     final address = _addressController.text.trim();
     if (address.isEmpty) {
       _showFieldValidationError(
@@ -130,20 +133,25 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             : null,
       );
 
+      if (!mounted) return;
+
       // Clear form
       _nameController.clear();
       _addressController.clear();
       _phoneController.clear();
       _messageController.clear();
 
-      // Show success message
-      Get.snackbar('checkout_success'.tr(Get.context), color: Colors.green);
-
-      // Return to cart page (which will pop back to previous page)
-      Get.pop();
-      Get.pop();
+      // Show success message and navigate back
+      if (mounted) {
+        Get.snackbar('checkout_success'.tr(context), color: Colors.green);
+        
+        // Pop checkout page and return success status
+        Navigator.of(context).pop(true);
+      }
     } catch (e) {
-      Get.snackbar('checkout_error'.tr(Get.context), color: Colors.red);
+      if (mounted) {
+        Get.snackbar('checkout_error'.tr(context), color: Colors.red);
+      }
     }
   }
 

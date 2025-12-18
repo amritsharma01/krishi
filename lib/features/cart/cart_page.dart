@@ -71,12 +71,19 @@ class _CartPageState extends ConsumerState<CartPage> {
     }
   }
 
-  void _navigateToCheckout(Cart cart) {
+  void _navigateToCheckout(Cart cart) async {
     if (cart.items.isEmpty) return;
-    Get.to(CheckoutPage(cart: cart)).then((_) {
-      // Reload cart after returning from checkout
+    final result = await Get.to(CheckoutPage(cart: cart));
+    
+    // Reload cart after returning from checkout
+    if (mounted) {
       ref.read(cartProvider.notifier).loadCart();
-    });
+      
+      // If checkout was successful, pop the cart page too
+      if (result == true && mounted) {
+        Navigator.of(context).pop();
+      }
+    }
   }
 
   @override

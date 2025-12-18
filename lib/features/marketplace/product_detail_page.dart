@@ -126,7 +126,12 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       if (mounted && cart != null) {
         ref.read(isCheckingOutProvider(widget.product.id).notifier).state =
             false;
-        Get.to(CheckoutPage(cart: cart));
+        final result = await Get.to(CheckoutPage(cart: cart));
+        
+        // Reload cart after checkout
+        if (mounted && result == true) {
+          ref.read(cartProvider.notifier).loadCart();
+        }
       }
     } catch (e) {
       if (mounted) {
