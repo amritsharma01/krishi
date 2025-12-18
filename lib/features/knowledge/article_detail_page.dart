@@ -110,9 +110,9 @@ class ArticleDetailPage extends ConsumerWidget {
                       styleSheet: MarkdownStyleSheet(
                         p: Get.bodyMedium.px12.w400.copyWith(
                           color: Get.bodyMedium.color ??
-                              (Get.isDark ? Colors.white : Colors.black87),
-                          height: 1.7,
-                        ),
+                            (Get.isDark ? Colors.white : Colors.black87),
+                        height: 1.7,
+                      ),
                         h1: Get.bodyLarge.px18.w700.copyWith(
                           color: Get.disabledColor,
                         ),

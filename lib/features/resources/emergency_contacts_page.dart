@@ -161,24 +161,29 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
   }
 
   Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
-    final uri = Uri.parse('tel:$phoneNumber');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      Get.snackbar('could_not_make_call'.tr(context));
+    try {
+      final uri = Uri.parse('tel:$phoneNumber');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar('could_not_make_call'.tr(context));
+      }
     }
   }
 
   Future<void> _sendEmail(BuildContext context, String email) async {
-    if (email.isEmpty) {
+    final trimmedEmail = email.trim();
+    if (trimmedEmail.isEmpty) {
       Get.snackbar('no_email_available'.tr(context));
       return;
     }
-    final uri = Uri.parse('mailto:$email');
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else {
-      Get.snackbar('could_not_send_email'.tr(context));
+    try {
+      final uri = Uri.parse('mailto:$trimmedEmail');
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (mounted) {
+        Get.snackbar('could_not_send_email'.tr(context));
+      }
     }
   }
 
@@ -259,7 +264,7 @@ class _EmergencyContactsPageState extends ConsumerState<EmergencyContactsPage> {
             contact: contact,
             icon: icon,
             onCall: () => _makePhoneCall(context, contact.phoneNumber),
-            onEmail: contact.email.isNotEmpty
+            onEmail: contact.email.trim().isNotEmpty
                 ? () => _sendEmail(context, contact.email)
                 : null,
           );

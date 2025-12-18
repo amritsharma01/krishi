@@ -26,7 +26,7 @@ class OrderStatusCard extends StatelessWidget {
         _getStatusColors(status.toLowerCase());
 
     return Container(
-      padding: const EdgeInsets.all(16).rt,
+      padding: const EdgeInsets.all(8).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
         borderRadius: BorderRadius.circular(16).rt,

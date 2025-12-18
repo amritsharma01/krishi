@@ -72,49 +72,49 @@ class _DirectoryCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+      onTap: onTap,
         borderRadius: BorderRadius.circular(14).rt,
         splashColor: AppColors.primary.withValues(alpha: 0.1),
         highlightColor: AppColors.primary.withValues(alpha: 0.05),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5).rt,
-          decoration: BoxDecoration(
-            color: Get.cardColor,
-            borderRadius: BorderRadius.circular(14).rt,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 5).rt,
+        decoration: BoxDecoration(
+          color: Get.cardColor,
+          borderRadius: BorderRadius.circular(14).rt,
             border: Border.all(
               color: AppColors.primary.withValues(alpha: 0.1),
               width: 1,
             ),
-            boxShadow: [
-              BoxShadow(
+          boxShadow: [
+            BoxShadow(
                 color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
+              blurRadius: 8,
                 offset: const Offset(0, 3),
                 spreadRadius: 0,
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10).rt,
-                decoration: BoxDecoration(
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10).rt,
+              decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12).rt,
-                ),
+                borderRadius: BorderRadius.circular(12).rt,
+              ),
                 child: Icon(icon, color: AppColors.primary, size: 28.st),
-              ),
-              3.verticalGap,
-              AppText(
-                title.tr(context),
-                style: Get.bodySmall.px10.w600.copyWith(color: Get.disabledColor),
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
+            ),
+            3.verticalGap,
+            AppText(
+              title.tr(context),
+              style: Get.bodySmall.px10.w600.copyWith(color: Get.disabledColor),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
           ),
         ),
       ),

@@ -7,16 +7,13 @@ import 'package:krishi/models/order.dart';
 class SalesOrderView extends StatelessWidget {
   final OrderItemSeller orderItem;
 
-  const SalesOrderView({
-    super.key,
-    required this.orderItem,
-  });
+  const SalesOrderView({super.key, required this.orderItem});
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16).rt,
+      padding: const EdgeInsets.all(6).rt,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -24,11 +21,11 @@ class SalesOrderView extends StatelessWidget {
             status: orderItem.orderStatus,
             displayStatus: orderItem.statusDisplay,
           ),
-          16.verticalGap,
+          6.verticalGap,
           SalesProductCard(orderItem: orderItem),
-          16.verticalGap,
+          6.verticalGap,
           SalesOrderInfoCard(orderItem: orderItem),
-          16.verticalGap,
+          6.verticalGap,
           const ContactAdminInfo(),
         ],
       ),

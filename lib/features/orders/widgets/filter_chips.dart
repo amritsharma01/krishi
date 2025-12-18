@@ -37,18 +37,20 @@ class OrderFilterChips extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).rt,
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4).rt,
       child: Row(
         children: filters
-            .map((filter) => Padding(
-                  padding: EdgeInsets.only(right: 8.rt),
-                  child: _FilterPill(
-                    filter: filter,
-                    isSelected: state.selectedFilter == filter['key'],
-                    count: _getFilterCount(filter['key']!),
-                    onTap: () => onFilterSelected(filter['key']!),
-                  ),
-                ))
+            .map(
+              (filter) => Padding(
+                padding: EdgeInsets.only(right: 4.rt),
+                child: _FilterPill(
+                  filter: filter,
+                  isSelected: state.selectedFilter == filter['key'],
+                  count: _getFilterCount(filter['key']!),
+                  onTap: () => onFilterSelected(filter['key']!),
+                ),
+              ),
+            )
             .toList(),
       ),
     );

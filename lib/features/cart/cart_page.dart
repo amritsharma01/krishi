@@ -15,7 +15,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CartPage extends ConsumerStatefulWidget {
-  const CartPage({super.key});
+  final bool showAppBar;
+
+  const CartPage({super.key, this.showAppBar = false});
 
   @override
   ConsumerState<CartPage> createState() => _CartPageState();
@@ -83,19 +85,23 @@ class _CartPageState extends ConsumerState<CartPage> {
 
     return Scaffold(
       backgroundColor: Get.scaffoldBackgroundColor,
-      // appBar: AppBar(
-      //   automaticallyImplyLeading: true,
-      //   backgroundColor: Get.scaffoldBackgroundColor,
-      //   elevation: 0,
-      //   title: AppText(
-      //     'my_cart'.tr(context),
-      //     style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
-      //   ),
-      //   leading: IconButton(
-      //     icon: Icon(Icons.arrow_back, color: Get.disabledColor),
-      //     onPressed: () => Get.pop(),
-      //   ),
-      // ),
+      appBar: widget.showAppBar
+          ? AppBar(
+              automaticallyImplyLeading: true,
+              backgroundColor: Get.scaffoldBackgroundColor,
+              elevation: 0,
+              title: AppText(
+                'my_cart'.tr(context),
+                style: Get.bodyLarge.px18.w700.copyWith(
+                  color: Get.disabledColor,
+                ),
+              ),
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back, color: Get.disabledColor),
+                onPressed: () => Get.pop(),
+              ),
+            )
+          : null,
       body: cartAsync.when(
         data: (cart) => _buildBody(cart),
         loading: () => Center(

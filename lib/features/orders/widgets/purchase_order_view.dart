@@ -27,7 +27,7 @@ class PurchaseOrderView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SingleChildScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16).rt,
+      padding: const EdgeInsets.all(6).rt,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -35,11 +35,11 @@ class PurchaseOrderView extends ConsumerWidget {
             status: order.status,
             displayStatus: order.statusDisplay ?? _capitalize(order.status),
           ),
-          16.verticalGap,
+          6.verticalGap,
           OrderProductCard(order: order),
-          16.verticalGap,
+          6.verticalGap,
           OrderInfoCard(order: order),
-          16.verticalGap,
+          6.verticalGap,
           if (isSeller) ...[
             BuyerInfoCard(
               buyerKrId: order.buyerKrId,
@@ -49,7 +49,7 @@ class PurchaseOrderView extends ConsumerWidget {
                 'buyer_public_listings',
               ),
             ),
-            16.verticalGap,
+            6.verticalGap,
           ],
           if (!isSeller && order.status.toLowerCase() == 'pending')
             DeleteOrderButton(
@@ -57,7 +57,7 @@ class PurchaseOrderView extends ConsumerWidget {
               onPressed: onDeleteOrder,
             ),
           if (!isSeller && order.status.toLowerCase() == 'pending')
-            16.verticalGap,
+            6.verticalGap,
           const ContactAdminInfo(),
         ],
       ),

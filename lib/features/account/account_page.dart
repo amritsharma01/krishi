@@ -116,7 +116,7 @@ class AccountPage extends ConsumerWidget {
                     ),
                     onTap: () => Get.to(const AboutPage()),
                   ),
-                  6.verticalGap,
+                  12.verticalGap,
                   _buildLogoutButton(context, ref),
                   16.verticalGap,
                 ],

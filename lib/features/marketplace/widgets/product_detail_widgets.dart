@@ -23,7 +23,7 @@ class ProductHeroSection extends StatelessWidget {
     final imageUrl = product.image != null ? Get.imageUrl(product.image) : '';
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.rt),
+      padding: EdgeInsets.symmetric(horizontal: 6.rt),
       child: Hero(
         tag: 'product-image-${product.id}',
         child: Container(
@@ -126,7 +126,7 @@ class ProductSectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 16).rt,
+      margin: const EdgeInsets.symmetric(horizontal: 6).rt,
       padding: const EdgeInsets.all(16).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
@@ -551,6 +551,7 @@ class CommentCard extends StatelessWidget {
                 ),
                 4.verticalGap,
                 AppText(
+                  maxLines: 3,
                   comment.text,
                   style: Get.bodySmall.px12.copyWith(
                     color: Get.disabledColor.withValues(alpha: 0.8),

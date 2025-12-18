@@ -254,16 +254,27 @@ class _VideosPageState extends ConsumerState<VideosPage> {
 
   String _getThumbnailUrl(Video video) {
     if (video.thumbnail != null && video.thumbnail!.isNotEmpty) {
-      return video.thumbnail!;
+      return Get.imageUrl(video.thumbnail!);
     }
 
-    // Extract YouTube video ID and generate thumbnail
-    final videoId = video.youtubeVideoId;
+    // Extract YouTube video ID from URL and generate thumbnail
+    final videoId = _extractYoutubeVideoId(video.youtubeUrl);
     if (videoId.isNotEmpty) {
       return 'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
     }
 
     return '';
+  }
+
+  String _extractYoutubeVideoId(String url) {
+    // Handle different YouTube URL formats
+    RegExp regExp = RegExp(
+      r'(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})',
+      caseSensitive: false,
+    );
+    
+    final match = regExp.firstMatch(url);
+    return match?.group(1) ?? '';
   }
 
   @override

@@ -69,11 +69,11 @@ class OrdersListContent extends StatelessWidget {
     return ListView.separated(
       controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(16).rt,
+      padding: const EdgeInsets.all(6).rt,
       itemBuilder: (_, index) {
         if (index >= state.filteredOrders.length) {
           return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12).rt,
+            padding: const EdgeInsets.symmetric(vertical: 6).rt,
             child: Center(
               child: CircularProgressIndicator.adaptive(
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
@@ -93,7 +93,7 @@ class OrdersListContent extends StatelessWidget {
                 onTap: () => onNavigateToDetail(item.id, isItemId: false),
               );
       },
-      separatorBuilder: (_, __) => 12.verticalGap,
+      separatorBuilder: (_, __) => 4.verticalGap,
       itemCount: state.filteredOrders.length + (state.isLoadingMore ? 1 : 0),
     );
   }

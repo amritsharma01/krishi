@@ -52,7 +52,7 @@ class UserManualDetailHeader extends StatelessWidget {
                   border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.2),
                     width: 1,
-                  ),
+                    ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

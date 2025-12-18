@@ -185,10 +185,10 @@ class ApiManager {
                     // Auto-dispose providers will reload naturally, but invalidating ensures immediate cleanup
                     ref.invalidate(checkoutUserProfileProvider);
                     
-                    if (kDebugMode) {
-                      print(
+                  if (kDebugMode) {
+                    print(
                         '✅ Auth state updated - user will be redirected to login',
-                      );
+                    );
                     }
                   } catch (authError) {
                     if (kDebugMode) {

@@ -310,7 +310,7 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
       actions: [
         IconButton(
           icon: Icon(Icons.shopping_cart_outlined, color: Get.disabledColor),
-          onPressed: () => Get.to(const CartPage()),
+          onPressed: () => Get.to(const CartPage(showAppBar: true)),
         ),
       ],
     );

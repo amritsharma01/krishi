@@ -13,11 +13,7 @@ class OrderCard extends StatelessWidget {
   final Order order;
   final VoidCallback onTap;
 
-  const OrderCard({
-    super.key,
-    required this.order,
-    required this.onTap,
-  });
+  const OrderCard({super.key, required this.order, required this.onTap});
 
   static final _dateFormat = DateFormat('MMM d, yyyy • h:mm a');
 
@@ -27,8 +23,8 @@ class OrderCard extends StatelessWidget {
     final isCompleted = status == 'completed';
     final displayStatus =
         (order.statusDisplay != null && order.statusDisplay!.trim().isNotEmpty)
-            ? order.statusDisplay!
-            : _capitalize(order.status);
+        ? order.statusDisplay!
+        : _capitalize(order.status);
     final (Color bgColor, Color textColor, Color borderColor) =
         _getStatusColors(status);
 
@@ -173,7 +169,7 @@ class SalesOrderCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16).rt,
       child: Container(
-        padding: const EdgeInsets.all(16).rt,
+        padding: const EdgeInsets.all(8).rt,
         decoration: BoxDecoration(
           color: Get.cardColor,
           borderRadius: BorderRadius.circular(20).rt,
@@ -223,7 +219,8 @@ class SalesOrderCard extends StatelessWidget {
                   label: '${'order_id'.tr(context)} #${orderItem.orderId}',
                 ),
                 _InfoChip(
-                  label: 'Rs. ${(orderItem.basePriceAsDouble * orderItem.quantity).toStringAsFixed(2)}',
+                  label:
+                      'Rs. ${(orderItem.basePriceAsDouble * orderItem.quantity).toStringAsFixed(2)}',
                 ),
                 _InfoChip(
                   icon: Icons.production_quantity_limits,

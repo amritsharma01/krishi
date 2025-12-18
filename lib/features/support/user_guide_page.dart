@@ -195,11 +195,11 @@ class _UserGuidePageState extends ConsumerState<UserGuidePage> {
                       title: 'no_manuals_available'.tr(context),
                       subtitle: 'check_back_later'.tr(context),
                     )
-                       : ListView.builder(
-                          controller: _scrollController,
+                  : ListView.builder(
+                      controller: _scrollController,
                           padding: const EdgeInsets.all(6),
-                          itemCount: manuals.length + (isLoadingMore ? 1 : 0),
-                          itemBuilder: (context, index) {
+                      itemCount: manuals.length + (isLoadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
                         if (index == manuals.length) {
                           return Padding(
                             padding: const EdgeInsets.symmetric(vertical: 16),

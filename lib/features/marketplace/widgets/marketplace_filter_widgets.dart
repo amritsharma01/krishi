@@ -122,29 +122,29 @@ class _StatusFilterChip extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+      onTap: onTap,
         borderRadius: BorderRadius.circular(24).rt,
         splashColor: AppColors.primary.withValues(alpha: 0.1),
         highlightColor: AppColors.primary.withValues(alpha: 0.05),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
           padding: EdgeInsets.symmetric(horizontal: 8.rt, vertical: 6.rt),
-          decoration: BoxDecoration(
-            gradient: isSelected
-                ? LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primary.withValues(alpha: 0.85),
-                    ],
-                  )
-                : null,
-            color: isSelected ? null : Get.disabledColor.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(24).rt,
-            border: Border.all(
-              color: isSelected
-                  ? Colors.transparent
-                  : Get.disabledColor.withValues(alpha: 0.2),
-            ),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withValues(alpha: 0.85),
+                  ],
+                )
+              : null,
+          color: isSelected ? null : Get.disabledColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(24).rt,
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : Get.disabledColor.withValues(alpha: 0.2),
+          ),
             boxShadow: [
               if (isSelected)
                 BoxShadow(
@@ -153,12 +153,12 @@ class _StatusFilterChip extends StatelessWidget {
                   offset: const Offset(0, 4),
                 ),
             ],
-          ),
-          child: AppText(
-            label,
-            style: Get.bodySmall.w600.copyWith(
-              fontSize: 12.sp,
-              color: isSelected ? Colors.white : Get.disabledColor,
+        ),
+        child: AppText(
+          label,
+          style: Get.bodySmall.w600.copyWith(
+            fontSize: 12.sp,
+            color: isSelected ? Colors.white : Get.disabledColor,
             ),
           ),
         ),

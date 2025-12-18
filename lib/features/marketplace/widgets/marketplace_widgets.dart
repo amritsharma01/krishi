@@ -395,57 +395,57 @@ class CategoryPill extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+      onTap: onTap,
         borderRadius: BorderRadius.circular(24).rt,
         splashColor: AppColors.primary.withValues(alpha: 0.1),
         highlightColor: AppColors.primary.withValues(alpha: 0.05),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 180),
-          padding: EdgeInsets.symmetric(horizontal: 8.rt, vertical: 6.rt),
-          decoration: BoxDecoration(
-            gradient: isSelected
-                ? LinearGradient(
-                    colors: [
-                      AppColors.primary,
-                      AppColors.primary.withValues(alpha: 0.85),
-                    ],
-                  )
-                : null,
-            color: isSelected ? null : Get.disabledColor.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(24).rt,
-            border: Border.all(
-              color: isSelected
-                  ? Colors.transparent
-                  : Get.disabledColor.withValues(alpha: 0.2),
-            ),
-            boxShadow: [
-              if (isSelected)
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-            ],
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: EdgeInsets.symmetric(horizontal: 8.rt, vertical: 6.rt),
+        decoration: BoxDecoration(
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [
+                    AppColors.primary,
+                    AppColors.primary.withValues(alpha: 0.85),
+                  ],
+                )
+              : null,
+          color: isSelected ? null : Get.disabledColor.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(24).rt,
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : Get.disabledColor.withValues(alpha: 0.2),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: 14.st,
-                  color: isSelected ? Colors.white : Get.disabledColor,
-                ),
-                6.horizontalGap,
-              ],
-              AppText(
-                label,
-                style: Get.bodySmall.w600.copyWith(
-                  fontSize: 12.sp,
-                  color: isSelected ? Colors.white : Get.disabledColor,
-                ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 14.st,
+                  color: isSelected ? Colors.white : Get.disabledColor,
+              ),
+              6.horizontalGap,
             ],
+            AppText(
+              label,
+              style: Get.bodySmall.w600.copyWith(
+                fontSize: 12.sp,
+                color: isSelected ? Colors.white : Get.disabledColor,
+              ),
+            ),
+          ],
           ),
         ),
       ),

@@ -75,67 +75,67 @@ class SupportOption extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+      onTap: onTap,
         borderRadius: BorderRadius.circular(16).rt,
         splashColor: AppColors.primary.withValues(alpha: 0.1),
         highlightColor: AppColors.primary.withValues(alpha: 0.05),
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Get.cardColor,
-            borderRadius: BorderRadius.circular(16).rt,
-            border: Border.all(
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Get.cardColor,
+          borderRadius: BorderRadius.circular(16).rt,
+          border: Border.all(
               color: AppColors.primary.withValues(alpha: 0.1),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
+            width: 1,
           ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12).rt,
+                borderRadius: BorderRadius.circular(12).rt,
                   border: Border.all(
                     color: AppColors.primary.withValues(alpha: 0.2),
                     width: 1,
                   ),
-                ),
+              ),
                 child: Icon(icon, color: AppColors.primary, size: 24.st),
-              ),
-              16.horizontalGap,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      title.tr(context),
-                      style: Get.bodyMedium.px12.w700.copyWith(
-                        color: Get.disabledColor,
-                      ),
+            ),
+            16.horizontalGap,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    title.tr(context),
+                    style: Get.bodyMedium.px12.w700.copyWith(
+                      color: Get.disabledColor,
                     ),
-                    AppText(
-                      subtitle.tr(context),
-                      style: Get.bodySmall.px10.w500.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.6),
-                      ),
+                  ),
+                  AppText(
+                    subtitle.tr(context),
+                    style: Get.bodySmall.px10.w500.copyWith(
+                      color: Get.disabledColor.withValues(alpha: 0.6),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
+            ),
+            Icon(
+              Icons.arrow_forward_ios_rounded,
                 color: AppColors.primary.withValues(alpha: 0.7),
-                size: 18.st,
-              ),
-            ],
+              size: 18.st,
+            ),
+          ],
           ),
         ),
       ),

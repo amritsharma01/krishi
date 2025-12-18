@@ -26,22 +26,22 @@ class FilterPill extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+      onTap: onTap,
         borderRadius: BorderRadius.circular(16).rt,
         splashColor: AppColors.primary.withValues(alpha: 0.1),
         highlightColor: AppColors.primary.withValues(alpha: 0.05),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(horizontal: 12.wt, vertical: 6.ht),
-          decoration: BoxDecoration(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(horizontal: 12.wt, vertical: 6.ht),
+        decoration: BoxDecoration(
             color: isSelected ? AppColors.primary : Get.cardColor,
-            borderRadius: BorderRadius.circular(16).rt,
-            border: Border.all(
-              color: isSelected
+          borderRadius: BorderRadius.circular(16).rt,
+          border: Border.all(
+            color: isSelected
                   ? AppColors.primary
                   : AppColors.primary.withValues(alpha: 0.2),
-              width: 1,
-            ),
+            width: 1,
+          ),
             boxShadow: [
               if (isSelected)
                 BoxShadow(
@@ -50,24 +50,24 @@ class FilterPill extends StatelessWidget {
                   offset: const Offset(0, 3),
                 ),
             ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
               Icon(
                 icon,
                 size: 14.st,
                 color: isSelected ? Colors.white : AppColors.primary,
               ),
-              6.horizontalGap,
-              AppText(
-                label,
-                style: Get.bodySmall.px12.w600.copyWith(
+            6.horizontalGap,
+            AppText(
+              label,
+              style: Get.bodySmall.px12.w600.copyWith(
                   color: isSelected ? Colors.white : AppColors.primary,
                 ),
               ),
             ],
-          ),
+            ),
         ),
       ),
     );

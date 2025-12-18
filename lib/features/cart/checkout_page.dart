@@ -197,7 +197,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16).rt,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5).rt,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -233,10 +233,10 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
   Widget _buildOrderSummary() {
     return Container(
-      padding: const EdgeInsets.all(8).rt,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5).rt,
       decoration: BoxDecoration(
         color: Get.cardColor,
-        borderRadius: BorderRadius.circular(20).rt,
+        borderRadius: BorderRadius.circular(15).rt,
         border: Border.all(
           color: Get.disabledColor.withValues(alpha: 0.08),
           width: 1,
@@ -257,7 +257,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             'order_summary'.tr(context),
             style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
           ),
-          16.verticalGap,
+          10.verticalGap,
           ...widget.cart.items.map((item) => _buildOrderItem(item)),
         ],
       ),
@@ -270,7 +270,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
 
     return Container(
       margin: EdgeInsets.only(bottom: 6.rt),
-      padding: const EdgeInsets.all(12).rt,
+      padding: const EdgeInsets.all(8).rt,
       decoration: BoxDecoration(
         color: Get.scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(12).rt,
@@ -363,14 +363,14 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       children: [
         AppText(
           'delivery_information'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
-        ),
-        16.verticalGap,
-        AppText(
-          'full_name'.tr(context),
-          style: Get.bodyMedium.px15.w600.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
         ),
         8.verticalGap,
+        AppText(
+          'full_name'.tr(context),
+          style: Get.bodyMedium.px14.w600.copyWith(color: Get.disabledColor),
+        ),
+        6.verticalGap,
         AppTextFormField(
           controller: _nameController,
           hintText: 'enter_full_name'.tr(context),
@@ -382,12 +382,12 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
             return null;
           },
         ),
-        16.verticalGap,
+        6.verticalGap,
         AppText(
           'address'.tr(context),
-          style: Get.bodyMedium.px15.w600.copyWith(color: Get.disabledColor),
+          style: Get.bodyMedium.px14.w600.copyWith(color: Get.disabledColor),
         ),
-        8.verticalGap,
+        6.verticalGap,
         AppTextFormField(
           controller: _addressController,
           hintText: 'enter_address'.tr(context),
@@ -410,14 +410,14 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       children: [
         AppText(
           'contact_information'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
-        ),
-        16.verticalGap,
-        AppText(
-          'phone_number'.tr(context),
-          style: Get.bodyMedium.px15.w600.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
         ),
         8.verticalGap,
+        AppText(
+          'phone_number'.tr(context),
+          style: Get.bodyMedium.px14.w600.copyWith(color: Get.disabledColor),
+        ),
+        6.verticalGap,
         AppTextFormField(
           controller: _phoneController,
           hintText: 'enter_phone_number'.tr(context),
@@ -439,16 +439,16 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       children: [
         AppText(
           'message_to_seller'.tr(context),
-          style: Get.bodyLarge.px18.w700.copyWith(color: Get.disabledColor),
+          style: Get.bodyLarge.px16.w700.copyWith(color: Get.disabledColor),
         ),
-        8.verticalGap,
+        2.verticalGap,
         AppText(
           'message_to_seller_hint'.tr(context),
           style: Get.bodySmall.px12.copyWith(
             color: Get.disabledColor.withValues(alpha: 0.6),
           ),
         ),
-        12.verticalGap,
+        8.verticalGap,
         AppTextFormField(
           controller: _messageController,
           hintText: 'enter_message_to_seller'.tr(context),
