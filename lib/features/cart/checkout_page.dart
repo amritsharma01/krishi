@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:krishi/core/configs/app_colors.dart';
@@ -150,7 +151,23 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       }
     } catch (e) {
       if (mounted) {
-        Get.snackbar('checkout_error'.tr(context), color: Colors.red);
+        // Extract backend error message
+        String errorMessage = 'checkout_error'.tr(context);
+        
+        if (e is DioException) {
+          final errorData = e.response?.data;
+          if (errorData is Map<String, dynamic>) {
+            // Backend returns error message in 'error' key
+            final backendMessage = errorData['error'];
+            if (backendMessage != null) {
+              errorMessage = backendMessage.toString();
+            }
+          } else if (errorData is String) {
+            errorMessage = errorData;
+          }
+        }
+        
+        Get.snackbar(errorMessage, color: Colors.red);
       }
     }
   }

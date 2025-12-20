@@ -109,7 +109,24 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         ref.read(isAddingToCartProvider(widget.product.id).notifier).state =
             false;
       }
-      Get.snackbar('error_adding_to_cart'.tr(context), color: Colors.red);
+      
+      // Extract backend error message
+      String errorMessage = 'error_adding_to_cart'.tr(context);
+      
+      if (e is DioException) {
+        final errorData = e.response?.data;
+        if (errorData is Map<String, dynamic>) {
+          // Backend returns error message in 'error' key
+          final backendMessage = errorData['error'];
+          if (backendMessage != null) {
+            errorMessage = backendMessage.toString();
+          }
+        } else if (errorData is String) {
+          errorMessage = errorData;
+        }
+      }
+      
+      Get.snackbar(errorMessage, color: Colors.red);
     }
   }
 
@@ -129,8 +146,9 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         final result = await Get.to(CheckoutPage(cart: cart));
         
         // Reload cart after checkout
+        // AWAIT to prevent race condition and potential black screen
         if (mounted && result == true) {
-          ref.read(cartProvider.notifier).loadCart();
+          await ref.read(cartProvider.notifier).loadCart();
         }
       }
     } catch (e) {
@@ -138,7 +156,24 @@ class _ProductDetailPageState extends ConsumerState<ProductDetailPage>
         ref.read(isCheckingOutProvider(widget.product.id).notifier).state =
             false;
       }
-      Get.snackbar('error_adding_to_cart'.tr(context), color: Colors.red);
+      
+      // Extract backend error message
+      String errorMessage = 'error_adding_to_cart'.tr(context);
+      
+      if (e is DioException) {
+        final errorData = e.response?.data;
+        if (errorData is Map<String, dynamic>) {
+          // Backend returns error message in 'error' key
+          final backendMessage = errorData['error'];
+          if (backendMessage != null) {
+            errorMessage = backendMessage.toString();
+          }
+        } else if (errorData is String) {
+          errorMessage = errorData;
+        }
+      }
+      
+      Get.snackbar(errorMessage, color: Colors.red);
     }
   }
 

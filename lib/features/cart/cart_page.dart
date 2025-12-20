@@ -77,7 +77,9 @@ class _CartPageState extends ConsumerState<CartPage> {
     
     // Reload cart after returning from checkout
     if (mounted) {
-      ref.read(cartProvider.notifier).loadCart();
+      // AWAIT cart reload to prevent black screen during navigation
+      // This ensures cart state is updated before popping the page
+      await ref.read(cartProvider.notifier).loadCart();
       
       // If checkout was successful, pop the cart page too
       if (result == true && mounted) {
