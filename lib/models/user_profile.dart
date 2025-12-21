@@ -117,10 +117,14 @@ class User {
 
 class UserPublicProfile {
   final int id;
+  final String? krUserId;
+  final String? description;
   final List<Product> sellerProducts;
 
   UserPublicProfile({
     required this.id,
+    this.krUserId,
+    this.description,
     required this.sellerProducts,
   });
 
@@ -128,10 +132,11 @@ class UserPublicProfile {
     final productsJson = json['seller_products'] as List<dynamic>? ?? [];
     return UserPublicProfile(
       id: json['id'] as int? ?? 0,
+      krUserId: json['kr_user_id'] as String?,
+      description: json['description'] as String?,
       sellerProducts: productsJson
           .map((item) => Product.fromJson(item as Map<String, dynamic>))
           .toList(),
     );
   }
 }
-

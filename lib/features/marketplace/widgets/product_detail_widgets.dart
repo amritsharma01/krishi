@@ -347,29 +347,29 @@ class SellerInfoCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppText(
-                      'seller_information'.tr(context),
-                      style: Get.bodySmall.px11.w600.copyWith(
-                        color: Get.disabledColor.withValues(alpha: 0.6),
-                      ),
-                    ),
-                    4.verticalGap,
+                    // AppText(
+                    //   'seller_information'.tr(context),
+                    //   style: Get.bodySmall.px11.w600.copyWith(
+                    //     color: Get.disabledColor.withValues(alpha: 0.6),
+                    //   ),
+                    // ),
+                    // 4.verticalGap,
                     AppText(
                       'seller_id_label'.tr(context),
-                      style: Get.bodySmall.px11.w600.copyWith(
+                      style: Get.bodySmall.px10.w600.copyWith(
                         color: Get.disabledColor.withValues(alpha: 0.6),
                       ),
                     ),
-                    4.verticalGap,
+
                     AppText(
                       sellerKrId,
-                      style: Get.bodyMedium.px15.w700.copyWith(
+                      style: Get.bodyMedium.px14.w700.copyWith(
                         color: Get.disabledColor,
                       ),
                     ),
                     if (product.sellerDescription != null &&
                         product.sellerDescription!.trim().isNotEmpty) ...[
-                      8.verticalGap,
+                      4.verticalGap,
                       AppText(
                         product.sellerDescription!,
                         style: Get.bodySmall.px12.copyWith(

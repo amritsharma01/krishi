@@ -81,8 +81,9 @@ class _CartPageState extends ConsumerState<CartPage> {
       // This ensures cart state is updated before popping the page
       await ref.read(cartProvider.notifier).loadCart();
       
-      // If checkout was successful, pop the cart page too
-      if (result == true && mounted) {
+      // Only pop if cart page was pushed (has AppBar)
+      // If embedded in marketplace tab, don't pop to avoid black screen
+      if (result == true && mounted && widget.showAppBar) {
         Navigator.of(context).pop();
       }
     }

@@ -16,11 +16,13 @@ class SellerPublicListingsPage extends ConsumerStatefulWidget {
   final String userKrId;
   final List<Product> initialListings;
   final String? titleKey;
+  final String? sellerDescription;
 
   const SellerPublicListingsPage({
     super.key,
     required this.userKrId,
     required this.initialListings,
+    this.sellerDescription,
     this.titleKey,
   });
 
@@ -34,6 +36,7 @@ class _SellerPublicListingsPageState
   late List<Product> listings;
   bool isLoading = false;
   String? errorMessage;
+  String? businessDescription;
 
   @override
   void initState() {
@@ -54,6 +57,7 @@ class _SellerPublicListingsPageState
       if (mounted) {
         setState(() {
           listings = profile.sellerProducts;
+          businessDescription = profile.description;
           isLoading = false;
         });
       }
@@ -95,6 +99,43 @@ class _SellerPublicListingsPageState
         child: ListView(
           padding: const EdgeInsets.all(8).rt,
           children: [
+            // Show business description if available
+            if (businessDescription != null &&
+                businessDescription!.isNotEmpty) ...[
+              Container(
+                padding: const EdgeInsets.all(12).rt,
+                margin: EdgeInsets.only(bottom: 8.rt),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12).rt,
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 18.st,
+                      color: AppColors.primary,
+                    ),
+                    8.horizontalGap,
+                    Expanded(
+                      child: AppText(
+                        businessDescription!,
+                        style: Get.bodySmall.px12.copyWith(
+                          color: Get.disabledColor.withValues(alpha: 0.8),
+                          height: 1.4,
+                        ),
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             if (isLoading)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 32).rt,
@@ -144,7 +185,7 @@ class _SellerPublicListingsPageState
 
   Widget _buildListingCard(Product product) {
     return GestureDetector(
-      onTap: () => Get.to(ProductDetailPage(product: product)),
+      // onTap: () => Get.to(ProductDetailPage(product: product)),
       child: Container(
         margin: EdgeInsets.only(bottom: 6.rt),
         padding: const EdgeInsets.all(8).rt,
